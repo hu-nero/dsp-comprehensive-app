@@ -89,8 +89,8 @@ void main(void)
 //	l32 lEmifH, lEmifL;
 //	s16 iEmifH, iEmifL;
 
-	struct ECAN_REGS ECanaShadow;
-	struct ECAN_REGS ECanbShadow;
+	/*struct ECAN_REGS ECanaShadow;*/
+	/*struct ECAN_REGS ECanbShadow;*/
 
 	DINT;
 	InitSysCtrl();
@@ -154,467 +154,471 @@ void main(void)
 	memset(&iIsrBuf, 0, sizeof(iIsrBuf));
 
 	CPLDSWVerRead();
-	for(; ;)
-	{
-		EINT;
-///////////////////////////////////////////////////////////////////////////////
-		ConvInner_CANAComm();     //CANA_NPR2MPR
-		ConvInner_CANBComm();     //CANB_NPR2MCS
-///////////////////////////////////////////////////////////////////////////////
-		Sci_Monitor_RxData(&ScibRegs, SCIBRecvBuffer, &SCIBRecvTail);
-		Monitor_Rx_Protocol(SCIBRecvBuffer, &SCIBRecvFront, SCIBRecvTail, SCIBSendBuffer, &SCIBSendTail);
-		Software_oscilloscope(SCIBSend_1ms, SCIBSendBuffer, &SCIBSendTail);
-		Sci_Monitor_TxData(&ScibRegs, SCIBSendBuffer, &SCIBSendFront, SCIBSendTail, SCIBSend_1ms);
-///////////////////////////////////////////////////////////////////////////////
-		Modbus_Send_To_HMI();
-		Sci_Modbus_RxData(&SciaRegs, Modbus_RecvBuffer, &Modbus_RecvTail, Modbus_Recv_BUFF_SIZE);
-		ModbusRTU_Protocol(Modbus_RecvBuffer, &Modbus_RecvFront, Modbus_RecvTail, Modbus_Recv_BUFF_SIZE, Modbus_SendBuffer);
-		Modbus_Recv_For_HMI();
-///////////////////////////////////////////////////////////////////////////////
-		Flag_EEPROMCheck = EEPROMAccess(&ParaDownloadCtrlWord, &EEPROMAceNum);
-		{
-			if(FaultMask_Map(40) == 1)
-			{
-				if(MPR_FaultCode == 0)
-				{
-					FunFaultReact();
-					ParaDownloadFaultNum = EEPROMAceNum - 1;
-					MPR_FaultCode = 40;
-				}
-			}
-			FaultWord_Map(40);
-		}
-//////////////////////////////////////////////////////////////////////////////
-		if(CtrlCnt_LedTogg > 200)
-		{
-			CtrlCnt_LedTogg = 0;
+    for(;;)
+    {
+        CAN_Agent_Process();
+    }
 
-			for(i=0; i<5; i++);
-			IO_LEDG_TOG;
-			for(i=0; i<5; i++);
-			IO_LEDFPGA_TOG;
+	/*{*/
+		/*EINT;*/
+/*///////////////////////////////////////////////////////////////////////////////*/
+		/*ConvInner_CANAComm();     //CANA_NPR2MPR*/
+		/*ConvInner_CANBComm();     //CANB_NPR2MCS*/
+/*///////////////////////////////////////////////////////////////////////////////*/
+		/*Sci_Monitor_RxData(&ScibRegs, SCIBRecvBuffer, &SCIBRecvTail);*/
+		/*Monitor_Rx_Protocol(SCIBRecvBuffer, &SCIBRecvFront, SCIBRecvTail, SCIBSendBuffer, &SCIBSendTail);*/
+		/*Software_oscilloscope(SCIBSend_1ms, SCIBSendBuffer, &SCIBSendTail);*/
+		/*Sci_Monitor_TxData(&ScibRegs, SCIBSendBuffer, &SCIBSendFront, SCIBSendTail, SCIBSend_1ms);*/
+/*///////////////////////////////////////////////////////////////////////////////*/
+		/*Modbus_Send_To_HMI();*/
+		/*Sci_Modbus_RxData(&SciaRegs, Modbus_RecvBuffer, &Modbus_RecvTail, Modbus_Recv_BUFF_SIZE);*/
+		/*ModbusRTU_Protocol(Modbus_RecvBuffer, &Modbus_RecvFront, Modbus_RecvTail, Modbus_Recv_BUFF_SIZE, Modbus_SendBuffer);*/
+		/*Modbus_Recv_For_HMI();*/
+/*///////////////////////////////////////////////////////////////////////////////*/
+		/*Flag_EEPROMCheck = EEPROMAccess(&ParaDownloadCtrlWord, &EEPROMAceNum);*/
+		/*{*/
+			/*if(FaultMask_Map(40) == 1)*/
+			/*{*/
+				/*if(MPR_FaultCode == 0)*/
+				/*{*/
+					/*FunFaultReact();*/
+					/*ParaDownloadFaultNum = EEPROMAceNum - 1;*/
+					/*MPR_FaultCode = 40;*/
+				/*}*/
+			/*}*/
+			/*FaultWord_Map(40);*/
+		/*}*/
+/*//////////////////////////////////////////////////////////////////////////////*/
+		/*if(CtrlCnt_LedTogg > 200)*/
+		/*{*/
+			/*CtrlCnt_LedTogg = 0;*/
 
-			if(MPR_FaultCode)
-			{
-				IO_LEDR_TOG;
-			}
-			else
-			{
-				IO_LEDR_OFF;
-			}
+			/*for(i=0; i<5; i++);*/
+			/*IO_LEDG_TOG;*/
+			/*for(i=0; i<5; i++);*/
+			/*IO_LEDFPGA_TOG;*/
 
-			GetFlowRate_Calc();
-			MotorFreq_FpgaScan();
-		}
-//////////////////////////////////////////////////////////////////////////////
-		if(SysCnt_1ms != SysCnt_1msOld)
-		{
-			SysCnt_1msOld = SysCnt_1ms;
-			//////////////////////////////////////////////////////////////////
-			for(i=0; i<45; i++)
-			{
-				lEmifH = *(unsigned  int *)(0x4010 + 2*i);
-				lEmifL = *(unsigned  int *)(0x4011 + 2*i);
-				lCycBuf[i] = ( (lEmifH<<16)&0xFFFF0000) | (lEmifL&0x0000FFFF);
-				fCycBuf[i] = (f32)(lCycBuf[i]) / 16777216.0;
-			}
+			/*if(MPR_FaultCode)*/
+			/*{*/
+				/*IO_LEDR_TOG;*/
+			/*}*/
+			/*else*/
+			/*{*/
+				/*IO_LEDR_OFF;*/
+			/*}*/
 
-			MotorVolt_Angle = fCycBuf[0];
-			mpr_ia 			= fCycBuf[1]*2048;
-			mpr_ib 			= fCycBuf[2]*2048;
-			mpr_ic 			= fCycBuf[3]*2048;
-			mpr_uab 		= fCycBuf[4]*2048;
-			mpr_ubc 		= fCycBuf[5]*2048;
-			mpr_uca 		= fCycBuf[6]*2048;
-			mpr_udc 		= fCycBuf[7]*2048;
-			UsCtrl_d 		= fCycBuf[8]*2048;
-			UsCtrl_q 		= fCycBuf[9]*2048;
-			Ia_Rms 			= fCycBuf[10]*2048;
-			Ib_Rms 			= fCycBuf[11]*2048;
-			Ic_Rms 			= fCycBuf[12]*2048;
-			Ua_Rms 			= fCycBuf[13]*2048;
-			Ub_Rms 			= fCycBuf[14]*2048;
-			Uc_Rms 			= fCycBuf[15]*2048;
-			Uab_Rms 		= fCycBuf[16]*2048;
-			Ubc_Rms 		= fCycBuf[17]*2048;
-			Uca_Rms 		= fCycBuf[18]*2048;
-			MPR_Ps 			= fCycBuf[19]*4480;
-			MPR_Qs 			= fCycBuf[20]*4480;
-			MPR_Ss 			= fCycBuf[21]*5270;
-			Ioa_Rms 		= fCycBuf[22]*2048;
-			Iob_Rms 		= fCycBuf[23]*2048;
-			Ioc_Rms 		= fCycBuf[24]*2048;
-			UabBus1_Rms 	= fCycBuf[25]*2048;
-			UbcBus1_Rms 	= fCycBuf[26]*2048;
-			UcaBus1_Rms 	= fCycBuf[27]*2048;
-			UabBus2_Rms 	= fCycBuf[28]*2048;
-			UbcBus2_Rms 	= fCycBuf[29]*2048;
-			UcaBus2_Rms 	= fCycBuf[30]*2048;
-			mpr_id			= fCycBuf[31]*2048;
-			mpr_iq			= fCycBuf[32]*2048;
-			mpr_idf			= fCycBuf[33]*2048;
-			mpr_iqf			= fCycBuf[34]*2048;
-			Id_Loop_Out		= fCycBuf[35]*2048;
-			Iq_Loop_Out		= fCycBuf[36]*2048;
-			IdRef_Outer 	= fCycBuf[37]*2048;
-			IqRef_Outer 	= fCycBuf[38]*2048;
-			if(MainStusWord.DataBit.SingPara)
-			{
-				UdRefRef_Outer =  fCycBuf[39]*2048;
-			}
-			UdcOffset_Outer = fCycBuf[40]*2048;
-			mpr_iod			= fCycBuf[41]*2048;
-			mpr_ioq			= fCycBuf[42]*2048;
-			mpr_iodf		= fCycBuf[43]*2048;
-			mpr_ioqf		= fCycBuf[44]*2048;
-			//////////////////////////////////////////////////////////////////
-			FPGAWR_CTRLREF = DspToFpgaWord.DataInt;
-			fCycBuf[0] 	= Idq_Loop_Kp;
-			fCycBuf[1] 	= Idq_Loop_Ki;
-			fCycBuf[2] 	= Id_Loop_Lim/2048.0;
-			fCycBuf[3] 	= Id_Loop_Lim/2048.0;  //Iq_Loop_Lim/2048.0;
-			fCycBuf[4] 	= FltThr_OverVolt_Udc/2048.0;
-			fCycBuf[5] 	= FltThr_OverCurr_Ipeak/2048.0;
-			fCycBuf[6] 	= FilterPara_Induct;
-			fCycBuf[7] 	= FastChar_DCOffset/2048.0;
-			fCycBuf[8] 	= Para_IoFwdCoeff;
-			for(i=0; i<9; i++)
-			{
-				lCycBuf[i] 	= (s32)(fCycBuf[i]*16777216.0);
-				iEmifH 		=  (s16)((lCycBuf[i]>>16) & 0x0000FFFF);
-				iEmifL 		=  (s16)((lCycBuf[i]>> 0) & 0x0000FFFF);
-				*(unsigned  int *)(0x4110 + 2*i) = iEmifH;
-				*(unsigned  int *)(0x4111 + 2*i) = iEmifL;
-			}
-			//////////////////////////////////////////////////////////////////
-			Flag_DspWrFpga ^= 0xFFFF;
-			FPGAWR_TOGGLE = Flag_DspWrFpga;
+			/*GetFlowRate_Calc();*/
+			/*MotorFreq_FpgaScan();*/
+		/*}*/
+/*//////////////////////////////////////////////////////////////////////////////*/
+		/*if(SysCnt_1ms != SysCnt_1msOld)*/
+		/*{*/
+			/*SysCnt_1msOld = SysCnt_1ms;*/
+			/*//////////////////////////////////////////////////////////////////*/
+			/*for(i=0; i<45; i++)*/
+			/*{*/
+				/*lEmifH = *(unsigned  int *)(0x4010 + 2*i);*/
+				/*lEmifL = *(unsigned  int *)(0x4011 + 2*i);*/
+				/*lCycBuf[i] = ( (lEmifH<<16)&0xFFFF0000) | (lEmifL&0x0000FFFF);*/
+				/*fCycBuf[i] = (f32)(lCycBuf[i]) / 16777216.0;*/
+			/*}*/
 
-			Flag_DspRdFpga = FPGARD_TOGGLE;
-			if(Flag_DspRdFpga != Flag_DspWrFpga)
-			{
-				if(MPR_FaultCode == 0)
-				{
-					FunFaultReact();
-					MPR_FaultCode = 250;
-					FaultWord_Map(250);
-				}
-			}
+			/*MotorVolt_Angle = fCycBuf[0];*/
+			/*mpr_ia 			= fCycBuf[1]*2048;*/
+			/*mpr_ib 			= fCycBuf[2]*2048;*/
+			/*mpr_ic 			= fCycBuf[3]*2048;*/
+			/*mpr_uab 		= fCycBuf[4]*2048;*/
+			/*mpr_ubc 		= fCycBuf[5]*2048;*/
+			/*mpr_uca 		= fCycBuf[6]*2048;*/
+			/*mpr_udc 		= fCycBuf[7]*2048;*/
+			/*UsCtrl_d 		= fCycBuf[8]*2048;*/
+			/*UsCtrl_q 		= fCycBuf[9]*2048;*/
+			/*Ia_Rms 			= fCycBuf[10]*2048;*/
+			/*Ib_Rms 			= fCycBuf[11]*2048;*/
+			/*Ic_Rms 			= fCycBuf[12]*2048;*/
+			/*Ua_Rms 			= fCycBuf[13]*2048;*/
+			/*Ub_Rms 			= fCycBuf[14]*2048;*/
+			/*Uc_Rms 			= fCycBuf[15]*2048;*/
+			/*Uab_Rms 		= fCycBuf[16]*2048;*/
+			/*Ubc_Rms 		= fCycBuf[17]*2048;*/
+			/*Uca_Rms 		= fCycBuf[18]*2048;*/
+			/*MPR_Ps 			= fCycBuf[19]*4480;*/
+			/*MPR_Qs 			= fCycBuf[20]*4480;*/
+			/*MPR_Ss 			= fCycBuf[21]*5270;*/
+			/*Ioa_Rms 		= fCycBuf[22]*2048;*/
+			/*Iob_Rms 		= fCycBuf[23]*2048;*/
+			/*Ioc_Rms 		= fCycBuf[24]*2048;*/
+			/*UabBus1_Rms 	= fCycBuf[25]*2048;*/
+			/*UbcBus1_Rms 	= fCycBuf[26]*2048;*/
+			/*UcaBus1_Rms 	= fCycBuf[27]*2048;*/
+			/*UabBus2_Rms 	= fCycBuf[28]*2048;*/
+			/*UbcBus2_Rms 	= fCycBuf[29]*2048;*/
+			/*UcaBus2_Rms 	= fCycBuf[30]*2048;*/
+			/*mpr_id			= fCycBuf[31]*2048;*/
+			/*mpr_iq			= fCycBuf[32]*2048;*/
+			/*mpr_idf			= fCycBuf[33]*2048;*/
+			/*mpr_iqf			= fCycBuf[34]*2048;*/
+			/*Id_Loop_Out		= fCycBuf[35]*2048;*/
+			/*Iq_Loop_Out		= fCycBuf[36]*2048;*/
+			/*IdRef_Outer 	= fCycBuf[37]*2048;*/
+			/*IqRef_Outer 	= fCycBuf[38]*2048;*/
+			/*if(MainStusWord.DataBit.SingPara)*/
+			/*{*/
+				/*UdRefRef_Outer =  fCycBuf[39]*2048;*/
+			/*}*/
+			/*UdcOffset_Outer = fCycBuf[40]*2048;*/
+			/*mpr_iod			= fCycBuf[41]*2048;*/
+			/*mpr_ioq			= fCycBuf[42]*2048;*/
+			/*mpr_iodf		= fCycBuf[43]*2048;*/
+			/*mpr_ioqf		= fCycBuf[44]*2048;*/
+			/*//////////////////////////////////////////////////////////////////*/
+			/*FPGAWR_CTRLREF = DspToFpgaWord.DataInt;*/
+			/*fCycBuf[0] 	= Idq_Loop_Kp;*/
+			/*fCycBuf[1] 	= Idq_Loop_Ki;*/
+			/*fCycBuf[2] 	= Id_Loop_Lim/2048.0;*/
+			/*fCycBuf[3] 	= Id_Loop_Lim/2048.0;  //Iq_Loop_Lim/2048.0;*/
+			/*fCycBuf[4] 	= FltThr_OverVolt_Udc/2048.0;*/
+			/*fCycBuf[5] 	= FltThr_OverCurr_Ipeak/2048.0;*/
+			/*fCycBuf[6] 	= FilterPara_Induct;*/
+			/*fCycBuf[7] 	= FastChar_DCOffset/2048.0;*/
+			/*fCycBuf[8] 	= Para_IoFwdCoeff;*/
+			/*for(i=0; i<9; i++)*/
+			/*{*/
+				/*lCycBuf[i] 	= (s32)(fCycBuf[i]*16777216.0);*/
+				/*iEmifH 		=  (s16)((lCycBuf[i]>>16) & 0x0000FFFF);*/
+				/*iEmifL 		=  (s16)((lCycBuf[i]>> 0) & 0x0000FFFF);*/
+				/**(unsigned  int *)(0x4110 + 2*i) = iEmifH;*/
+				/**(unsigned  int *)(0x4111 + 2*i) = iEmifL;*/
+			/*}*/
+			/*//////////////////////////////////////////////////////////////////*/
+			/*Flag_DspWrFpga ^= 0xFFFF;*/
+			/*FPGAWR_TOGGLE = Flag_DspWrFpga;*/
 
-			if(ParaDownloadCtrlWord == 0)
-				IO_Scan();
-			mpr_1ms_protection();
-			mpr_1ms_AlarmCheck();
+			/*Flag_DspRdFpga = FPGARD_TOGGLE;*/
+			/*if(Flag_DspRdFpga != Flag_DspWrFpga)*/
+			/*{*/
+				/*if(MPR_FaultCode == 0)*/
+				/*{*/
+					/*FunFaultReact();*/
+					/*MPR_FaultCode = 250;*/
+					/*FaultWord_Map(250);*/
+				/*}*/
+			/*}*/
 
-			Source_Select();
-			Udq_Ramp_Limit(MainStusWord.DataBit.MprRun);
-			Inner_ADCScan();
-			GetPQVIRms();
-			CoolFanCtrl();
-			FunResetAct();
-			FunStatusUpdate();
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			if(MainStusWord.DataBit.NprFault | MainStusWord.DataBit.MprFault)
-			{
-				Status_MPRRun = 12;
-			}
+			/*if(ParaDownloadCtrlWord == 0)*/
+				/*IO_Scan();*/
+			/*mpr_1ms_protection();*/
+			/*mpr_1ms_AlarmCheck();*/
 
-			FpgaToDspWord.DataBit.SyncOk = 1;
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			if(Status_MPRRun == 0)
-			{
-				if(ParaDownloadCtrlWord == 0)
-				if(SysCnt_1ms > 500)
-				{
-					SysCnt_1ms = 0;
+			/*Source_Select();*/
+			/*Udq_Ramp_Limit(MainStusWord.DataBit.MprRun);*/
+			/*Inner_ADCScan();*/
+			/*GetPQVIRms();*/
+			/*CoolFanCtrl();*/
+			/*FunResetAct();*/
+			/*FunStatusUpdate();*/
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+			/*if(MainStusWord.DataBit.NprFault | MainStusWord.DataBit.MprFault)*/
+			/*{*/
+				/*Status_MPRRun = 12;*/
+			/*}*/
 
-					IO_ACB1ON_Dis;
-					IO_ACB1OFF_Dis;
-					MainStusWord.DataBit.ACB1Req = 0;
+			/*FpgaToDspWord.DataBit.SyncOk = 1;*/
+/*///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////*/
+			/*if(Status_MPRRun == 0)*/
+			/*{*/
+				/*if(ParaDownloadCtrlWord == 0)*/
+				/*if(SysCnt_1ms > 500)*/
+				/*{*/
+					/*SysCnt_1ms = 0;*/
 
-					SlaToMasWord.bit.ParallReq = 0;
+					/*IO_ACB1ON_Dis;*/
+					/*IO_ACB1OFF_Dis;*/
+					/*MainStusWord.DataBit.ACB1Req = 0;*/
 
-					Status_MPRRun = 1;
-				}
-			}
-			else if(Status_MPRRun == 1)
-			{
-				if(SysCnt_1ms > 1000)
-				{
-					SysCnt_1ms = 0;
+					/*SlaToMasWord.bit.ParallReq = 0;*/
 
-					if(MainStusWord.DataBit.SingPara == 0)
-					{
-						Status_MPRRun = 2;
-					}
-					else
-					{
-						if(MasToSlaWord.bit.AllowAdd == 1)
-						{
-							Status_MPRRun = 2;
-						}
-					}
-				}
-			}
-///////////////////////////////////////////////////////////////////////////////
-			else if(Status_MPRRun == 2)
-			{
-				if(MainCtrlWord.DataBit.NPR_Run == 1)
-				if(!(MainStusWord.DataBit.NprFault | MainStusWord.DataBit.MprFault) )
-				if(SysCnt_1ms > 500)
-				{
-					SysCnt_1ms = 0;
-					IO_NprRun_En;
-					Status_MPRRun = 3;
-				}
-			}
-			else if(Status_MPRRun == 3)
-			{
-				if(SysCnt_1ms > 100)
-				{
-					IO_ACB1OFF_Dis;
-				}
+					/*Status_MPRRun = 1;*/
+				/*}*/
+			/*}*/
+			/*else if(Status_MPRRun == 1)*/
+			/*{*/
+				/*if(SysCnt_1ms > 1000)*/
+				/*{*/
+					/*SysCnt_1ms = 0;*/
 
-				if(MainCtrlWord.DataBit.NPR_Run == 0)
-				{
-					IO_NprRun_Dis;
+					/*if(MainStusWord.DataBit.SingPara == 0)*/
+					/*{*/
+						/*Status_MPRRun = 2;*/
+					/*}*/
+					/*else*/
+					/*{*/
+						/*if(MasToSlaWord.bit.AllowAdd == 1)*/
+						/*{*/
+							/*Status_MPRRun = 2;*/
+						/*}*/
+					/*}*/
+				/*}*/
+			/*}*/
+/*///////////////////////////////////////////////////////////////////////////////*/
+			/*else if(Status_MPRRun == 2)*/
+			/*{*/
+				/*if(MainCtrlWord.DataBit.NPR_Run == 1)*/
+				/*if(!(MainStusWord.DataBit.NprFault | MainStusWord.DataBit.MprFault) )*/
+				/*if(SysCnt_1ms > 500)*/
+				/*{*/
+					/*SysCnt_1ms = 0;*/
+					/*IO_NprRun_En;*/
+					/*Status_MPRRun = 3;*/
+				/*}*/
+			/*}*/
+			/*else if(Status_MPRRun == 3)*/
+			/*{*/
+				/*if(SysCnt_1ms > 100)*/
+				/*{*/
+					/*IO_ACB1OFF_Dis;*/
+				/*}*/
 
-					Status_MPRRun = 2;
-				}
-				else if(MainCtrlWord.DataBit.NPR_Run == 1) // ctrl npr start
-				{
-					if(MainStusWord.DataBit.NPRRun)
-					if(SysCnt_1ms > 500)
-					{
-						SysCnt_1ms = 0;
-						Status_MPRRun = 4;
-					}
-				}
-			}
-///////////////////////////////////////////////////////////////////////////////
-			else if(Status_MPRRun == 4)
-			{
-				if(SysCnt_1ms > 1000)
-				{
-					SysCnt_1ms = 0;
+				/*if(MainCtrlWord.DataBit.NPR_Run == 0)*/
+				/*{*/
+					/*IO_NprRun_Dis;*/
 
-					if(MainStusWord.DataBit.SingPara == 0)
-					{
-						Status_MPRRun = 5;
+					/*Status_MPRRun = 2;*/
+				/*}*/
+				/*else if(MainCtrlWord.DataBit.NPR_Run == 1) // ctrl npr start*/
+				/*{*/
+					/*if(MainStusWord.DataBit.NPRRun)*/
+					/*if(SysCnt_1ms > 500)*/
+					/*{*/
+						/*SysCnt_1ms = 0;*/
+						/*Status_MPRRun = 4;*/
+					/*}*/
+				/*}*/
+			/*}*/
+/*///////////////////////////////////////////////////////////////////////////////*/
+			/*else if(Status_MPRRun == 4)*/
+			/*{*/
+				/*if(SysCnt_1ms > 1000)*/
+				/*{*/
+					/*SysCnt_1ms = 0;*/
 
-						MainStusWord.DataBit.VoltSel = 0;
-					}
-					else if( MainStusWord.DataBit.SingPara & FpgaToDspWord.DataBit.SyncOk)
-					{
-						if(MainCtrlWord.DataBit.PWMON)
-						{
-							if(MasToSlaWord.bit.BusBuild == 0)
-							{
-								IO_ACB1ON_En;
-								IO_ACB1OFF_Dis;
-								MainStusWord.DataBit.ACB1Req = 1;
+					/*if(MainStusWord.DataBit.SingPara == 0)*/
+					/*{*/
+						/*Status_MPRRun = 5;*/
 
-								MainStusWord.DataBit.VoltSel = 1;
+						/*MainStusWord.DataBit.VoltSel = 0;*/
+					/*}*/
+					/*else if( MainStusWord.DataBit.SingPara & FpgaToDspWord.DataBit.SyncOk)*/
+					/*{*/
+						/*if(MainCtrlWord.DataBit.PWMON)*/
+						/*{*/
+							/*if(MasToSlaWord.bit.BusBuild == 0)*/
+							/*{*/
+								/*IO_ACB1ON_En;*/
+								/*IO_ACB1OFF_Dis;*/
+								/*MainStusWord.DataBit.ACB1Req = 1;*/
 
-								SysCnt_1ms = 0;
+								/*MainStusWord.DataBit.VoltSel = 1;*/
 
-								Status_MPRRun = 7;
-							}
-							else
-							{
-								IO_ACB1OFF_Dis;
-								MainStusWord.DataBit.ACB1Req = 0;
+								/*SysCnt_1ms = 0;*/
 
-								MainStusWord.DataBit.VoltSel = 0;
+								/*Status_MPRRun = 7;*/
+							/*}*/
+							/*else*/
+							/*{*/
+								/*IO_ACB1OFF_Dis;*/
+								/*MainStusWord.DataBit.ACB1Req = 0;*/
 
-								Status_MPRRun = 9;
-							}
-							SlaToMasWord.bit.ParallReq = 1;
-						}
-					}
-				}
-			}
-///////////////////////////////////////////////////////////////////////////////
-			// Power Single run
-			else if(Status_MPRRun == 5)
-			{
-				if(MainCtrlWord.DataBit.NPR_Run == 0)
-				if(SysCnt_1ms > 500)
-				{
-					SysCnt_1ms = 0;
-					IO_NprRun_Dis;
-					Status_MPRRun = 3;
-				}
+								/*MainStusWord.DataBit.VoltSel = 0;*/
 
-				if( (MainCtrlWord.DataBit.PWMON == 1) && (MainStusWord.DataBit.MprRun == 0) )
-				if(MainStusWord.DataBit.NPRRun == 1)
-				if(MainStusWord.DataBit.ACB1Ack == 0)
-				if(!(MainStusWord.DataBit.NprFault | MainStusWord.DataBit.MprFault) )
-				{
-					En_PWM();
-					MainStusWord.DataBit.MprRun = 1;
+								/*Status_MPRRun = 9;*/
+							/*}*/
+							/*SlaToMasWord.bit.ParallReq = 1;*/
+						/*}*/
+					/*}*/
+				/*}*/
+			/*}*/
+/*///////////////////////////////////////////////////////////////////////////////*/
+			/*// Power Single run*/
+			/*else if(Status_MPRRun == 5)*/
+			/*{*/
+				/*if(MainCtrlWord.DataBit.NPR_Run == 0)*/
+				/*if(SysCnt_1ms > 500)*/
+				/*{*/
+					/*SysCnt_1ms = 0;*/
+					/*IO_NprRun_Dis;*/
+					/*Status_MPRRun = 3;*/
+				/*}*/
 
-					SlaToMasWord.bit.ParallReq = 0;
+				/*if( (MainCtrlWord.DataBit.PWMON == 1) && (MainStusWord.DataBit.MprRun == 0) )*/
+				/*if(MainStusWord.DataBit.NPRRun == 1)*/
+				/*if(MainStusWord.DataBit.ACB1Ack == 0)*/
+				/*if(!(MainStusWord.DataBit.NprFault | MainStusWord.DataBit.MprFault) )*/
+				/*{*/
+					/*En_PWM();*/
+					/*MainStusWord.DataBit.MprRun = 1;*/
 
-					Status_MPRRun = 6;
-				}
-			}
-			else if(Status_MPRRun == 6)
-			{
-				if(MainCtrlWord.DataBit.PWMON == 0)
-				{
-					if(UsdRef < fabs(10) )
-					{
-						Dis_PWM();
-						MainStusWord.DataBit.MprRun = 0;
+					/*SlaToMasWord.bit.ParallReq = 0;*/
 
-						IO_ACB1OFF_Dis;
-						IO_ACB1ON_Dis;
-						MainStusWord.DataBit.ACB1Req = 0;
+					/*Status_MPRRun = 6;*/
+				/*}*/
+			/*}*/
+			/*else if(Status_MPRRun == 6)*/
+			/*{*/
+				/*if(MainCtrlWord.DataBit.PWMON == 0)*/
+				/*{*/
+					/*if(UsdRef < fabs(10) )*/
+					/*{*/
+						/*Dis_PWM();*/
+						/*MainStusWord.DataBit.MprRun = 0;*/
 
-						Status_MPRRun = 5;
+						/*IO_ACB1OFF_Dis;*/
+						/*IO_ACB1ON_Dis;*/
+						/*MainStusWord.DataBit.ACB1Req = 0;*/
 
-						FastChar_RunStatus = 0;
-					}
-				}
+						/*Status_MPRRun = 5;*/
+
+						/*FastChar_RunStatus = 0;*/
+					/*}*/
+				/*}*/
 
 
-			}
-///////////////////////////////////////////////////////////////////////////////
-			// Power Paller not voltgle
-			else if(Status_MPRRun == 7)
-			{
-				if(SysCnt_1ms > 100)
-				{
-					IO_ACB1ON_Dis;
-				}
+			/*}*/
+/*///////////////////////////////////////////////////////////////////////////////*/
+			/*// Power Paller not voltgle*/
+			/*else if(Status_MPRRun == 7)*/
+			/*{*/
+				/*if(SysCnt_1ms > 100)*/
+				/*{*/
+					/*IO_ACB1ON_Dis;*/
+				/*}*/
 
-				if(MainCtrlWord.DataBit.NPR_Run == 0)
-				if(SysCnt_1ms > 500)
-				{
-					SysCnt_1ms = 0;
-					IO_NprRun_Dis;
+				/*if(MainCtrlWord.DataBit.NPR_Run == 0)*/
+				/*if(SysCnt_1ms > 500)*/
+				/*{*/
+					/*SysCnt_1ms = 0;*/
+					/*IO_NprRun_Dis;*/
 
-					Status_MPRRun = 3;
-				}
+					/*Status_MPRRun = 3;*/
+				/*}*/
 
-				if( (MainCtrlWord.DataBit.PWMON == 1) && (MainStusWord.DataBit.MprRun == 0) )
-				if(MainStusWord.DataBit.NPRRun == 1)
-				if( (MasToSlaWord.bit.ParallAck == 1) && (MainStusWord.DataBit.ACB1Ack == 1) )
-				if(!(MainStusWord.DataBit.NprFault | MainStusWord.DataBit.MprFault) )
-				{
-					IO_ACB1ON_Dis;
-					IO_ACB1OFF_Dis;
+				/*if( (MainCtrlWord.DataBit.PWMON == 1) && (MainStusWord.DataBit.MprRun == 0) )*/
+				/*if(MainStusWord.DataBit.NPRRun == 1)*/
+				/*if( (MasToSlaWord.bit.ParallAck == 1) && (MainStusWord.DataBit.ACB1Ack == 1) )*/
+				/*if(!(MainStusWord.DataBit.NprFault | MainStusWord.DataBit.MprFault) )*/
+				/*{*/
+					/*IO_ACB1ON_Dis;*/
+					/*IO_ACB1OFF_Dis;*/
 
-					En_PWM();
-					MainStusWord.DataBit.MprRun = 1;
+					/*En_PWM();*/
+					/*MainStusWord.DataBit.MprRun = 1;*/
 
-					SlaToMasWord.bit.ParallReq = 0;
+					/*SlaToMasWord.bit.ParallReq = 0;*/
 
-					Status_MPRRun = 8;
-				}
-			}
-			else if(Status_MPRRun == 8)
-			{
+					/*Status_MPRRun = 8;*/
+				/*}*/
+			/*}*/
+			/*else if(Status_MPRRun == 8)*/
+			/*{*/
 
-				if(MainCtrlWord.DataBit.PWMON == 0)
-				{
-					Dis_PWM();
-					MainStusWord.DataBit.MprRun = 0;
+				/*if(MainCtrlWord.DataBit.PWMON == 0)*/
+				/*{*/
+					/*Dis_PWM();*/
+					/*MainStusWord.DataBit.MprRun = 0;*/
 
-					IO_ACB1OFF_En;
-					IO_ACB1ON_Dis;
-					MainStusWord.DataBit.ACB1Req = 0;
+					/*IO_ACB1OFF_En;*/
+					/*IO_ACB1ON_Dis;*/
+					/*MainStusWord.DataBit.ACB1Req = 0;*/
 
-					Status_MPRRun = 3;
+					/*Status_MPRRun = 3;*/
 
-					SysCnt_1ms = 0;
+					/*SysCnt_1ms = 0;*/
 
-					FastChar_RunStatus = 0;
-				}
-			}
-///////////////////////////////////////////////////////////////////////////////
-			// Power Paller have voltgle
-			else if(Status_MPRRun == 9)
-			{
-				if(MainCtrlWord.DataBit.NPR_Run == 0)
-				if(SysCnt_1ms > 500)
-				{
-					SysCnt_1ms = 0;
-					IO_NprRun_Dis;
-					Status_MPRRun = 3;
-				}
+					/*FastChar_RunStatus = 0;*/
+				/*}*/
+			/*}*/
+/*///////////////////////////////////////////////////////////////////////////////*/
+			/*// Power Paller have voltgle*/
+			/*else if(Status_MPRRun == 9)*/
+			/*{*/
+				/*if(MainCtrlWord.DataBit.NPR_Run == 0)*/
+				/*if(SysCnt_1ms > 500)*/
+				/*{*/
+					/*SysCnt_1ms = 0;*/
+					/*IO_NprRun_Dis;*/
+					/*Status_MPRRun = 3;*/
+				/*}*/
 
-				if( (MainCtrlWord.DataBit.PWMON == 1) && (MainStusWord.DataBit.MprRun == 0) )
-				if(MainStusWord.DataBit.NPRRun == 1)
-				if( (MasToSlaWord.bit.ParallAck == 1) && (MainStusWord.DataBit.ACB1Ack == 0) )
-				if(!(MainStusWord.DataBit.NprFault | MainStusWord.DataBit.MprFault) )
-				{
-					En_PWM();
-					MainStusWord.DataBit.MprRun = 1;
+				/*if( (MainCtrlWord.DataBit.PWMON == 1) && (MainStusWord.DataBit.MprRun == 0) )*/
+				/*if(MainStusWord.DataBit.NPRRun == 1)*/
+				/*if( (MasToSlaWord.bit.ParallAck == 1) && (MainStusWord.DataBit.ACB1Ack == 0) )*/
+				/*if(!(MainStusWord.DataBit.NprFault | MainStusWord.DataBit.MprFault) )*/
+				/*{*/
+					/*En_PWM();*/
+					/*MainStusWord.DataBit.MprRun = 1;*/
 
-					SlaToMasWord.bit.ParallReq = 0;
+					/*SlaToMasWord.bit.ParallReq = 0;*/
 
-					Status_MPRRun = 10;
+					/*Status_MPRRun = 10;*/
 
-					SysCnt_1ms = 0;
-				}
-			}
-			else if(Status_MPRRun == 10)
-			{
-				if(SlaToMasWord.bit.AddBusOk == 1)
-				{
-					IO_ACB1ON_En;
-					IO_ACB1OFF_Dis;
-					MainStusWord.DataBit.ACB1Req = 1;
+					/*SysCnt_1ms = 0;*/
+				/*}*/
+			/*}*/
+			/*else if(Status_MPRRun == 10)*/
+			/*{*/
+				/*if(SlaToMasWord.bit.AddBusOk == 1)*/
+				/*{*/
+					/*IO_ACB1ON_En;*/
+					/*IO_ACB1OFF_Dis;*/
+					/*MainStusWord.DataBit.ACB1Req = 1;*/
 
-					MainStusWord.DataBit.VoltSel = 1;
+					/*MainStusWord.DataBit.VoltSel = 1;*/
 
-					SysCnt_1ms = 0;
+					/*SysCnt_1ms = 0;*/
 
-					Status_MPRRun = 11;
-				}
-			}
-			else if(Status_MPRRun == 11)
-			{
-				if(SysCnt_1ms > 100)
-				{
-					IO_ACB1ON_Dis;
-				}
+					/*Status_MPRRun = 11;*/
+				/*}*/
+			/*}*/
+			/*else if(Status_MPRRun == 11)*/
+			/*{*/
+				/*if(SysCnt_1ms > 100)*/
+				/*{*/
+					/*IO_ACB1ON_Dis;*/
+				/*}*/
 
-				if(MainCtrlWord.DataBit.PWMON == 0)
-				{
-					Dis_PWM();
-					MainStusWord.DataBit.MprRun = 0;
+				/*if(MainCtrlWord.DataBit.PWMON == 0)*/
+				/*{*/
+					/*Dis_PWM();*/
+					/*MainStusWord.DataBit.MprRun = 0;*/
 
-					IO_ACB1OFF_En;
-					IO_ACB1ON_Dis;
-					MainStusWord.DataBit.ACB1Req = 0;
+					/*IO_ACB1OFF_En;*/
+					/*IO_ACB1ON_Dis;*/
+					/*MainStusWord.DataBit.ACB1Req = 0;*/
 
-					Status_MPRRun = 3;
+					/*Status_MPRRun = 3;*/
 
-					SysCnt_1ms = 0;
+					/*SysCnt_1ms = 0;*/
 
-					FastChar_RunStatus = 0;
-				}
-			}
-///////////////////////////////////////////////////////////////////////////////
-			if(Status_MPRRun == 12)
-			{
-				Dis_PWM();
-				MainStusWord.DataBit.MprRun = 0;
+					/*FastChar_RunStatus = 0;*/
+				/*}*/
+			/*}*/
+/*///////////////////////////////////////////////////////////////////////////////*/
+			/*if(Status_MPRRun == 12)*/
+			/*{*/
+				/*Dis_PWM();*/
+				/*MainStusWord.DataBit.MprRun = 0;*/
 
-				IO_NprRun_Dis;
+				/*IO_NprRun_Dis;*/
 
-				IO_ACB1OFF_En;
-				IO_ACB1ON_Dis;
-				MainStusWord.DataBit.ACB1Req = 0;
+				/*IO_ACB1OFF_En;*/
+				/*IO_ACB1ON_Dis;*/
+				/*MainStusWord.DataBit.ACB1Req = 0;*/
 
-				FastChar_RunStatus = 0;
-			}
-///////////////////////////////////////////////////////////////////////////////
-		}
-	}
+				/*FastChar_RunStatus = 0;*/
+			/*}*/
+/*///////////////////////////////////////////////////////////////////////////////*/
+		/*}*/
+	/*}*/
 }
 /******************************************************************/
 void INT28335_process(void)
