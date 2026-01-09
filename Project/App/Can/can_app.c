@@ -43,18 +43,17 @@
 
 
 static CAN_App_func_status_handler_t g_func_status_handler = NULL;
-/* 全局区段柜上下文（静态分配） */
+// 全局区段柜上下文
 static CabinetContext_t g_cabinet_context;
-/* 硬件开关控制函数 */
-static ExecuteResult_t Hardware_SwitchControl(uint16_t switch_id, SwitchState_t state);
-static uint16_t Hardware_SwitchFeed(uint16_t switch_id);
-static void Hardware_AlarmCallback(AlarmType_t alarm_type, const char* message);
+// 硬件开关控制函数
+static ExecuteResult_t Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State);
+static uint16_t Hardware_SwitchFeed(uint16_t SwitchId);
+static void Hardware_AlarmCallback(AlarmType_t AlarmType, const char* Message);
 
-/* 应用层接收处理函数 */
+// 应用层接收处理函数
 static void
 CAN_App_CanRxHandler(FuncCode_t Func, uint16_t SrcAddr, uint16_t *Data, uint16_t Dlc)
 {
-
     // 处理特定功能码
     switch (Func)
     {
@@ -161,22 +160,22 @@ CAN_App_Set_func_status_handler(CAN_App_func_status_handler_t Handler)
 	g_func_status_handler = Handler;
 }
 
-/* 应用层初始化 */
+// 应用层初始化
 void
 CAN_App_Init(void)
 {
-    /* 初始化CAN协议栈 */
+    // 初始化CAN协议栈
     CAN_Agent_Init();
-    /* 设置接收回调到CAN代理 */
+    // 设置接收回调到CAN代理
     CAN_SetRxHandler(CAN_App_CanRxHandler);
 
-    /* 初始化区段柜控制 */
+    // 初始化区段柜控制
     if (!Cabinet_Init(&g_cabinet_context,
                       Hardware_SwitchControl,
                       Hardware_SwitchFeed,
                       Hardware_AlarmCallback))
     {
-        //printf("Failed to initialize cabinet control!\n");
+        // init failed
         return;
     }
 
@@ -186,10 +185,10 @@ CAN_App_Init(void)
 void
 CAN_App_MainLoop(void)
 {
-    /* 处理CAN协议栈 */
+    // 处理CAN协议栈
     CAN_Agent_Process();
 
-    /* 处理区段柜状态机 */
+    // 处理区段柜状态机
     Cabinet_Process(&g_cabinet_context);
 
     // switch test
@@ -211,31 +210,31 @@ CAN_App_Test(void)
     res = res;
 }
 
-/* 示例：发送控制命令 */
+// 发送控制命令
 void
 CAN_App_SendControlToDevice(uint16_t DstAddr)
 {
     if (CAN_Agent_SendControl(DstAddr, CMD_START, 0))
     {
-        //printf("控制命令发送成功\n");
+        //控制命令发送成功
     }
     else
     {
-        //printf("控制命令发送失败\n");
+        //控制命令发送失败
     }
 }
 
-/* 示例：发送故障报告 */
+// 发送故障报告
 void
 CAN_App_SendFaultReport(void)
 {
     if (CAN_Agent_SendFault(DEV_ADDRESS_BROADCAST, FAULT_LEVEL_WARNING, 0x0001))
     {
-        //printf("故障报告发送成功\n");
+        //故障报告发送成功
     }
     else
     {
-        //printf("故障报告发送失败\n");
+        //故障报告发送失败
     }
 }
 
@@ -255,17 +254,17 @@ CAN_App_SendParam(uint16_t DstAddr, ParamDevice_t Device, uint16_t *Data, uint16
  * @return :按钮状态反馈;0/1
  */
 static ExecuteResult_t
-Hardware_SwitchControl(uint16_t switch_id, SwitchState_t state)
+Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
 {
-	switch (switch_id)
+	switch (SwitchId)
 	{
         case SWITCH_ID_A3QF1:
             {
-                if (state == SWITCH_ON)
+                if (State == SWITCH_ON)
                 {
                     IO_A3QF1_En;
                 }
-                else if (state == SWITCH_OFF)
+                else if (State == SWITCH_OFF)
                 {
                     IO_A3QF1_Dis;
                 }
@@ -273,11 +272,11 @@ Hardware_SwitchControl(uint16_t switch_id, SwitchState_t state)
             break;
         case SWITCH_ID_A3QF2:
             {
-                if (state == SWITCH_ON)
+                if (State == SWITCH_ON)
                 {
                     IO_A3QF2_En;
                 }
-                else if (state == SWITCH_OFF)
+                else if (State == SWITCH_OFF)
                 {
                     IO_A3QF2_Dis;
                 }
@@ -285,11 +284,11 @@ Hardware_SwitchControl(uint16_t switch_id, SwitchState_t state)
             break;
         case SWITCH_ID_A3QR1:
             {
-                if (state == SWITCH_ON)
+                if (State == SWITCH_ON)
                 {
                     IO_A3QR1_En;
                 }
-                else if (state == SWITCH_OFF)
+                else if (State == SWITCH_OFF)
                 {
                     IO_A3QR1_Dis;
                 }
@@ -297,11 +296,11 @@ Hardware_SwitchControl(uint16_t switch_id, SwitchState_t state)
             break;
         case SWITCH_ID_A3QR2:
             {
-                if (state == SWITCH_ON)
+                if (State == SWITCH_ON)
                 {
                     IO_A3QR2_En;
                 }
-                else if (state == SWITCH_OFF)
+                else if (State == SWITCH_OFF)
                 {
                     IO_A3QR2_Dis;
                 }
@@ -309,11 +308,11 @@ Hardware_SwitchControl(uint16_t switch_id, SwitchState_t state)
             break;
         case SWITCH_ID_SINGLE:
             {
-                if (state == SWITCH_ON)
+                if (State == SWITCH_ON)
                 {
                     IO_SINGLE_En;
                 }
-                else if (state == SWITCH_OFF)
+                else if (State == SWITCH_OFF)
                 {
                     IO_SINGLE_Dis;
                 }
@@ -321,11 +320,11 @@ Hardware_SwitchControl(uint16_t switch_id, SwitchState_t state)
             break;
         case SWITCH_ID_BUS1:
             {
-                if (state == SWITCH_ON)
+                if (State == SWITCH_ON)
                 {
                     IO_BUS1_En;
                 }
-                else if (state == SWITCH_OFF)
+                else if (State == SWITCH_OFF)
                 {
                     IO_BUS1_Dis;
                 }
@@ -333,11 +332,11 @@ Hardware_SwitchControl(uint16_t switch_id, SwitchState_t state)
             break;
         case SWITCH_ID_SHORT:
             {
-                if (state == SWITCH_ON)
+                if (State == SWITCH_ON)
                 {
                     IO_SHORT_En;
                 }
-                else if (state == SWITCH_OFF)
+                else if (State == SWITCH_OFF)
                 {
                     IO_SHORT_Dis;
                 }
@@ -349,9 +348,9 @@ Hardware_SwitchControl(uint16_t switch_id, SwitchState_t state)
 }
 
 static uint16_t
-Hardware_SwitchFeed(uint16_t switch_id)
+Hardware_SwitchFeed(uint16_t SwitchId)
 {
-	switch (switch_id)
+	switch (SwitchId)
 	{
         case SWITCH_ID_A3QF1:
             {
@@ -388,10 +387,9 @@ Hardware_SwitchFeed(uint16_t switch_id)
 
 /* 硬件报警回调函数 */
 static void
-Hardware_AlarmCallback(AlarmType_t alarm_type, const char* message)
+Hardware_AlarmCallback(AlarmType_t AlarmType, const char* Message)
 {
     /* 实际报警处理 */
-//    printf("Alarm: %s - %s\n",
 //           alarm_type == ALARM_STATE_ROLLBACK ? "State Rollback" :
 //           alarm_type == ALARM_POWER_START_FAILED ? "Power Start Failed" :
 //           alarm_type == ALARM_CAN_COMM_ERROR ? "CAN Comm Error" :

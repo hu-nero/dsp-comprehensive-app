@@ -13,9 +13,10 @@
 #include "SDK/Agent/Can/can_agent.h"
 #include "Services/Logic/section_common.h"
 
-/* 设备地址定义 */
-#define CABINET_DEVICE_ADDR    0x01    /* 区段柜设备地址 */
-#define POWER_DEVICE_ADDR      0x02    /* 电源设备地址 */
+// 设备地址定义
+#define CABINET_DEVICE_ADDR    0x01    // 区段柜设备地址
+#define POWER_DEVICE_ADDR      0x02    // 电源设备地址
+
 union WordPowerStatus_t
 {
 	unsigned int all;
@@ -28,16 +29,11 @@ union WordPowerStatus_t
 	}	bit;
 };
 
-/* CAN消息接收回调函数 */
-typedef void (*CAN_Adapter_RxHandler_t)(FuncCode_t func, uint16_t src_addr, uint16_t *data, uint16_t dlc);
-
-/* 适配器接口 */
-void CAN_Adapter_Init(void);
-bool CAN_Adapter_SendPowerStart(void);
-bool CAN_Adapter_SendStatusQuery(void);
-bool CAN_Adapter_SendControlResponse(uint16_t dst_addr, ResponseStatus_t status);
-void CAN_Adapter_ProcessReceivedMessage(FuncCode_t func, uint16_t src_addr, uint16_t *data, uint16_t dlc);
-
+// 适配器接口
+extern void CAN_Adapter_Init(void);
+extern bool CAN_Adapter_SendPowerStart(void);
+extern bool CAN_Adapter_SendStatusQuery(void);
+extern bool CAN_Adapter_SendControlResponse(uint16_t DstAddr, ResponseStatus_t Status);
 extern PowerStatus_t CAN_Adapter_GetPowerStatus(void);
 
 #endif /* SERVICES_ADAPTER_CAN_ADAPTER_H_ */
