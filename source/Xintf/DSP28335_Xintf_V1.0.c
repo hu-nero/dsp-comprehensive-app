@@ -170,6 +170,15 @@ void IO_Scan(void)
 							   |(IOInputEn.DataBit.Bit10 & ((IOInputFpga1.DataBit.Bit10^IOInputLogic.DataBit.Bit10)^1)));
 	IOInput1.DataBit.Bit11 = (((!IOInputEn.DataBit.Bit11) & IOInputDisValue.DataBit.Bit11)
 							   |(IOInputEn.DataBit.Bit11 & ((IOInputFpga1.DataBit.Bit11^IOInputLogic.DataBit.Bit11)^1)));
+	IOInput1.DataBit.Bit12 = (((!IOInputEn.DataBit.Bit12) & IOInputDisValue.DataBit.Bit12)
+							   |(IOInputEn.DataBit.Bit12 & ((IOInputFpga1.DataBit.Bit12^IOInputLogic.DataBit.Bit12)^1)));
+	IOInput1.DataBit.Bit13 = (((!IOInputEn.DataBit.Bit13) & IOInputDisValue.DataBit.Bit13)
+							   |(IOInputEn.DataBit.Bit13 & ((IOInputFpga1.DataBit.Bit13^IOInputLogic.DataBit.Bit13)^1)));
+	IOInput1.DataBit.Bit14 = (((!IOInputEn.DataBit.Bit14) & IOInputDisValue.DataBit.Bit14)
+							   |(IOInputEn.DataBit.Bit14 & ((IOInputFpga1.DataBit.Bit14^IOInputLogic.DataBit.Bit14)^1)));
+	IOInput1.DataBit.Bit15 = (((!IOInputEn.DataBit.Bit15) & IOInputDisValue.DataBit.Bit15)
+							   |(IOInputEn.DataBit.Bit15 & ((IOInputFpga1.DataBit.Bit15^IOInputLogic.DataBit.Bit15)^1)));
+
 	////////////////////////////////////////////////////////////////////////
 //	for(i=0; i<1; i++)
 //	{

@@ -325,15 +325,16 @@ void GPIO_init(void)
 	IOInputFpga1.DataInt = 0;
 	IOInput1.DataInt = 0;
 	IOInput2.DataInt = 0;
-	IOInputEn.DataInt = 0;
+	IOInputEn.DataInt = 0xFFFF;
 	IOInputLogic.DataInt = 0;
 	IOInputDisValue.DataInt = 0;
 
 	IOOutFpga1.DataInt = 0;
 	IOOutFpga1Old.DataInt = 0;
 	IOOutput1.DataInt = 0;
+	IOOutput1Old.DataInt = 0;
 
-	IOOutCtrl1Word.DataInt = 0;
+	IOOutCtrl1Word.DataInt = 0xFFFF;
 
 	IO_ACB1OFF_Dis;
 	IO_ACB2OFF_Dis;

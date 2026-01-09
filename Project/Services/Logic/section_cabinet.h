@@ -10,11 +10,22 @@
 
 #include "section_common.h"
 
+/* 内部常量定义 */
+#define SWITCH_ID_A3QF1         0x01    /* A3QF1开关 */
+#define SWITCH_ID_A3QR1         0x02    /* A3QR1开关 */
+#define SWITCH_ID_A3QF2         0x03    /* A3QF1开关 */
+#define SWITCH_ID_A3QR2         0x04    /* A3QR1开关 */
+#define SWITCH_ID_SINGLE        0x05    /* 单机开关 */
+#define SWITCH_ID_BUS1          0x06    /* 母线1开关 */
+#define SWITCH_ID_SHORT         0x07    /* 短接开关 */
+
+#define POWER_START_TIMEOUT_MS  1000    /* 电源启动超时（1秒） */
+#define TIMER_50MS_INTERVAL     50      /* 50ms计时单位 */
+#define DEMAGNETIZE_TIMEOUT_MS  10000   /* 消磁超时（10秒），50ms*200 */
+
 /* 开关控制回调函数 */
 typedef ExecuteResult_t (*SwitchControlFunc_t)(uint16_t switch_id, SwitchState_t state);
-
-/* 消磁操作回调函数 */
-typedef ExecuteResult_t (*DemagnetizeFunc_t)(void);
+typedef uint16_t (*SwitchFeedFunc_t)(uint16_t switch_id);
 
 /* 报警回调函数 */
 typedef void (*AlarmCallback_t)(AlarmType_t alarm_type, const char* message);
@@ -44,7 +55,7 @@ typedef struct {
 
     /* 回调函数指针 */
     SwitchControlFunc_t switch_control;
-    DemagnetizeFunc_t demagnetize;
+    SwitchFeedFunc_t switch_feed;
     AlarmCallback_t alarm_callback;
 } CabinetContext_t;
 
@@ -54,14 +65,14 @@ typedef struct {
  * @brief 初始化区段柜控制
  * @param context 区段柜上下文指针
  * @param switch_ctrl 开关控制回调函数
- * @param demagnetize 消磁回调函数
  * @param alarm_cb 报警回调函数
  * @return 初始化结果，true成功，false失败
  */
-bool Cabinet_Init(CabinetContext_t* context,
-                  SwitchControlFunc_t switch_ctrl,
-                  DemagnetizeFunc_t demagnetize,
-                  AlarmCallback_t alarm_cb);
+bool
+Cabinet_Init(CabinetContext_t* context,
+             SwitchControlFunc_t switch_ctrl,
+             SwitchFeedFunc_t  switch_feed,
+             AlarmCallback_t alarm_cb);
 
 /**
  * @brief 周期处理函数

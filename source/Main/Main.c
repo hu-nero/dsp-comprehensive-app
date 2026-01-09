@@ -156,7 +156,8 @@ void main(void)
 	CPLDSWVerRead();
     for(;;)
     {
-        CAN_Agent_Process();
+    	IO_Scan();
+        CAN_App_MainLoop();
     }
 
 	/*{*/

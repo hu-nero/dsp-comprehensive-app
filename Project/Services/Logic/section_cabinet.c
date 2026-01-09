@@ -10,18 +10,6 @@
 #include "SDK/Hal/Timer/hal_timer.h"
 #include <string.h>
 
-/* 内部常量定义 */
-#define SWITCH_ID_A3QF1         0x01    /* A3QF1开关 */
-#define SWITCH_ID_A3QR1         0x02    /* A3QR1开关 */
-#define SWITCH_ID_A3QF2         0x03    /* A3QF1开关 */
-#define SWITCH_ID_A3QR2         0x04    /* A3QR1开关 */
-#define SWITCH_ID_SINGLE        0x05    /* 单机开关 */
-#define SWITCH_ID_BUS1          0x06    /* 母线1开关 */
-#define SWITCH_ID_SHORT         0x07    /* 短接开关 */
-
-#define POWER_START_TIMEOUT_MS  1000    /* 电源启动超时（1秒） */
-#define TIMER_50MS_INTERVAL     50      /* 50ms计时单位 */
-#define DEMAGNETIZE_TIMEOUT_MS  10000   /* 消磁超时（10秒），50ms*200 */
 
 /* 内部函数声明 */
 static ExecuteResult_t Cabinet_SingleActionBranch(CabinetContext_t* context);
@@ -39,10 +27,10 @@ static void Cabinet_ProcessDemagnetizeWait(CabinetContext_t* context);
 bool
 Cabinet_Init(CabinetContext_t* context,
              SwitchControlFunc_t switch_ctrl,
-             DemagnetizeFunc_t demagnetize,
+             SwitchFeedFunc_t  switch_feed,
              AlarmCallback_t alarm_cb)
 {
-    if ((!context) || (!switch_ctrl) || (!demagnetize) || (!alarm_cb))
+    if ((!context) || (!switch_ctrl) || (!switch_feed) || (!alarm_cb))
     {
         return false;
     }
@@ -53,7 +41,7 @@ Cabinet_Init(CabinetContext_t* context,
 
     /* 保存回调函数 */
     context->switch_control = switch_ctrl;
-    context->demagnetize = demagnetize;
+    context->switch_feed = switch_feed;
     context->alarm_callback = alarm_cb;
 
     /* 设置默认状态 */
@@ -103,6 +91,7 @@ Cabinet_Process(CabinetContext_t* context)
             return; /* 消磁等待期间不进行状态转换 */
         case DEMAGNETIZE_DONE:
             {
+                // TODO:读取按钮读取
                 // 根据记录状态处理状态转换
                 Cabinet_ContinueAction(context);
             }
@@ -166,18 +155,6 @@ Cabinet_SetMode(CabinetContext_t* context, CabinetMode_t mode)
     return RESULT_SUCCESS;
 }
 
-/* 更新电源状态 */
-void
-Cabinet_UpdatePowerStatus(CabinetContext_t* context, const PowerStatus_t* power_status)
-{
-    if ((!context) || (!power_status))
-    {
-        return;
-    }
-
-    memcpy(&context->power_status, power_status, sizeof(PowerStatus_t));
-}
-
 /* 获取当前状态 */
 CabinetState_t
 Cabinet_GetState(const CabinetContext_t* context)
@@ -200,6 +177,9 @@ Cabinet_UpdateCabinetState(CabinetContext_t* context)
 {
     CabinetState_t target_state;
 
+    // 读取旋钮状态
+    context->single_switch = context->switch_feed(SWITCH_ID_SINGLE);
+    context->bus1_switch = context->switch_feed(SWITCH_ID_BUS1);
     /* 根据开关状态确定目标状态 */
     if ((context->single_switch == SWITCH_OFF) && (context->bus1_switch == SWITCH_OFF))
     {
@@ -376,17 +356,20 @@ Cabinet_ContinueAction(CabinetContext_t* context)
 static ExecuteResult_t
 Cabinet_SingleActionBranch(CabinetContext_t* context)
 {
+	ExecuteResult_t result;
     PowerStatus_t* ps = &context->power_status;  // MODIFIED: 使用指针简化访问
 
     /* 分支1：电源已在运行状态 */
     if (ps->run_state == POWER_RUNNING)  // MODIFIED: 修正指针访问语法
     {
         /* 启动消磁流程 */
-        if (context->demagnetize)
+        if (context->switch_control)
         {
-            ExecuteResult_t demag_result = context->demagnetize();
+            uint16_t demag_result;
+            context->switch_control(SWITCH_ID_SHORT, SWITCH_ON);
+            demag_result = context->switch_feed(SWITCH_ID_SHORT);
 
-            if (demag_result == RESULT_SUCCESS)
+            if (demag_result == 1)
             {
                 /* 消磁命令执行成功，开始等待 */
                 context->demagnetize_state = DEMAGNETIZE_WAITING;
@@ -400,13 +383,13 @@ Cabinet_SingleActionBranch(CabinetContext_t* context)
                 context->single_switch = SWITCH_OFF;
                 context->bus1_switch = SWITCH_OFF;
                 context->target_state = CABINET_STATE_INVALID;
-                return demag_result;
+                return RESULT_FAILED;
             }
         }
         else
         {
             /* 没有消磁函数，直接执行单机流程 */  // MODIFIED: 处理无消磁函数情况
-            ExecuteResult_t result = Cabinet_ExecuteSingleProcedure(context);
+            result = Cabinet_ExecuteSingleProcedure(context);
             if (result == RESULT_SUCCESS)
             {
                 context->state = CABINET_STATE_SINGLE;
@@ -438,6 +421,7 @@ Cabinet_SingleActionBranch(CabinetContext_t* context)
 static ExecuteResult_t
 Cabinet_ParallelActionBranch(CabinetContext_t* context)
 {
+	ExecuteResult_t result;
     PowerStatus_t* ps = &context->power_status;
 
     // 分支1：电源待机、远控、单机或者待机、就地
@@ -448,11 +432,12 @@ Cabinet_ParallelActionBranch(CabinetContext_t* context)
         (ps->ctrl_mode == CONTROL_LOCAL)))
     {
         /* 启动消磁流程 */
-        if (context->demagnetize)
+        if (context->switch_control)
         {
-            ExecuteResult_t demag_result = context->demagnetize();
-
-            if (demag_result == RESULT_SUCCESS)
+            uint16_t demag_result;
+            context->switch_control(SWITCH_ID_SHORT, SWITCH_ON);
+            demag_result = context->switch_feed(SWITCH_ID_SHORT);
+            if (demag_result == 1)
             {
                 /* 消磁命令执行成功，开始等待 */
                 context->demagnetize_state = DEMAGNETIZE_WAITING;
@@ -466,13 +451,13 @@ Cabinet_ParallelActionBranch(CabinetContext_t* context)
                 context->single_switch = SWITCH_OFF;
                 context->bus1_switch = SWITCH_OFF;
                 context->target_state = CABINET_STATE_INVALID;
-                return demag_result;
+                return RESULT_FAILED;
             }
         }
         else
         {
             /* 没有消磁函数，直接执行并机流程 */
-            ExecuteResult_t result = Cabinet_ExecuteParallelProcedure(context);
+            result = Cabinet_ExecuteParallelProcedure(context);
             if (result == RESULT_SUCCESS)
             {
                 context->state = CABINET_STATE_PARALLEL;
@@ -553,8 +538,7 @@ Cabinet_StartPowerSupply(CabinetContext_t* context)
         power_start_counter++;
 
         /* 更新电源状态 */
-        PowerStatus_t power_status = CAN_Adapter_GetPowerStatus();
-        Cabinet_UpdatePowerStatus(context, &power_status);
+        context->power_status = CAN_Adapter_GetPowerStatus();
 
         /* 检查电源是否已启动 */
         if (context->power_status.run_state == POWER_RUNNING)
@@ -563,10 +547,11 @@ Cabinet_StartPowerSupply(CabinetContext_t* context)
             power_start_counter = 0;
 
             /* 启动消磁流程 */
-            if (context->demagnetize)
+            if (context->switch_control)
             {
-                ExecuteResult_t demag_result = context->demagnetize();
-
+            	uint16_t demag_result;
+                context->switch_control(SWITCH_ID_SHORT, SWITCH_ON);
+                demag_result = context->switch_feed(SWITCH_ID_SHORT);
                 if (demag_result == RESULT_SUCCESS)
                 {
                     /* 消磁命令执行成功，开始等待 */
@@ -581,7 +566,7 @@ Cabinet_StartPowerSupply(CabinetContext_t* context)
                     context->single_switch = SWITCH_OFF;
                     context->bus1_switch = SWITCH_OFF;
                     context->target_state = CABINET_STATE_INVALID;
-                    return demag_result;
+                    return RESULT_FAILED;
                 }
             }
             else
@@ -614,29 +599,32 @@ Cabinet_StartPowerSupply(CabinetContext_t* context)
 static ExecuteResult_t
 Cabinet_ExecuteSingleProcedure(CabinetContext_t* context)
 {
-    ExecuteResult_t result;
+    uint16_t res = 0;
 
     /* 闭合 A3QF1 */
     if (context->switch_control)
     {
-        result = context->switch_control(SWITCH_ID_A3QF1, SWITCH_ON);
-        if (result != RESULT_SUCCESS)
+        context->switch_control(SWITCH_ID_A3QF1, SWITCH_ON);
+        res = context->switch_feed(SWITCH_ID_A3QF1);
+        if (res != 1)
         {
             Cabinet_SetAlarm(context, ALARM_NONE, "Failed to close A3QF1");
-            return result;
+            return RESULT_FAILED;
         }
     }
 
+    res = 0;
     /* 闭合 A3QR1（并断开相应互锁回路） */
     if (context->switch_control)
     {
-        result = context->switch_control(SWITCH_ID_A3QR1, SWITCH_ON);
-        if (result != RESULT_SUCCESS)
+        context->switch_control(SWITCH_ID_A3QR1, SWITCH_ON);
+        res = context->switch_feed(SWITCH_ID_A3QR1);
+        if (res != 1)
         {
             Cabinet_SetAlarm(context, ALARM_NONE, "Failed to close A3QR1");
-            /* 回滚：断开A3QF1 */
-            (void)context->switch_control(SWITCH_ID_A3QF1, SWITCH_OFF);
-            return result;
+            /* 回滚：断开A3QR1 */
+            (void)context->switch_control(SWITCH_ID_A3QR1, SWITCH_OFF);
+            return RESULT_FAILED;
         }
     }
 
@@ -647,29 +635,31 @@ Cabinet_ExecuteSingleProcedure(CabinetContext_t* context)
 static ExecuteResult_t
 Cabinet_ExecuteParallelProcedure(CabinetContext_t* context)
 {
-    ExecuteResult_t result;
+    uint16_t res = 0;
 
     /* 闭合 A3QF2 */
     if (context->switch_control)
     {
-        result = context->switch_control(SWITCH_ID_A3QF2, SWITCH_ON);
-        if (result != RESULT_SUCCESS)
+        context->switch_control(SWITCH_ID_A3QF2, SWITCH_ON);
+        res = context->switch_feed(SWITCH_ID_A3QF2);
+        if (res != 1)
         {
             Cabinet_SetAlarm(context, ALARM_NONE, "Failed to close A3QF2");
-            return result;
+            return RESULT_FAILED;
         }
     }
 
     // 闭合 A3QR2
     if (context->switch_control)
     {
-        result = context->switch_control(SWITCH_ID_A3QR2, SWITCH_ON);
-        if (result != RESULT_SUCCESS)
+        context->switch_control(SWITCH_ID_A3QR2, SWITCH_ON);
+        res = context->switch_feed(SWITCH_ID_A3QR2);
+        if (res != 1)
         {
             Cabinet_SetAlarm(context, ALARM_NONE, "Failed to close A3QR2");
-            /* 回滚：断开A3QF2 */
-            (void)context->switch_control(SWITCH_ID_A3QF2, SWITCH_OFF);
-            return result;
+            /* 回滚：断开A3QR2 */
+            (void)context->switch_control(SWITCH_ID_A3QR2, SWITCH_OFF);
+            return RESULT_FAILED;
         }
     }
 

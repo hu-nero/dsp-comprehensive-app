@@ -11,13 +11,43 @@
 #include <string.h>
 #include "Services/Adapter/can_adapter.h"
 #include "Services/Logic/section_cabinet.h"
+#include "Main/Variable.h"
+
+#define IO_A3QF1_En					    IOOutput1.DataBit.Bit0 = 1
+#define IO_A3QF1_Dis	  				IOOutput1.DataBit.Bit0 = 0
+#define IO_A3QF1_Feed   				IOInput1.DataBit.Bit0
+
+#define IO_A3QR1_En					    IOOutput1.DataBit.Bit1 = 1
+#define IO_A3QR1_Dis	  				IOOutput1.DataBit.Bit1 = 0
+#define IO_A3QR1_Feed					IOInput1.DataBit.Bit1
+
+#define IO_A3QF2_En					    IOOutput1.DataBit.Bit2 = 1
+#define IO_A3QF2_Dis	  				IOOutput1.DataBit.Bit2 = 0
+#define IO_A3QF2_Feed   				IOInput1.DataBit.Bit2
+
+#define IO_A3QR2_En					    IOOutput1.DataBit.Bit3 = 1
+#define IO_A3QR2_Dis	  				IOOutput1.DataBit.Bit3 = 0
+#define IO_A3QR2_Feed					IOInput1.DataBit.Bit3
+
+#define IO_SINGLE_En					IOOutput1.DataBit.Bit4 = 1
+#define IO_SINGLE_Dis	  				IOOutput1.DataBit.Bit4 = 0
+#define IO_SINGLE_Feed					IOInput1.DataBit.Bit15
+
+#define IO_BUS1_En					    IOOutput1.DataBit.Bit5 = 1
+#define IO_BUS1_Dis	  				    IOOutput1.DataBit.Bit5 = 0
+#define IO_BUS1_Feed					IOInput1.DataBit.Bit14
+
+#define IO_SHORT_En					    IOOutput1.DataBit.Bit6 = 1
+#define IO_SHORT_Dis	  				IOOutput1.DataBit.Bit6 = 0
+#define IO_SHORT_Feed					IOInput1.DataBit.Bit15
+
 
 static CAN_App_func_status_handler_t g_func_status_handler = NULL;
 /* 全局区段柜上下文（静态分配） */
 static CabinetContext_t g_cabinet_context;
 /* 硬件开关控制函数 */
 static ExecuteResult_t Hardware_SwitchControl(uint16_t switch_id, SwitchState_t state);
-static ExecuteResult_t Hardware_Demagnetize(void);
+static uint16_t Hardware_SwitchFeed(uint16_t switch_id);
 static void Hardware_AlarmCallback(AlarmType_t alarm_type, const char* message);
 
 /* 应用层接收处理函数 */
@@ -143,16 +173,43 @@ CAN_App_Init(void)
     /* 初始化区段柜控制 */
     if (!Cabinet_Init(&g_cabinet_context,
                       Hardware_SwitchControl,
-                      Hardware_Demagnetize,
+                      Hardware_SwitchFeed,
                       Hardware_AlarmCallback))
     {
         //printf("Failed to initialize cabinet control!\n");
         return;
     }
 
-
 }
 
+// 应用层主循环
+void
+CAN_App_MainLoop(void)
+{
+    /* 处理CAN协议栈 */
+    CAN_Agent_Process();
+
+    /* 处理区段柜状态机 */
+    Cabinet_Process(&g_cabinet_context);
+
+    // switch test
+    CAN_App_Test();
+}
+
+void
+CAN_App_Test(void)
+{
+    // switch enable test
+    Hardware_SwitchControl(SWITCH_ID_A3QF1,SWITCH_ON);
+    Hardware_SwitchControl(SWITCH_ID_A3QR1,SWITCH_ON);
+    Hardware_SwitchControl(SWITCH_ID_A3QF2,SWITCH_ON);
+    Hardware_SwitchControl(SWITCH_ID_A3QR2,SWITCH_ON);
+    Hardware_SwitchControl(SWITCH_ID_SINGLE,SWITCH_ON);
+    Hardware_SwitchControl(SWITCH_ID_BUS1,SWITCH_ON);
+    Hardware_SwitchControl(SWITCH_ID_SHORT,SWITCH_ON);
+    uint16_t res = Hardware_SwitchFeed(SWITCH_ID_A3QF1);
+    res = res;
+}
 
 /* 示例：发送控制命令 */
 void
@@ -189,22 +246,144 @@ CAN_App_SendParam(uint16_t DstAddr, ParamDevice_t Device, uint16_t *Data, uint16
 }
 
 
-/* 硬件开关控制函数 */
+/**
+ * @brief :硬件开关控制函数
+ *
+ * @param switch_id:开关宏id
+ * @param state：开启/关闭
+ *
+ * @return :按钮状态反馈;0/1
+ */
 static ExecuteResult_t
 Hardware_SwitchControl(uint16_t switch_id, SwitchState_t state)
 {
-    /* 实际硬件控制代码 */
-    //printf("Switch %d set to %s\n", switch_id, state == SWITCH_ON ? "ON" : "OFF");
+	switch (switch_id)
+	{
+        case SWITCH_ID_A3QF1:
+            {
+                if (state == SWITCH_ON)
+                {
+                    IO_A3QF1_En;
+                }
+                else if (state == SWITCH_OFF)
+                {
+                    IO_A3QF1_Dis;
+                }
+            }
+            break;
+        case SWITCH_ID_A3QF2:
+            {
+                if (state == SWITCH_ON)
+                {
+                    IO_A3QF2_En;
+                }
+                else if (state == SWITCH_OFF)
+                {
+                    IO_A3QF2_Dis;
+                }
+            }
+            break;
+        case SWITCH_ID_A3QR1:
+            {
+                if (state == SWITCH_ON)
+                {
+                    IO_A3QR1_En;
+                }
+                else if (state == SWITCH_OFF)
+                {
+                    IO_A3QR1_Dis;
+                }
+            }
+            break;
+        case SWITCH_ID_A3QR2:
+            {
+                if (state == SWITCH_ON)
+                {
+                    IO_A3QR2_En;
+                }
+                else if (state == SWITCH_OFF)
+                {
+                    IO_A3QR2_Dis;
+                }
+            }
+            break;
+        case SWITCH_ID_SINGLE:
+            {
+                if (state == SWITCH_ON)
+                {
+                    IO_SINGLE_En;
+                }
+                else if (state == SWITCH_OFF)
+                {
+                    IO_SINGLE_Dis;
+                }
+            }
+            break;
+        case SWITCH_ID_BUS1:
+            {
+                if (state == SWITCH_ON)
+                {
+                    IO_BUS1_En;
+                }
+                else if (state == SWITCH_OFF)
+                {
+                    IO_BUS1_Dis;
+                }
+            }
+            break;
+        case SWITCH_ID_SHORT:
+            {
+                if (state == SWITCH_ON)
+                {
+                    IO_SHORT_En;
+                }
+                else if (state == SWITCH_OFF)
+                {
+                    IO_SHORT_Dis;
+                }
+            }
+            break;
+        default:break;
+	}
     return RESULT_SUCCESS;
 }
 
-/* 硬件消磁函数 */
-static ExecuteResult_t
-Hardware_Demagnetize(void)
+static uint16_t
+Hardware_SwitchFeed(uint16_t switch_id)
 {
-    /* 实际消磁操作 */
-    //printf("Performing demagnetization...\n");
-    return RESULT_SUCCESS;
+	switch (switch_id)
+	{
+        case SWITCH_ID_A3QF1:
+            {
+                return IO_A3QF1_Feed;
+            }
+        case SWITCH_ID_A3QF2:
+            {
+                return IO_A3QF2_Feed;
+            }
+        case SWITCH_ID_A3QR1:
+            {
+                return IO_A3QR1_Feed;
+            }
+        case SWITCH_ID_A3QR2:
+            {
+                return IO_A3QR2_Feed;
+            }
+        case SWITCH_ID_SINGLE:
+            {
+                return IO_SINGLE_Feed;
+            }
+        case SWITCH_ID_BUS1:
+            {
+                return IO_BUS1_Feed;
+            }
+        case SWITCH_ID_SHORT:
+            {
+                return IO_SHORT_Feed;
+            }
+        default:break;
+	}
+    return 0;
 }
 
 /* 硬件报警回调函数 */
