@@ -13,12 +13,16 @@
 
 static ExecuteResult_t Cabinet_SingleActionBranch(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ParallelActionBranch(CabinetContext_t* Context);
+static ExecuteResult_t Cabinet_BackupToSingleActionBranch(CabinetContext_t* Context);
+static ExecuteResult_t Cabinet_BackupToParallelActionBranch(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_StartPowerSupply(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ExecuteSingleProcedure(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ExecuteParallelProcedure(CabinetContext_t* Context);
 static void Cabinet_SetAlarm(CabinetContext_t* Context, AlarmType_t Type, const char* Message);
 static void Cabinet_UpdateCabinetState(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_BackToStandby(CabinetContext_t* Context);
+static ExecuteResult_t Cabinet_BackToBackup(CabinetContext_t* Context);
+static ExecuteResult_t Cabinet_BackToSingle(CabinetContext_t* Context);
 static void Cabinet_ContinueAction(CabinetContext_t* Context);
 static void Cabinet_ProcessDemagnetizeWait(CabinetContext_t* Context);
 
@@ -210,34 +214,37 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
     switch (Context->state)
     {
         case CABINET_STATE_STANDBY:
-            if (target_state == CABINET_STATE_SINGLE)
             {
-                ExecuteResult_t result;
-                // 读取电源状态
-                Context->power_status = CAN_Adapter_GetPowerStatus();
-
-                result = Cabinet_SingleActionBranch(Context);
-                if (result == RESULT_SUCCESS)
+                if (target_state == CABINET_STATE_SINGLE)
                 {
-                    result = Cabinet_ExecuteSingleProcedure(Context);
+                    ExecuteResult_t result;
+                    // 读取电源状态
+                    Context->power_status = CAN_Adapter_GetPowerStatus();
+
+                    result = Cabinet_SingleActionBranch(Context);
                     if (result == RESULT_SUCCESS)
                     {
-                        Context->state = CABINET_STATE_SINGLE;
+                        result = Cabinet_ExecuteSingleProcedure(Context);
+                        if (result == RESULT_SUCCESS)
+                        {
+                            Context->state = CABINET_STATE_SINGLE;
+                            Context->target_state = CABINET_STATE_INVALID;
+                        }
                     }
                 }
-            }
-            else if (target_state == CABINET_STATE_PARALLEL)
-            {
-                ExecuteResult_t result;
-                // 读取电源状态
-                Context->power_status = CAN_Adapter_GetPowerStatus();
-                result = Cabinet_ParallelActionBranch(Context);
-                if (result == RESULT_SUCCESS)
+                else if (target_state == CABINET_STATE_PARALLEL)
                 {
-                    result = Cabinet_ExecuteParallelProcedure(Context);
+                    ExecuteResult_t result;
+                    // 读取电源状态
+                    Context->power_status = CAN_Adapter_GetPowerStatus();
+                    result = Cabinet_ParallelActionBranch(Context);
                     if (result == RESULT_SUCCESS)
                     {
-                        Context->state = CABINET_STATE_PARALLEL;
+                        result = Cabinet_ExecuteParallelProcedure(Context);
+                        if (result == RESULT_SUCCESS)
+                        {
+                            Context->state = CABINET_STATE_PARALLEL;
+                        }
                     }
                 }
             }
@@ -256,7 +263,45 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 /*Context->state = CABINET_STATE_STANDBY;*/
             /*}*/
             break;
+        case CABINET_STATE_BACKUP:
+            {
+                if (target_state == CABINET_STATE_SINGLE)
+                {
+                    ExecuteResult_t result;
+                    // 读取电源状态
+                    Context->power_status = CAN_Adapter_GetPowerStatus();
 
+                    result = Cabinet_BackupToSingleActionBranch(Context);
+                    if (result == RESULT_SUCCESS)
+                    {
+                        result = Cabinet_ExecuteSingleProcedure(Context);
+                        if (result == RESULT_SUCCESS)
+                        {
+                            Context->state = CABINET_STATE_SINGLE;
+                            Context->target_state = CABINET_STATE_INVALID;
+                        }
+                    }
+                }
+                else if (target_state == CABINET_STATE_PARALLEL)
+                {
+                    ExecuteResult_t result;
+                    // 读取电源状态
+                    Context->power_status = CAN_Adapter_GetPowerStatus();
+
+                    result = Cabinet_BackupToParallelActionBranch(Context);
+                    if (result == RESULT_SUCCESS)
+                    {
+                        result = Cabinet_ExecuteParallelProcedure(Context);
+                        if (result == RESULT_SUCCESS)
+                        {
+                            Context->state = CABINET_STATE_PARALLEL;
+                            Context->target_state = CABINET_STATE_INVALID;
+                        }
+                    }
+                }
+
+            }
+            break;
         default:
             /* 其他状态转换暂未实现 */
             break;
@@ -267,11 +312,13 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
 static ExecuteResult_t
 Cabinet_BackToStandby(CabinetContext_t* Context)
 {
-    // 断开单机相关开关
+    // 断开所有开关
     if (Context->switch_control)
     {
         (void)Context->switch_control(SWITCH_ID_A3QF1, SWITCH_OFF);
         (void)Context->switch_control(SWITCH_ID_A3QR1, SWITCH_OFF);
+        (void)Context->switch_control(SWITCH_ID_A3QF2, SWITCH_OFF);
+        (void)Context->switch_control(SWITCH_ID_A3QR2, SWITCH_OFF);
     }
 
     Context->state = CABINET_STATE_STANDBY;
@@ -282,6 +329,47 @@ Cabinet_BackToStandby(CabinetContext_t* Context)
     return RESULT_SUCCESS;
 }
 
+// 返回到备用状态
+static ExecuteResult_t
+Cabinet_BackToBackup(CabinetContext_t* Context)
+{
+    // 开启备用相关开关
+    if (Context->switch_control)
+    {
+        (void)Context->switch_control(SWITCH_ID_A3QF1, SWITCH_ON);
+        (void)Context->switch_control(SWITCH_ID_A3QR1, SWITCH_ON);
+        (void)Context->switch_control(SWITCH_ID_A3QF2, SWITCH_ON);
+        (void)Context->switch_control(SWITCH_ID_A3QR2, SWITCH_ON);
+    }
+
+    Context->state = CABINET_STATE_BACKUP;
+    Context->single_switch = SWITCH_ON;
+    Context->bus1_switch = SWITCH_ON;
+    Context->target_state = CABINET_STATE_INVALID;
+
+    return RESULT_SUCCESS;
+}
+
+// 返回到单机状态
+static ExecuteResult_t
+Cabinet_BackToSingle(CabinetContext_t* Context)
+{
+    // 开启并机相关开关
+    if (Context->switch_control)
+    {
+        (void)Context->switch_control(SWITCH_ID_A3QF1, SWITCH_ON);
+        (void)Context->switch_control(SWITCH_ID_A3QR1, SWITCH_ON);
+        (void)Context->switch_control(SWITCH_ID_A3QF2, SWITCH_OFF);
+        (void)Context->switch_control(SWITCH_ID_A3QR2, SWITCH_OFF);
+    }
+
+    Context->state = CABINET_STATE_SINGLE;
+    Context->single_switch = SWITCH_ON;
+    Context->bus1_switch = SWITCH_OFF;
+    Context->target_state = CABINET_STATE_INVALID;
+
+    return RESULT_SUCCESS;
+}
 // 延续区段柜状态
 static void
 Cabinet_ContinueAction(CabinetContext_t* Context)
@@ -303,8 +391,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     }
                     else
                     {
-                        Context->single_switch = SWITCH_OFF;
-                        Context->bus1_switch = SWITCH_OFF;
+                        Cabinet_BackToStandby(Context);
                     }
                     Context->target_state = CABINET_STATE_INVALID;
                 }
@@ -319,8 +406,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     }
                     else
                     {
-                        Context->single_switch = SWITCH_OFF;
-                        Context->bus1_switch = SWITCH_OFF;
+                        Cabinet_BackToStandby(Context);
 
                     }
                     Context->target_state = CABINET_STATE_INVALID;
@@ -376,9 +462,7 @@ Cabinet_SingleActionBranch(CabinetContext_t* Context)
             {
                 // 消磁命令执行失败
                 Cabinet_SetAlarm(Context, ALARM_NONE, "Demagnetize command failed");
-                Context->single_switch = SWITCH_OFF;
-                Context->bus1_switch = SWITCH_OFF;
-                Context->target_state = CABINET_STATE_INVALID;
+                Cabinet_BackToStandby(Context);
                 return RESULT_FAILED;
             }
         }
@@ -389,6 +473,7 @@ Cabinet_SingleActionBranch(CabinetContext_t* Context)
             if (result == RESULT_SUCCESS)
             {
                 Context->state = CABINET_STATE_SINGLE;
+                Context->target_state = CABINET_STATE_INVALID;
             }
             return result;
         }
@@ -404,11 +489,8 @@ Cabinet_SingleActionBranch(CabinetContext_t* Context)
 
     // 分支3：其他状态
     Cabinet_SetAlarm(Context, ALARM_STATE_ROLLBACK, "Invalid power status for single mode");
-
     // 回退到待机状态
-    Context->single_switch = SWITCH_OFF;
-    Context->bus1_switch = SWITCH_OFF;
-    Context->target_state = CABINET_STATE_INVALID;
+    Cabinet_BackToStandby(Context);
 
     return RESULT_FAILED;
 }
@@ -444,9 +526,7 @@ Cabinet_ParallelActionBranch(CabinetContext_t* Context)
             {
                 // 消磁命令执行失败
                 Cabinet_SetAlarm(Context, ALARM_NONE, "Demagnetize command failed");
-                Context->single_switch = SWITCH_OFF;
-                Context->bus1_switch = SWITCH_OFF;
-                Context->target_state = CABINET_STATE_INVALID;
+                Cabinet_BackToStandby(Context);
                 return RESULT_FAILED;
             }
         }
@@ -472,11 +552,61 @@ Cabinet_ParallelActionBranch(CabinetContext_t* Context)
 
     // 分支3：其他状态
     Cabinet_SetAlarm(Context, ALARM_STATE_ROLLBACK, "Invalid power status for parallel mode");
+    // 判断母线OK且电源数量大于允许值
+    // TODO:添加电压读取函数、context中加入函数指针
+    // TODO:添加电源数量解析，放入can_adapter.c
+    if (0)
+    {
+        result = Cabinet_ExecuteParallelProcedure(Context);
+        if (result == RESULT_SUCCESS)
+        {
+            Context->state = CABINET_STATE_PARALLEL;
+        }
+    }
+    else
+    {
+        Cabinet_BackToStandby(Context);
+    }
 
-    // 回退到待机状态
-    Context->single_switch = SWITCH_OFF;
-    Context->bus1_switch = SWITCH_OFF;
-    Context->target_state = CABINET_STATE_INVALID;
+    return RESULT_FAILED;
+}
+
+// 检查电源状态用于并机模式
+static ExecuteResult_t
+Cabinet_BackupToSingleActionBranch(CabinetContext_t* Context)
+{
+    PowerStatus_t* ps = &Context->power_status;
+
+    // 分支1：电源运行、并机
+    if ((ps->run_state == POWER_RUNNING)&&
+        (ps->comb_state == POWER_PARALLEL))
+    {
+        return RESULT_SUCCESS;
+    }
+
+    // 分支2：其他状态
+    Cabinet_SetAlarm(Context, ALARM_STATE_ROLLBACK, "Invalid power status for parallel mode");
+    Cabinet_BackToBackup(Context);
+
+    return RESULT_FAILED;
+}
+
+// 检查电源状态用于并机模式
+static ExecuteResult_t
+Cabinet_BackupToParallelActionBranch(CabinetContext_t* Context)
+{
+    PowerStatus_t* ps = &Context->power_status;
+
+    // 分支1：电源运行、并机
+    if ((ps->run_state == POWER_RUNNING)&&
+        (ps->comb_state == POWER_PARALLEL))
+    {
+        return RESULT_SUCCESS;
+    }
+
+    // 分支2：其他状态
+    Cabinet_SetAlarm(Context, ALARM_STATE_ROLLBACK, "Invalid power status for parallel mode");
+    Cabinet_BackToBackup(Context);
 
     return RESULT_FAILED;
 }
@@ -517,9 +647,7 @@ Cabinet_StartPowerSupply(CabinetContext_t* Context)
         if (!CAN_Adapter_SendPowerStart())
         {
             Cabinet_SetAlarm(Context, ALARM_CAN_COMM_ERROR, "Failed to send power start command");
-            Context->single_switch = SWITCH_OFF;
-            Context->bus1_switch = SWITCH_OFF;
-            Context->target_state = CABINET_STATE_INVALID;
+            Cabinet_BackToStandby(Context);
             return RESULT_COMM_ERROR;
         }
 
@@ -559,9 +687,7 @@ Cabinet_StartPowerSupply(CabinetContext_t* Context)
                 {
                     // 消磁命令执行失败
                     Cabinet_SetAlarm(Context, ALARM_NONE, "Demagnetize command failed");
-                    Context->single_switch = SWITCH_OFF;
-                    Context->bus1_switch = SWITCH_OFF;
-                    Context->target_state = CABINET_STATE_INVALID;
+                    Cabinet_BackToStandby(Context);
                     return RESULT_FAILED;
                 }
             }
@@ -572,6 +698,7 @@ Cabinet_StartPowerSupply(CabinetContext_t* Context)
                 if (result == RESULT_SUCCESS)
                 {
                     Context->state = CABINET_STATE_SINGLE;
+                    Context->target_state = CABINET_STATE_INVALID;
                 }
                 return result;
             }
@@ -579,9 +706,7 @@ Cabinet_StartPowerSupply(CabinetContext_t* Context)
         else if (power_start_counter >= Context->power_start_timeout)
         {
             Cabinet_SetAlarm(Context, ALARM_POWER_START_FAILED, "Power start timeout");
-            Context->single_switch = SWITCH_OFF;
-            Context->bus1_switch = SWITCH_OFF;
-            Context->target_state = CABINET_STATE_INVALID;
+            Cabinet_BackToStandby(Context);
             Context->power_start_timeout = 0;
             power_start_counter = 0;
             return RESULT_TIMEOUT;
@@ -597,32 +722,69 @@ Cabinet_ExecuteSingleProcedure(CabinetContext_t* Context)
 {
     uint16_t res = 0;
 
-    // 闭合 A3QF1
-    if (Context->switch_control)
+    // 待机时
+    if ((Context->single_switch == SWITCH_OFF) &&
+        (Context->bus1_switch == SWITCH_OFF))
     {
-        Context->switch_control(SWITCH_ID_A3QF1, SWITCH_ON);
-        res = Context->switch_feed(SWITCH_ID_A3QF1);
-        if (res != 1)
+        // 闭合 A3QF1
+        if (Context->switch_control)
         {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF1");
-            return RESULT_FAILED;
+            Context->switch_control(SWITCH_ID_A3QF1, SWITCH_ON);
+            res = Context->switch_feed(SWITCH_ID_A3QF1);
+            if (res != 1)
+            {
+                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF1");
+                return RESULT_FAILED;
+            }
+        }
+
+        res = 0;
+        // 闭合 A3QR1（并断开相应互锁回路）
+        if (Context->switch_control)
+        {
+            Context->switch_control(SWITCH_ID_A3QR1, SWITCH_ON);
+            res = Context->switch_feed(SWITCH_ID_A3QR1);
+            if (res != 1)
+            {
+                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF1");
+                // 回滚：断开A3QF1
+                (void)Context->switch_control(SWITCH_ID_A3QF1, SWITCH_OFF);
+                return RESULT_FAILED;
+            }
+        }
+    }
+    // 备用时
+    else if ((Context->single_switch == SWITCH_ON) &&
+        (Context->bus1_switch == SWITCH_ON))
+    {
+        // 断开 A3QF2
+        if (Context->switch_control)
+        {
+            Context->switch_control(SWITCH_ID_A3QF2, SWITCH_OFF);
+            res = Context->switch_feed(SWITCH_ID_A3QF2);
+            if (res != 0)
+            {
+                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
+                return RESULT_FAILED;
+            }
+        }
+
+        res = 0;
+        // 断开 A3QR2
+        if (Context->switch_control)
+        {
+            Context->switch_control(SWITCH_ID_A3QR2, SWITCH_OFF);
+            res = Context->switch_feed(SWITCH_ID_A3QR2);
+            if (res != 0)
+            {
+                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
+                // 回滚：闭合A3QF2
+                (void)Context->switch_control(SWITCH_ID_A3QF2, SWITCH_ON);
+                return RESULT_FAILED;
+            }
         }
     }
 
-    res = 0;
-    // 闭合 A3QR1（并断开相应互锁回路）
-    if (Context->switch_control)
-    {
-        Context->switch_control(SWITCH_ID_A3QR1, SWITCH_ON);
-        res = Context->switch_feed(SWITCH_ID_A3QR1);
-        if (res != 1)
-        {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QR1");
-            // 回滚：断开A3QR1
-            (void)Context->switch_control(SWITCH_ID_A3QR1, SWITCH_OFF);
-            return RESULT_FAILED;
-        }
-    }
 
     return RESULT_SUCCESS;
 }
@@ -633,32 +795,68 @@ Cabinet_ExecuteParallelProcedure(CabinetContext_t* Context)
 {
     uint16_t res = 0;
 
-    // 闭合 A3QF2
-    if (Context->switch_control)
+    // 待机时
+    if ((Context->single_switch == SWITCH_OFF) &&
+        (Context->bus1_switch == SWITCH_OFF))
     {
-        Context->switch_control(SWITCH_ID_A3QF2, SWITCH_ON);
-        res = Context->switch_feed(SWITCH_ID_A3QF2);
-        if (res != 1)
+        // 闭合 A3QF2
+        if (Context->switch_control)
         {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
-            return RESULT_FAILED;
+            Context->switch_control(SWITCH_ID_A3QF2, SWITCH_ON);
+            res = Context->switch_feed(SWITCH_ID_A3QF2);
+            if (res != 1)
+            {
+                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
+                return RESULT_FAILED;
+            }
+        }
+
+        // 闭合 A3QR2
+        if (Context->switch_control)
+        {
+            Context->switch_control(SWITCH_ID_A3QR2, SWITCH_ON);
+            res = Context->switch_feed(SWITCH_ID_A3QR2);
+            if (res != 1)
+            {
+                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QR2");
+                // 回滚：断开A3QF2
+                (void)Context->switch_control(SWITCH_ID_A3QF2, SWITCH_OFF);
+                return RESULT_FAILED;
+            }
         }
     }
 
-    // 闭合 A3QR2
-    if (Context->switch_control)
+    // 备用时
+    if ((Context->single_switch == SWITCH_ON) &&
+        (Context->bus1_switch == SWITCH_ON))
     {
-        Context->switch_control(SWITCH_ID_A3QR2, SWITCH_ON);
-        res = Context->switch_feed(SWITCH_ID_A3QR2);
-        if (res != 1)
+        // 断开 A3QF1
+        if (Context->switch_control)
         {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QR2");
-            // 回滚：断开A3QR2
-            (void)Context->switch_control(SWITCH_ID_A3QR2, SWITCH_OFF);
-            return RESULT_FAILED;
+            Context->switch_control(SWITCH_ID_A3QF1, SWITCH_OFF);
+            res = Context->switch_feed(SWITCH_ID_A3QF1);
+            if (res != 0)
+            {
+                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF1");
+                return RESULT_FAILED;
+            }
+        }
+
+        res = 0;
+        // 断开 A3QR1
+        if (Context->switch_control)
+        {
+            Context->switch_control(SWITCH_ID_A3QR1, SWITCH_OFF);
+            res = Context->switch_feed(SWITCH_ID_A3QR1);
+            if (res != 0)
+            {
+                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF1");
+                // 回滚：闭合A3QF1
+                (void)Context->switch_control(SWITCH_ID_A3QF1, SWITCH_ON);
+                return RESULT_FAILED;
+            }
         }
     }
-
     return RESULT_SUCCESS;
 }
 // 设置报警
