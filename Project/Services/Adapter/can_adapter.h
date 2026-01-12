@@ -32,6 +32,7 @@ union WordPowerStatus_t
 // ÊÊÅäÆ÷½Ó¿Ú
 extern void CAN_Adapter_Init(void);
 extern bool CAN_Adapter_SendPowerStart(void);
+extern bool CAN_Adapter_SendPowerClose(void);
 extern bool CAN_Adapter_SendStatusQuery(void);
 extern bool CAN_Adapter_SendControlResponse(uint16_t DstAddr, ResponseStatus_t Status);
 extern PowerStatus_t CAN_Adapter_GetPowerStatus(void);

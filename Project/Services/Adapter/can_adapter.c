@@ -31,6 +31,12 @@ CAN_Adapter_SendPowerStart(void)
     return CAN_Agent_SendControl(POWER_DEVICE_ADDR, CMD_START, 0x01);
 }
 
+// 发送关闭电源命令
+bool
+CAN_Adapter_SendPowerClose(void)
+{
+    return CAN_Agent_SendControl(POWER_DEVICE_ADDR, CMD_STOP, 0x01);
+}
 // 发送状态查询命令
 bool
 CAN_Adapter_SendStatusQuery(void)
