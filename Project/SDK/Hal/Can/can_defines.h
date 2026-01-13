@@ -10,7 +10,7 @@
 #include "basic_types.h"
 
 // -----------------------------------------------------------------------------
-#define CAN_NUMBER_OF_PORTS                      (1u)
+#define CAN_NUMBER_OF_PORTS                      (2u)
 // This is the index of the mailbox used for transmission.
 #define CAN_TX_STD_MAILBOX_INDEX                 (0u)
 #define CAN_RX_STD_MAILBOX_INDEX                 (4u)

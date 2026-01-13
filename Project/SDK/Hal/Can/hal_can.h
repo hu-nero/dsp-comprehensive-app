@@ -1,7 +1,7 @@
 /*
  * hal_can.h
  *
- *  Created on: 2025Äê12ÔÂ16ÈÕ
+ *  Created on: 2025å¹´12æœˆ16æ—¥
  *      Author: huxl
  */
 
@@ -45,7 +45,7 @@ extern uint16_t hal_can_init(uint8_t PortId, TeCanPortSpeed Baud);
 extern uint16_t hal_can_deinit(uint8_t PortId);
 extern TeErrorEnum hal_can_send(uint8_t PortId, uint8_t Mb, TsCanFrame* Frame);
 
-extern TsCanFrame* hal_can_rx_queue_de(void);
+extern TsCanFrame* hal_can_rx_queue_de(uint8_t PortId);
 extern void hal_can_tx_callback_set(uint8_t PortId, TfpCanHalCallbackTx TxFunc);
 extern void hal_can_tx_callback(uint8_t PortId, uint8_t Mb);
 extern void hal_can_rx_callback(uint8_t PortId, uint8_t Mb);

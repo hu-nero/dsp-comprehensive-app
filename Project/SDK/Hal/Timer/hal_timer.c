@@ -1,14 +1,8 @@
 /*
  * hal_timer.c
  *
- *  Created on: 2025Äê12ÔÂ27ÈÕ
+ *  Created on: 2025å¹´12æœˆ27æ—¥
  *      Author: huxl
- */
-
-/*
- * hal_timer.c
- *
- *  Created on: 2023å¹?æœ?8æ—? *      Author: xinlei.hu
  */
 #include "hal_timer.h"
 #include "stdint_fix.h"

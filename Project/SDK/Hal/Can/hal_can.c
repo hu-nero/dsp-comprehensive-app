@@ -1,16 +1,15 @@
 /*
  * hal_can.c
  *
- *  Created on: 2025ƒÍ12‘¬16»’
+ *  Created on: 2025Âπ¥12Êúà16Êó•
  *      Author: huxl
  */
 #include "hal_can.h"
 #include "string.h"
 
-static Can_TypeDef *halCanDevicePtr = NULL;
-static uint16_t canRxBuf[CAN_DRIVER_RX_NUM][CAN_DRIVER_MAX_DLC];
-static HAL_CAN_Rx_Struct gHalCanRxStruct;
-uint32_t gHalCanBaudValue = 500;
+static Can_TypeDef *halCanDevicePtr[eCanPort_Count] = {NULL,NULL};
+static uint16_t canRxBuf[eCanPort_Count][CAN_DRIVER_RX_NUM][CAN_DRIVER_MAX_DLC];
+static HAL_CAN_Rx_Struct gHalCanRxStruct[eCanPort_Count];
 uint32_t gHalCanErrorCount = 0;
 uint32_t gHalCanBusoffCount = 0;
 
@@ -21,6 +20,7 @@ uint16_t
 hal_can_init(uint8_t PortId, TeCanPortSpeed Baud)
 {
 	int i;
+    uint32_t u32CanBaudValue = 500;
     if (PortId >= eCanPort_Count)
     {
         return 1;
@@ -33,50 +33,87 @@ hal_can_init(uint8_t PortId, TeCanPortSpeed Baud)
     {
         case eCanPort_0:
             {
-                halCanDevicePtr->MsgChn = CANCHNA;
+                halCanDevicePtr[eCanPort_0]->MsgChn = CANCHNA;
                 //init can device
                 //sample points = 75%
             	switch (Baud)
             	{
                     case eCanPortSpeed_125kbps:
                         {
-                            gHalCanBaudValue = 125;
+                            u32CanBaudValue = 125;
                         }
                         break;
                     case eCanPortSpeed_250kbps:
                         {
-                            gHalCanBaudValue = 250;
+                            u32CanBaudValue = 250;
                         }
                         break;
                     case eCanPortSpeed_500kbps:
                         {
-                            gHalCanBaudValue = 500;
+                            u32CanBaudValue = 500;
                         }
                         break;
                     case eCanPortSpeed_1000kbps:
                         {
-                            gHalCanBaudValue = 1000;
+                            u32CanBaudValue = 1000;
                         }
                         break;
                     default:
                     	{
-                            gHalCanBaudValue = 500;
+                            u32CanBaudValue = 500;
                     	}
                 		break;
             	}
-                InitCanDrive(halCanDevicePtr, gHalCanBaudValue);
+                InitCanDrive(halCanDevicePtr[eCanPort_0], u32CanBaudValue);
+            }
+            break;
+        case eCanPort_1:
+            {
+                halCanDevicePtr[eCanPort_1]->MsgChn = CANCHNB;
+                //init can device
+                //sample points = 75%
+                switch (Baud)
+                {
+                    case eCanPortSpeed_125kbps:
+                        {
+                            u32CanBaudValue = 125;
+                        }
+                        break;
+                    case eCanPortSpeed_250kbps:
+                        {
+                            u32CanBaudValue = 250;
+                        }
+                        break;
+                    case eCanPortSpeed_500kbps:
+                        {
+                            u32CanBaudValue = 500;
+                        }
+                        break;
+                    case eCanPortSpeed_1000kbps:
+                        {
+                            u32CanBaudValue = 1000;
+                        }
+                        break;
+                    default:
+                        {
+                            u32CanBaudValue = 500;
+                        }
+                        break;
+                }
+                InitCanDrive(halCanDevicePtr[eCanPort_1], u32CanBaudValue);
             }
             break;
         default:return 3;
     }
-    gHalCanRxStruct.u8IdxHead = 0;
-    gHalCanRxStruct.u8IdxTail = 0;
-    gHalCanRxStruct.u32CanRxCount = 0;
-    memset(gHalCanRxStruct.sCanRxTFrame, 0, sizeof(gHalCanRxStruct.sCanRxTFrame));
+
+    gHalCanRxStruct[PortId].u8IdxHead = 0;
+    gHalCanRxStruct[PortId].u8IdxTail = 0;
+    gHalCanRxStruct[PortId].u32CanRxCount = 0;
+    memset(gHalCanRxStruct[PortId].sCanRxTFrame, 0, sizeof(gHalCanRxStruct[PortId].sCanRxTFrame));
     //init can TxMsg
     for(i=0; i<CAN_DRIVER_RX_NUM; i++)
     {
-        gHalCanRxStruct.sCanRxTFrame[i].data = canRxBuf[i];
+        gHalCanRxStruct[PortId].sCanRxTFrame[i].data = canRxBuf[PortId][i];
     }
 
 
@@ -91,13 +128,27 @@ hal_can_deinit(uint8_t PortId)
         case eCanPort_0:
             {
                 //deinit can device
-                DeinitCanDrive(halCanDevicePtr);
-                // ÷ÿ÷√◊¥Ã¨±‰¡ø
-                gHalCanRxStruct.u8IdxHead = 0;
-                gHalCanRxStruct.u8IdxTail = 0;
-                gHalCanRxStruct.u32CanRxCount = 0;
+                DeinitCanDrive(halCanDevicePtr[eCanPort_0]);
+                // ÈáçÁΩÆÁä∂ÊÄÅÂèòÈáè
+                gHalCanRxStruct[eCanPort_0].u8IdxHead = 0;
+                gHalCanRxStruct[eCanPort_0].u8IdxTail = 0;
+                gHalCanRxStruct[eCanPort_0].u32CanRxCount = 0;
 
-                // ÷ÿ÷√»´æ÷¥ÌŒÛº∆ ˝
+                // ÈáçÁΩÆÂÖ®Â±ÄÈîôËØØËÆ°Êï∞
+                gHalCanErrorCount = 0;
+                gHalCanBusoffCount = 0;
+            }
+            break;
+        case eCanPort_1:
+            {
+                //deinit can device
+                DeinitCanDrive(halCanDevicePtr[eCanPort_1]);
+                // ÈáçÁΩÆÁä∂ÊÄÅÂèòÈáè
+                gHalCanRxStruct[eCanPort_1].u8IdxHead = 0;
+                gHalCanRxStruct[eCanPort_1].u8IdxTail = 0;
+                gHalCanRxStruct[eCanPort_1].u32CanRxCount = 0;
+
+                // ÈáçÁΩÆÂÖ®Â±ÄÈîôËØØËÆ°Êï∞
                 gHalCanErrorCount = 0;
                 gHalCanBusoffCount = 0;
             }
@@ -130,47 +181,45 @@ hal_can_send(uint8_t PortId, uint8_t Mb, TsCanFrame* Frame)
         sCanMsg.dlc = Frame->dlc <= 8 ? Frame->dlc : 8;
     }
     memcpy(sCanMsg.data, Frame->data, sCanMsg.dlc);
-    switch(PortId)
-    {
-        case eCanPort_0:
-            {
-                CanSendDrive(halCanDevicePtr, Mb, &sCanMsg);
-            }
-            break;
-        default:break;
-    }
+    CanSendDrive(halCanDevicePtr[PortId], Mb, &sCanMsg);
+
     return eErrorOk;
 }
 
 TsCanFrame*
-hal_can_rx_queue_de(void)
+hal_can_rx_queue_de(uint8_t PortId)
 {
     static TsCanFrame halCanFrameTmp = {};
 
+    if (PortId >= eCanPort_Count)
+    {
+        return NULL;
+    }
+
     ENTER_CRITICAL();
     //is empty
-    if (gHalCanRxStruct.u32CanRxCount == 0)
+    if (gHalCanRxStruct[PortId].u32CanRxCount == 0)
     {
         EXIT_CRITICAL();
         return NULL;
     }
     //copy data
-    memcpy(&halCanFrameTmp.data, gHalCanRxStruct.sCanRxTFrame[gHalCanRxStruct.u8IdxHead].data, CAN_DRIVER_MAX_DLC);
-    halCanFrameTmp.dlc = gHalCanRxStruct.sCanRxTFrame[gHalCanRxStruct.u8IdxHead].dlc;
-    halCanFrameTmp.is_ext_id =(gHalCanRxStruct.sCanRxTFrame[gHalCanRxStruct.u8IdxHead].rid.all & CAN_DRIVER_EID_FLAG)!=0 ? 1 : 0;
+    memcpy(&halCanFrameTmp.data, gHalCanRxStruct[PortId].sCanRxTFrame[gHalCanRxStruct[PortId].u8IdxHead].data, CAN_DRIVER_MAX_DLC);
+    halCanFrameTmp.dlc = gHalCanRxStruct[PortId].sCanRxTFrame[gHalCanRxStruct[PortId].u8IdxHead].dlc;
+    halCanFrameTmp.is_ext_id =(gHalCanRxStruct[PortId].sCanRxTFrame[gHalCanRxStruct[PortId].u8IdxHead].rid.all & CAN_DRIVER_EID_FLAG)!=0 ? 1 : 0;
     if (halCanFrameTmp.is_ext_id)
     {
-        halCanFrameTmp.id = gHalCanRxStruct.sCanRxTFrame[gHalCanRxStruct.u8IdxHead].rid.all & CAN_DRIVER_EXT_M;
+        halCanFrameTmp.id = gHalCanRxStruct[PortId].sCanRxTFrame[gHalCanRxStruct[PortId].u8IdxHead].rid.all & CAN_DRIVER_EXT_M;
     }
     else
     {
-        halCanFrameTmp.id = gHalCanRxStruct.sCanRxTFrame[gHalCanRxStruct.u8IdxHead].rid.all & CAN_DRIVER_STD_M;
+        halCanFrameTmp.id = gHalCanRxStruct[PortId].sCanRxTFrame[gHalCanRxStruct[PortId].u8IdxHead].rid.all & CAN_DRIVER_STD_M;
     }
-    //≤ª  ”√CANFD
+    //Ê∂ìÂ∂âÂÇúÊï§CANFD
     halCanFrameTmp.is_can_fd = 0;
     //dequeue
-    gHalCanRxStruct.u8IdxHead = (gHalCanRxStruct.u8IdxHead + 1)%CAN_DRIVER_RX_NUM;
-    gHalCanRxStruct.u32CanRxCount--;
+    gHalCanRxStruct[PortId].u8IdxHead = (gHalCanRxStruct[PortId].u8IdxHead + 1)%CAN_DRIVER_RX_NUM;
+    gHalCanRxStruct[PortId].u32CanRxCount--;
 
     EXIT_CRITICAL();
     return &halCanFrameTmp;
@@ -185,41 +234,25 @@ hal_can_tx_callback_set(uint8_t PortId, TfpCanHalCallbackTx Func)
 void
 hal_can_tx_callback(uint8_t PortId, uint8_t Mb)
 {
-    switch(PortId)
-    {
-        case eCanPort_0:
-            {
-                (*SpCAN_CallbackTx[(TeCanPort)PortId])((TeCanPort)PortId, Mb);
-            }
-            break;
-        default:break;
-    }
+    (*SpCAN_CallbackTx[(TeCanPort)PortId])((TeCanPort)PortId, Mb);
 }
 
 
 void
 hal_can_rx_callback(uint8_t PortId, uint8_t Mb)
 {
-    switch(PortId)
+    if(gHalCanRxStruct[PortId].u32CanRxCount >= CAN_DRIVER_RX_NUM)
     {
-        case eCanPort_0:
-            {
-                if(gHalCanRxStruct.u32CanRxCount >= CAN_DRIVER_RX_NUM)
-                {
-                    gHalCanErrorCount++;  // “Á≥ˆ¥ÌŒÛ
-                    return;
-                }
-                CanRecvDrive(halCanDevicePtr, Mb, &gHalCanRxStruct.sCanRxTFrame[gHalCanRxStruct.u8IdxTail]);
-                if(gHalCanRxStruct.sCanRxTFrame[gHalCanRxStruct.u8IdxTail].dlc > CAN_DRIVER_MAX_DLC)
-                {
-                    gHalCanRxStruct.sCanRxTFrame[gHalCanRxStruct.u8IdxTail].dlc = CAN_DRIVER_MAX_DLC;
-                }
-                gHalCanRxStruct.u8IdxTail = (gHalCanRxStruct.u8IdxTail + 1)%CAN_DRIVER_RX_NUM;
-                gHalCanRxStruct.u32CanRxCount++;
-            }
-            break;
-        default:break;
+        gHalCanErrorCount++;  // Ê∫¢Âá∫ÈîôËØØ
+        return;
     }
+    CanRecvDrive(halCanDevicePtr[PortId], Mb, &gHalCanRxStruct[PortId].sCanRxTFrame[gHalCanRxStruct[PortId].u8IdxTail]);
+    if(gHalCanRxStruct[PortId].sCanRxTFrame[gHalCanRxStruct[PortId].u8IdxTail].dlc > CAN_DRIVER_MAX_DLC)
+    {
+        gHalCanRxStruct[PortId].sCanRxTFrame[gHalCanRxStruct[PortId].u8IdxTail].dlc = CAN_DRIVER_MAX_DLC;
+    }
+    gHalCanRxStruct[PortId].u8IdxTail = (gHalCanRxStruct[PortId].u8IdxTail + 1)%CAN_DRIVER_RX_NUM;
+    gHalCanRxStruct[PortId].u32CanRxCount++;
 }
 
 void
@@ -229,14 +262,14 @@ hal_can_error_callback(uint8_t PortId, HAL_CAN_ER_TYPE u8CanErrorType)
     {
         case HAL_CAN_ER_ERROR:
             {
-                //CAN_GetError(halCanDevicePtr, &u32ErrorMask);
+                //CAN_GetError(halCanDevicePtr[PortId], &u32ErrorMask);
                 gHalCanErrorCount ++;
             }
             break;
         case HAL_CAN_ER_BUSOFF:
             {
                 gHalCanBusoffCount++;
-                //TODO:≈–∂œ±Í÷æ£¨≤¢‘⁄main÷–µ˜”√“‘œ¬Ω¯––can÷ÿ∆Ù
+                //TODO:Âà§Êñ≠Ê†áÂøóÔºåÂπ∂Âú®Main‰∏≠Ë∞ÉÁî®‰ª•‰∏ãËøõË°åcanÈáçÂêØ
                 hal_can_deinit(PortId);
                 hal_can_init(PortId, eCanPortSpeed_500kbps);
             }
@@ -244,4 +277,3 @@ hal_can_error_callback(uint8_t PortId, HAL_CAN_ER_TYPE u8CanErrorType)
         default:break;
     }
 }
-

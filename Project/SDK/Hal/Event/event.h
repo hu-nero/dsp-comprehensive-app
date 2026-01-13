@@ -1,7 +1,7 @@
 /*
  * event.h
  *
- *  Created on: 2025Äê12ÔÂ17ÈÕ
+ *  Created on: 2025å¹´12æœˆ17æ—¥
  *      Author: huxl
  */
 
@@ -12,6 +12,9 @@
 
 interrupt void CANA_TxRx_ISR(void);
 interrupt void CANA_Error_ISR(void);
+
+interrupt void CANB_TxRx_ISR(void);
+interrupt void CANB_Error_ISR(void);
 
 interrupt void TIM0_ISR(void);
 
