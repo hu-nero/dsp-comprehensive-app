@@ -165,7 +165,7 @@ void
 CAN_App_Init(void)
 {
     // 初始化CAN协议栈
-    //CAN_Agent_Init(eCanPort_0);
+    CAN_Agent_Init(eCanPort_0);
     CAN_Agent_Init(eCanPort_1);
     // 注册接收回调到CAN驱动
     CAN_SetRxHandler(CAN_App_CanRxHandler);

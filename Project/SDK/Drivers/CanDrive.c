@@ -591,12 +591,6 @@ static void InitCanaInterrupt(void)
     ECanaRegs.CANTSC = 0;
     EDIS;
     
-    // 配置PIE中断向量表
-    InitPieCtrl();
-    IER = 0x0000;
-    IFR = 0x0000;
-    InitPieVectTable();
-    
     EALLOW;
     PieVectTable.ECAN0INTA = &CANA_TxRx_ISR;   // 中断线0
     PieVectTable.ECAN1INTA = &CANA_Error_ISR;   // 中断线1
@@ -643,12 +637,6 @@ static void InitCanbInterrupt(void)
     // 时间戳计数器清零
     ECanbRegs.CANTSC = 0;
     EDIS;
-    
-    // 配置PIE中断向量表
-    InitPieCtrl();
-    IER = 0x0000;
-    IFR = 0x0000;
-    InitPieVectTable();
     
     EALLOW;
     PieVectTable.ECAN0INTB = &CANB_TxRx_ISR;   // 中断线0

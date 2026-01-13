@@ -289,7 +289,7 @@ CAN_Agent_ReceivedFrame(void)
     uint16_t src_addr, dst_addr;
 
     // 从接收队列中获取帧
-    //frame = hal_can_rx_queue_de(eCanPort_0);
+    frame = hal_can_rx_queue_de(eCanPort_0);
     frame = hal_can_rx_queue_de(eCanPort_1);
     if (!frame)
     {

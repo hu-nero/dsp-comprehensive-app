@@ -81,6 +81,14 @@ void Init_XINTF1(void)
 	XIntruptRegs.XINT1CR.bit.POLARITY = 0;
 	XIntruptRegs.XINT1CR.bit.ENABLE = 1;
 }
+
+inline void Init_PieVect(void)
+{
+	InitPieCtrl();
+	IER = 0x0000;    // Disable CPU interrupts and clear all CPU interrupt flags:
+	IFR = 0x0000;
+	InitPieVectTable();
+}
 /******************************************************************/
 void main(void)
 {
@@ -98,6 +106,8 @@ void main(void)
 	EALLOW;
 	SysCtrlRegs.PCLKCR0.bit.TBCLKSYNC = 0;
 	EDIS;
+
+    Init_PieVect();
 
 	memcpy( &RamfuncsRunStart,
 			&RamfuncsLoadStart,
