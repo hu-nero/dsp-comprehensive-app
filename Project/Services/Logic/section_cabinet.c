@@ -75,6 +75,8 @@ Cabinet_Init(CabinetContext_t* Context,
     Context->power_status.ctrl_mode = CONTROL_MODE_UNKNOWN;
     Context->power_status.status_word = 0;
     Context->power_status.is_using = 0;
+    Context->power_op_state = POWER_OP_IDLE;
+    Context->power_op_counter = 0;
 
     return true;
 }
@@ -224,22 +226,34 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
     {
         case CABINET_STATE_STANDBY:
             {
-                // 待机->单机
+                // ① 待机->单机
                 if (target_state == CABINET_STATE_SINGLE)
                 {
                     ExecuteResult_t result;
+
+                    if (Context->power_op_state == POWER_OP_STARTING)
+                    {
+                        result = Cabinet_StartPowerSupply(Context);
+                        if (result == RESULT_WAIT)
+                        {
+                            return;
+                        }
+                        else if ((result == RESULT_TIMEOUT) ||
+                                 (result == RESULT_COMM_ERROR) ||
+                                 (result == RESULT_FAILED))
+                        {
+                            Cabinet_BackToStandby(Context);
+                            return;
+                        }
+                    }
+
                     // 读取电源状态
                     Context->power_status = CAN_Adapter_GetPowerStatus();
 
                     result = Cabinet_SingleActionBranch(Context);
                     if (result == RESULT_SUCCESS)
                     {
-                        result = Cabinet_ExecuteSingleProcedure(Context);
-                        if (result == RESULT_SUCCESS)
-                        {
-                            Context->state = CABINET_STATE_SINGLE;
-                            Context->target_state = CABINET_STATE_INVALID;
-                        }
+                        (void)Cabinet_ExecuteDegaussProcedure(Context);
                     }
                     else if (result == RESULT_WAIT)
                     {
@@ -253,10 +267,26 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         Cabinet_ErrBranch(Context);
                     }
                 }
-                // 待机->并机
+                // ② 待机->并机
                 else if (target_state == CABINET_STATE_PARALLEL)
                 {
                     ExecuteResult_t result;
+
+                    if (Context->power_op_state == POWER_OP_STARTING)
+                    {
+                        result = Cabinet_StartPowerSupply(Context);
+                        if (result == RESULT_WAIT)
+                        {
+                            return;
+                        }
+                        else if ((result == RESULT_TIMEOUT) ||
+                                 (result == RESULT_COMM_ERROR) ||
+                                 (result == RESULT_FAILED))
+                        {
+                            Cabinet_BackToStandby(Context);
+                            return;
+                        }
+                    }
                     // 读取电源状态
                     Context->power_status = CAN_Adapter_GetPowerStatus();
 
@@ -282,10 +312,26 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
 
         case CABINET_STATE_SINGLE:
             {
-                // 单机->待机
+                // ⑤ 单机->待机
                 if (Context->target_state == CABINET_STATE_STANDBY)
                 {
                     ExecuteResult_t result;
+
+                    if (Context->power_op_state == POWER_OP_STARTING)
+                    {
+                        result = Cabinet_StartPowerSupply(Context);
+                        if (result == RESULT_WAIT)
+                        {
+                            return;
+                        }
+                        else if ((result == RESULT_TIMEOUT) ||
+                                 (result == RESULT_COMM_ERROR) ||
+                                 (result == RESULT_FAILED))
+                        {
+                            Cabinet_ErrBranch(Context);
+                            return;
+                        }
+                    }
                     // 读取电源状态
                     Context->power_status = CAN_Adapter_GetPowerStatus();
 
@@ -321,7 +367,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         Cabinet_ErrBranch(Context);
                     }
                 }
-                // 单机->备机
+                // ⑥ 单机->备机
                 else if (Context->target_state == CABINET_STATE_BACKUP)
                 {
                     ExecuteResult_t result;
@@ -368,7 +414,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
         case CABINET_STATE_PARALLEL:
             {
                 ExecuteResult_t result;
-                // 并机->待机
+                // ⑦ 并机->待机
                 if (Context->target_state == CABINET_STATE_STANDBY)
                 {
                     result = Cabinet_ExecuteStandbyProcedure(Context);
@@ -389,6 +435,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         Cabinet_ErrBranch(Context);
                     }
                 }
+                // ⑧ 并机->备机
                 else if (Context->target_state == CABINET_STATE_BACKUP)
                 {
                     ExecuteResult_t result;
@@ -418,6 +465,10 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                             Cabinet_ErrBranch(Context);
                         }
                     }
+                    else if (result == RESULT_WAIT)
+                    {
+                        ;
+                    }
                     else
                     {
                         // 发出警告
@@ -429,7 +480,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             break;
         case CABINET_STATE_BACKUP:
             {
-                // 备机->单机
+                // ③ 备机->单机
                 if (Context->target_state == CABINET_STATE_SINGLE)
                 {
                     ExecuteResult_t result;
@@ -467,6 +518,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         Cabinet_ErrBranch(Context);
                     }
                 }
+                // ④ 备机->并机
                 else if (Context->target_state == CABINET_STATE_PARALLEL)
                 {
                     ExecuteResult_t result;
@@ -521,42 +573,76 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
     {
         case CABINET_STATE_STANDBY:
             {
+                // ① 待机->单机
                 if (Context->target_state == CABINET_STATE_SINGLE)
                 {
+                    if (Context->power_op_state == POWER_OP_CLOSING)
+                    {
+                        result = Cabinet_ClosePowerSupply(Context);
+                        if (result == RESULT_WAIT)
+                        {
+                            return;
+                        }
+                        else if ((result == RESULT_COMM_ERROR) ||
+                            (result == RESULT_TIMEOUT) ||
+                            (result == RESULT_FAILED))
+                        {
+                            Cabinet_BackToStandby(Context);
+                        }
+                        return;
+                    }
+
                     result = Cabinet_ExecuteSingleProcedure(Context);
                     if (result == RESULT_SUCCESS)
                     {
-                        Context->state = CABINET_STATE_SINGLE;
                         Context->single_switch = SWITCH_ON;
                         Context->bus1_switch = SWITCH_OFF;
+                        Context->state = CABINET_STATE_SINGLE;
+                        Context->target_state = CABINET_STATE_INVALID;
                     }
                     else
                     {
-                        Cabinet_BackToStandby(Context);
+                        Cabinet_SetAlarm(Context, ALARM_NONE, "Single procedure failed, closing power");
+                        (void)Cabinet_ClosePowerSupply(Context);
                     }
-                    Context->target_state = CABINET_STATE_INVALID;
                 }
+                // ② 待机->并机
                 else if (Context->target_state == CABINET_STATE_PARALLEL)
                 {
+                    if (Context->power_op_state == POWER_OP_CLOSING)
+                    {
+                        result = Cabinet_ClosePowerSupply(Context);
+                        if (result == RESULT_WAIT)
+                        {
+                            return;
+                        }
+                        else if ((result == RESULT_COMM_ERROR) ||
+                            (result == RESULT_TIMEOUT) ||
+                            (result == RESULT_FAILED))
+                        {
+                            Cabinet_BackToStandby(Context);
+                        }
+                        return;
+                    }
                     result = Cabinet_ExecuteParallelProcedure(Context);
                     if (result == RESULT_SUCCESS)
                     {
-                        Context->state = CABINET_STATE_PARALLEL;
                         Context->single_switch = SWITCH_OFF;
                         Context->bus1_switch = SWITCH_ON;
+                        Context->state = CABINET_STATE_PARALLEL;
+                        Context->target_state = CABINET_STATE_INVALID;
                     }
                     else
                     {
-                        Cabinet_BackToStandby(Context);
-
+                        Cabinet_SetAlarm(Context, ALARM_NONE, "Single procedure failed, closing power");
+                        (void)Cabinet_ClosePowerSupply(Context);
                     }
-                    Context->target_state = CABINET_STATE_INVALID;
                 }
             }
             break;
         case CABINET_STATE_SINGLE:
             {
-                // 单机->待机
+                // ⑤ 单机->待机
                 if (Context->target_state == CABINET_STATE_STANDBY)
                 {
                     Context->single_switch = SWITCH_OFF;
@@ -568,7 +654,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
             break;
         case CABINET_STATE_PARALLEL:
             {
-                // 并机->待机
+                // ⑦ 并机->待机
                 if (Context->target_state == CABINET_STATE_STANDBY)
                 {
                     Context->single_switch = SWITCH_OFF;
@@ -593,7 +679,8 @@ Cabinet_SingleActionBranch(CabinetContext_t* Context)
     // 分支1：电源已在运行状态
     if (ps->run_state == POWER_RUNNING)
     {
-        (void)Cabinet_ExecuteDegaussProcedure(Context);
+        // 电源已运行，直接进入消磁流程
+        return RESULT_SUCCESS;
     }
 
     // 分支2：电源待机、远控、单机状态
@@ -624,7 +711,7 @@ Cabinet_ParallelActionBranch(CabinetContext_t* Context)
         ((ps->run_state == POWER_STANDBY)&&
         (ps->ctrl_mode == CONTROL_LOCAL)))
     {
-        (void)Cabinet_ExecuteDegaussProcedure(Context);
+        return RESULT_SUCCESS;
     }
 
     // 分支2：电源待机、远控、并机状态
@@ -649,7 +736,7 @@ Cabinet_ParallelActionBranch(CabinetContext_t* Context)
             Context->bus1_switch = SWITCH_ON;
             Context->state = CABINET_STATE_PARALLEL;
             Context->target_state = CABINET_STATE_INVALID;
-            return RESULT_WAIT;
+ q           return RESULT_WAIT;
         }
     }
     else
@@ -694,7 +781,6 @@ Cabinet_BackupToParallelActionBranch(CabinetContext_t* Context)
 
     // 分支2：其他状态
     Cabinet_SetAlarm(Context, ALARM_STATE_ROLLBACK, "Invalid power status for parallel mode");
-    Cabinet_BackToBackup(Context);
 
     return RESULT_FAILED;
 }
@@ -901,10 +987,8 @@ Cabinet_ProcessDemagnetizeWait(CabinetContext_t* Context)
 static ExecuteResult_t
 Cabinet_StartPowerSupply(CabinetContext_t* Context)
 {
-    static uint32_t power_start_counter = 0;
-
     // 启动电源启动超时计数
-    if (Context->power_start_timeout == 0)
+    if (Context->power_op_state == POWER_OP_IDLE)
     {
         // 发送启动电源命令
         if (!CAN_Adapter_SendPowerStart())
@@ -914,15 +998,16 @@ Cabinet_StartPowerSupply(CabinetContext_t* Context)
             return RESULT_COMM_ERROR;
         }
 
-        Context->power_start_timeout = POWER_START_TIMEOUT_MS;
-        power_start_counter = 0;
+        Context->power_op_timeout = POWER_START_TIMEOUT_MS;
+        Context->power_op_counter = 0;
+        Context->power_op_state = POWER_OP_STARTING;
         return RESULT_WAIT;
     }
 
     // 检查超时
-    if (power_start_counter < Context->power_start_timeout)
+    if (Context->power_op_counter < Context->power_op_timeout)
     {
-        power_start_counter++;
+        Context->power_op_counter++;
 
         // 更新电源状态
         Context->power_status = CAN_Adapter_GetPowerStatus();
@@ -930,30 +1015,30 @@ Cabinet_StartPowerSupply(CabinetContext_t* Context)
         // 检查电源是否已启动
         if (Context->power_status.run_state == POWER_RUNNING)
         {
-            Context->power_start_timeout = 0;
-            power_start_counter = 0;
-            (void)Cabinet_ExecuteDegaussProcedure(Context);
+            Context->power_op_timeout = 0;
+            Context->power_op_counter = 0;
+            Context->power_op_state = POWER_OP_IDLE;
+            return RESULT_SUCCESS;
         }
     }
-    else if (power_start_counter >= Context->power_start_timeout)
+    else if (Context->power_op_counter >= Context->power_op_timeout)
     {
         Cabinet_SetAlarm(Context, ALARM_POWER_START_FAILED, "Power start timeout");
-        Context->power_start_timeout = 0;
-        power_start_counter = 0;
+        Context->power_op_timeout = 0;
+        Context->power_op_counter = 0;
+        Context->power_op_state = POWER_OP_IDLE;
         return RESULT_TIMEOUT;
     }
 
-    return RESULT_WAIT;
+    return RESULT_FAILED;
 }
 
 // 关闭电源
 static ExecuteResult_t
 Cabinet_ClosePowerSupply(CabinetContext_t* Context)
 {
-    static uint32_t power_start_counter = 0;
-
     // 启动电源关闭超时计数
-    if (Context->power_start_timeout == 0)
+    if (Context->power_op_state == POWER_OP_IDLE)
     {
         // 发送关闭电源命令
         if (!CAN_Adapter_SendPowerClose())
@@ -962,36 +1047,37 @@ Cabinet_ClosePowerSupply(CabinetContext_t* Context)
             return RESULT_COMM_ERROR;
         }
 
-        Context->power_start_timeout = POWER_START_TIMEOUT_MS;
-        power_start_counter = 0;
+        Context->power_op_timeout = POWER_START_TIMEOUT_MS;
+        Context->power_op_counter = 0;
+        Context->power_op_state = POWER_OP_CLOSING;
         return RESULT_WAIT;
     }
 
     // 检查超时
-    if (power_start_counter < Context->power_start_timeout)
+    if (Context->power_op_counter < Context->power_op_timeout)
     {
-        power_start_counter++;
-
+        Context->power_op_counter++;
         // 更新电源状态
         Context->power_status = CAN_Adapter_GetPowerStatus();
-
         // 检查电源是否已关闭
         if (Context->power_status.run_state == POWER_STANDBY)
         {
-            Context->power_start_timeout = 0;
-            power_start_counter = 0;
+            Context->power_op_timeout = 0;
+            Context->power_op_counter = 0;
+            Context->power_op_state = POWER_OP_IDLE;
             return RESULT_SUCCESS;
         }
     }
-    else if (power_start_counter >= Context->power_start_timeout)
+    else if (Context->power_op_counter >= Context->power_op_timeout)
     {
-        Cabinet_SetAlarm(Context, ALARM_POWER_START_FAILED, "Power start timeout");
-        Context->power_start_timeout = 0;
-        power_start_counter = 0;
+        Cabinet_SetAlarm(Context, ALARM_POWER_START_FAILED, "Power close timeout");
+        Context->power_op_timeout = 0;
+        Context->power_op_counter = 0;
+        Context->power_op_state = POWER_OP_IDLE;
         return RESULT_TIMEOUT;
     }
 
-    return RESULT_WAIT;
+    return RESULT_FAILED;
 }
 
 // 执行消磁流程

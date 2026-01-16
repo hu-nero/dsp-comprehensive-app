@@ -38,6 +38,14 @@ typedef enum
     DEMAGNETIZE_FAILED         // 消磁失败
 } DemagnetizeState_t;
 
+// 电源操作状态枚举
+typedef enum
+{
+    POWER_OP_IDLE = 0,         // 空闲状态
+    POWER_OP_STARTING,         // 正在启动电源
+    POWER_OP_CLOSING           // 正在关闭电源
+} PowerOpState_t;
+
 // 区段柜上下文结构体
 typedef struct
 {
@@ -49,7 +57,9 @@ typedef struct
     SwitchState_t short_switch;        // 短接开关状态（消磁）
     bool emergency_stop;               // 急停状态
     PowerStatus_t power_status;        // 电源状态
-    uint32_t power_start_timeout;      // 电源启动超时计数
+    uint32_t power_op_timeout;      // 电源启动/关闭超时计数
+    uint32_t power_op_counter;         // 电源操作计数器
+    PowerOpState_t power_op_state;     // 电源操作状态
     DemagnetizeState_t demagnetize_state;  // 消磁状态
     uint16_t demagnetize_counter;          // 消磁计数器（50ms为单位）
 
