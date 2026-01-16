@@ -25,7 +25,8 @@
 // 开关控制回调函数
 typedef ExecuteResult_t (*SwitchControlFunc_t)(uint16_t SwitchId, SwitchState_t State);
 typedef uint16_t (*SwitchFeedFunc_t)(uint16_t SwitchId);
-
+// 电压读取回调函数
+typedef uint16_t (*VoltageReadFunc_t)(VoltageReadType_t VoltagePhaseType);
 // 报警回调函数
 typedef void (*AlarmCallback_t)(AlarmType_t AlarmType, const char* Message);
 
@@ -66,12 +67,14 @@ typedef struct
     // 回调函数指针
     SwitchControlFunc_t switch_control;
     SwitchFeedFunc_t switch_feed;
+    VoltageReadFunc_t voltage_read;
     AlarmCallback_t alarm_callback;
 } CabinetContext_t;
 
 extern bool Cabinet_Init(CabinetContext_t* Context,
              SwitchControlFunc_t switch_ctrl,
              SwitchFeedFunc_t  switch_feed,
+             VoltageReadFunc_t voltage_read,
              AlarmCallback_t alarm_cb);
 extern void Cabinet_Process(CabinetContext_t* Context);
 extern ExecuteResult_t Cabinet_SetSwitches(CabinetContext_t* Context,

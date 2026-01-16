@@ -93,4 +93,15 @@ typedef enum
     ALARM_MAX
 } AlarmType_t;
 
+// 三相电压采集点类型
+typedef enum
+{
+    VOLTAGE_QS1_PHASE_A = 0,   // QS1下口A相电压
+    VOLTAGE_QS1_PHASE_B,       // QS1下口B相电压
+    VOLTAGE_QS1_PHASE_C,       // QS1下口C相电压
+    VOLTAGE_QCS1_PHASE_A,      // QCS1下口C相电压
+    VOLTAGE_QCS1_PHASE_B,      // QCS1下口C相电压
+    VOLTAGE_QCS1_PHASE_C       // QCS1下口C相电压
+} VoltageReadType_t;
+
 #endif /* SERVICES_LOGIC_SECTION_COMMON_H_ */

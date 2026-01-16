@@ -40,9 +40,12 @@ bool
 Cabinet_Init(CabinetContext_t* Context,
              SwitchControlFunc_t switch_ctrl,
              SwitchFeedFunc_t  switch_feed,
+             VoltageReadFunc_t voltage_read,
              AlarmCallback_t alarm_cb)
 {
-    if ((!Context) || (!switch_ctrl) || (!switch_feed) || (!alarm_cb))
+    if ((!Context) || (!switch_ctrl) ||
+        (!switch_feed) || (!alarm_cb)||
+        (!voltage_read))
     {
         return false;
     }
@@ -54,6 +57,7 @@ Cabinet_Init(CabinetContext_t* Context,
     // 保存回调函数
     Context->switch_control = switch_ctrl;
     Context->switch_feed = switch_feed;
+    Context->voltage_read = voltage_read;
     Context->alarm_callback = alarm_cb;
 
     // 设置默认状态
@@ -736,7 +740,7 @@ Cabinet_ParallelActionBranch(CabinetContext_t* Context)
             Context->bus1_switch = SWITCH_ON;
             Context->state = CABINET_STATE_PARALLEL;
             Context->target_state = CABINET_STATE_INVALID;
- q           return RESULT_WAIT;
+            return RESULT_WAIT;
         }
     }
     else

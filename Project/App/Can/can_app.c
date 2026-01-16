@@ -41,6 +41,9 @@
 #define IO_SHORT_Dis	  				IOOutput1.DataBit.Bit6 = 0
 #define IO_SHORT_Feed					IOInput1.DataBit.Bit15
 
+#define ADC0_CH0_Value					*(unsigned  int *)(0x4010)
+#define ADC0_CH1_Value					*(unsigned  int *)(0x4020)
+#define ADC0_CH2_Value					*(unsigned  int *)(0x4030)
 
 static CAN_App_func_status_handler_t g_func_status_handler = NULL;
 // 全局柜体控制上下文
@@ -48,6 +51,7 @@ static CabinetContext_t g_cabinet_context;
 // 硬件开关控制接口
 static ExecuteResult_t Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State);
 static uint16_t Hardware_SwitchFeed(uint16_t SwitchId);
+static uint16_t Hardware_VoltageRead(VoltageReadType_t VoltagePhaseType);
 static void Hardware_AlarmCallback(AlarmType_t AlarmType, const char* Message);
 
 // 应用层CAN接收处理函数
@@ -166,7 +170,7 @@ CAN_App_Init(void)
 {
     // 初始化CAN协议栈
     CAN_Agent_Init(eCanPort_0);
-    CAN_Agent_Init(eCanPort_1);
+    //CAN_Agent_Init(eCanPort_1);
     // 注册接收回调到CAN驱动
     CAN_SetRxHandler(CAN_App_CanRxHandler);
 
@@ -174,6 +178,7 @@ CAN_App_Init(void)
     if (!Cabinet_Init(&g_cabinet_context,
                       Hardware_SwitchControl,
                       Hardware_SwitchFeed,
+                      Hardware_VoltageRead,
                       Hardware_AlarmCallback))
     {
         // init failed
@@ -384,6 +389,42 @@ Hardware_SwitchFeed(uint16_t SwitchId)
         default:break;
 	}
     return 0;
+}
+
+static uint16_t
+Hardware_VoltageRead(VoltageReadType_t VoltagePhaseType)
+{
+    switch (VoltagePhaseType)
+    {
+        case VOLTAGE_QS1_PHASE_A:
+            {
+                return ADC0_CH0_Value;
+            }
+            // QS1下口A相电压
+        case VOLTAGE_QS1_PHASE_B:
+            {
+                return ADC0_CH1_Value;
+            }
+            // QS1下口B相电压
+        case VOLTAGE_QS1_PHASE_C:
+            {
+                return ADC0_CH2_Value;
+            }
+            // QS1下口C相电压
+        case VOLTAGE_QCS1_PHASE_A:
+            {
+            }
+            break;// QCS1下口C相电压
+        case VOLTAGE_QCS1_PHASE_B:
+            {
+            }
+            break;// QCS1下口C相电压
+        case VOLTAGE_QCS1_PHASE_C:
+            {
+            }
+            break;// QCS1下口C相电压
+        default:break; 
+    }
 }
 
 /* 硬件报警回调函数 */
