@@ -76,10 +76,15 @@ CAN_Adapter_ParsePowerStatus(uint16_t *Data, uint16_t Dlc)
             break;
         case 1:
             {
-                gPowerStatus.run_state = POWER_RUNNING;
+                gPowerStatus.run_state = POWER_SINGLE_RUNNING;
             }
             break;
         case 2:
+            {
+                gPowerStatus.run_state = POWER_PARALLEL_RUNNING;
+            }
+            break;
+        case 3:
             {
                 gPowerStatus.run_state = POWER_FAULT;
             }

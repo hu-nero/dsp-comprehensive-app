@@ -14,10 +14,11 @@
 // 电源运行状态
 typedef enum
 {
-    POWER_STANDBY = 0,  // 待机
-    POWER_RUNNING,      // 运行
-    POWER_FAULT,        // 故障
-    POWER_UNKNOWN       // 未知
+    POWER_STANDBY = 0,           // 待机
+	POWER_SINGLE_RUNNING,        // 单机运行
+    POWER_PARALLEL_RUNNING,      // 并机运行
+    POWER_FAULT,                 // 故障
+    POWER_UNKNOWN                // 未知
 } PowerRunState_t;
 
 // 电源并机状态
@@ -47,11 +48,11 @@ typedef struct
 } PowerStatus_t;
 
 // 区段柜面板模式
-typedef enum
-{
-    CABINET_MODE_MANUAL = 0,   // 手动模式
-    CABINET_MODE_AUTO          // 自动模式
-} CabinetMode_t;
+//typedef enum
+//{
+    //CABINET_MODE_MANUAL = 0,   // 手动模式
+    //CABINET_MODE_AUTO          // 自动模式
+//} CabinetMode_t;
 
 // 开关状态
 typedef enum
@@ -93,15 +94,68 @@ typedef enum
     ALARM_MAX
 } AlarmType_t;
 
+// 反馈输入
+typedef enum
+{
+    DI_ID_LOCALREMOTE = 0,     // 本地远端
+    DI_ID_EMERGENCY_STOP,      // 急停
+    DI_ID_RESET,               // 复位
+    DI_ID_A3QF1,               // 单机QF1
+    DI_ID_A3QF2,               // 并机QF2
+    DI_ID_A3QS1,               // 单机/并机母线刀闸
+    DI_ID_A3K17,               // 检修母线刀闸
+    DI_ID_A3QS2,               // 补偿电容刀闸
+    DI_ID_A3QS3,               // 消磁刀闸
+    DI_ID_A3TB3_1,             // UPS供电
+    DI_ID_A3TB3_2,             // 消磁接通反馈
+    DI_ID_A3ON_2,              // 远控启动(预留)
+    DI_ID_A3OFF_2,             // 远控停止(预留)
+    DI_ID_A3XCON_1,            // 远控消磁启动(预留)
+    DI_ID_A3XCOFF_2            // 远控消磁停止(预留)
+} DigitalInputType_t;
+
+// 按钮输出
+typedef enum
+{
+    DO_ID_LOCALREMOTE = 0,   // 本地远端
+    DO_ID_DEGAUSS,       // 消磁按键K2
+    DO_ID_A3QF1,       // 单机QF1
+    DO_ID_A3QR1,       // 单机QR1
+    DO_ID_A3QF2,       // 并机QF2
+    DO_ID_A3QR2,       // 并机QR2
+    DO_ID_A3QR3,       // 消磁回路QR3
+    DO_ID_A3QR4,       // 补偿电容
+    DO_ID_A3QR5,       // 补偿电容
+    DO_ID_A3QR6,       // 补偿电容
+    DO_ID_A3QR7,       // 补偿电容
+} DigitalOutputType_t;
+
 // 三相电压采集点类型
 typedef enum
 {
-    VOLTAGE_QS1_PHASE_A = 0,   // QS1下口A相电压
-    VOLTAGE_QS1_PHASE_B,       // QS1下口B相电压
-    VOLTAGE_QS1_PHASE_C,       // QS1下口C相电压
-    VOLTAGE_QCS1_PHASE_A,      // QCS1下口C相电压
-    VOLTAGE_QCS1_PHASE_B,      // QCS1下口C相电压
-    VOLTAGE_QCS1_PHASE_C       // QCS1下口C相电压
+    VOLTAGE_U5_PHASE_A = 0,   // U5_A相电压
+    VOLTAGE_U5_PHASE_B,       // U5_B相电压
+    VOLTAGE_U5_PHASE_C,       // U5_C相电压
+    VOLTAGE_U6_PHASE_A,       // U6_A相电压
+    VOLTAGE_U6_PHASE_B,       // U6_B相电压
+    VOLTAGE_U6_PHASE_C,       // U6_C相电压
+    VOLTAGE_U7_PHASE_A,       // U7_A相电压
+    VOLTAGE_U7_PHASE_B,       // U7_B相电压
+    VOLTAGE_U7_PHASE_C        // U7_C相电压
 } VoltageReadType_t;
+
+// 三相电流采集点类型
+typedef enum
+{
+    CURRENT_U5_PHASE_A = 0,   // U5_A相电流
+    CURRENT_U5_PHASE_B,       // U5_B相电流
+    CURRENT_U5_PHASE_C,       // U5_C相电流
+    CURRENT_U6_PHASE_A,       // U6_A相电流
+    CURRENT_U6_PHASE_B,       // U6_B相电流
+    CURRENT_U6_PHASE_C,       // U6_C相电流
+    CURRENT_U7_PHASE_A,       // U7_A相电流
+    CURRENT_U7_PHASE_B,       // U7_B相电流
+    CURRENT_U7_PHASE_C        // U7_C相电流
+} CurrentReadType_t;
 
 #endif /* SERVICES_LOGIC_SECTION_COMMON_H_ */

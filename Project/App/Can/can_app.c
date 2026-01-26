@@ -45,6 +45,10 @@
 #define ADC0_CH1_Value					*(unsigned  int *)(0x4020)
 #define ADC0_CH2_Value					*(unsigned  int *)(0x4030)
 
+#define ADC0_CH3_Value					*(unsigned  int *)(0x4040)
+#define ADC0_CH4_Value					*(unsigned  int *)(0x4050)
+#define ADC0_CH5_Value					*(unsigned  int *)(0x4060)
+
 static CAN_App_func_status_handler_t g_func_status_handler = NULL;
 // 全局柜体控制上下文
 static CabinetContext_t g_cabinet_context;
@@ -52,6 +56,7 @@ static CabinetContext_t g_cabinet_context;
 static ExecuteResult_t Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State);
 static uint16_t Hardware_SwitchFeed(uint16_t SwitchId);
 static uint16_t Hardware_VoltageRead(VoltageReadType_t VoltagePhaseType);
+static uint16_t Hardware_CurrentRead(CurrentReadType_t CurrentPhaseType);
 static void Hardware_AlarmCallback(AlarmType_t AlarmType, const char* Message);
 
 // 应用层CAN接收处理函数
@@ -179,6 +184,7 @@ CAN_App_Init(void)
                       Hardware_SwitchControl,
                       Hardware_SwitchFeed,
                       Hardware_VoltageRead,
+                      Hardware_CurrentRead,
                       Hardware_AlarmCallback))
     {
         // init failed
@@ -262,132 +268,190 @@ CAN_App_SendParam(uint16_t DstAddr, ParamDevice_t Device, uint16_t *Data, uint16
 static ExecuteResult_t
 Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
 {
-	switch (SwitchId)
-	{
-        case SWITCH_ID_A3QF1:
+    switch (SwitchId)
+    {
+        case DO_ID_LOCALREMOTE:
             {
                 if (State == SWITCH_ON)
                 {
-                    IO_A3QF1_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IO_A3QF1_Dis;
                 }
             }
             break;
-        case SWITCH_ID_A3QF2:
+        case DO_ID_DEGAUSS:
             {
                 if (State == SWITCH_ON)
                 {
-                    IO_A3QF2_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IO_A3QF2_Dis;
                 }
             }
             break;
-        case SWITCH_ID_A3QR1:
+        case DO_ID_A3QF1:
             {
                 if (State == SWITCH_ON)
                 {
-                    IO_A3QR1_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IO_A3QR1_Dis;
                 }
             }
             break;
-        case SWITCH_ID_A3QR2:
+        case DO_ID_A3QR1:
             {
                 if (State == SWITCH_ON)
                 {
-                    IO_A3QR2_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IO_A3QR2_Dis;
                 }
             }
             break;
-        case SWITCH_ID_SINGLE:
+        case DO_ID_A3QF2:
             {
                 if (State == SWITCH_ON)
                 {
-                    IO_SINGLE_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IO_SINGLE_Dis;
                 }
             }
             break;
-        case SWITCH_ID_BUS1:
+        case DO_ID_A3QR2:
             {
                 if (State == SWITCH_ON)
                 {
-                    IO_BUS1_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IO_BUS1_Dis;
                 }
             }
             break;
-        case SWITCH_ID_SHORT:
+        case DO_ID_A3QR3:
             {
                 if (State == SWITCH_ON)
                 {
-                    IO_SHORT_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IO_SHORT_Dis;
+                }
+            }
+            break;
+        case DO_ID_A3QR4:
+            {
+                if (State == SWITCH_ON)
+                {
+                }
+                else if (State == SWITCH_OFF)
+                {
+                }
+            }
+            break;
+        case DO_ID_A3QR5:
+            {
+                if (State == SWITCH_ON)
+                {
+                }
+                else if (State == SWITCH_OFF)
+                {
+                }
+            }
+            break;
+        case DO_ID_A3QR6:
+            {
+                if (State == SWITCH_ON)
+                {
+                }
+                else if (State == SWITCH_OFF)
+                {
+                }
+            }
+            break;
+        case DO_ID_A3QR7:
+            {
+                if (State == SWITCH_ON)
+                {
+                }
+                else if (State == SWITCH_OFF)
+                {
                 }
             }
             break;
         default:break;
-	}
+    }
     return RESULT_SUCCESS;
 }
 
 static uint16_t
 Hardware_SwitchFeed(uint16_t SwitchId)
 {
-	switch (SwitchId)
-	{
-        case SWITCH_ID_A3QF1:
+    switch (SwitchId)
+    {
+        case DI_ID_LOCALREMOTE:
             {
-                return IO_A3QF1_Feed;
             }
-        case SWITCH_ID_A3QF2:
+            break;
+        case DI_ID_EMERGENCY_STOP:
             {
-                return IO_A3QF2_Feed;
             }
-        case SWITCH_ID_A3QR1:
+            break;
+        case DI_ID_RESET:
             {
-                return IO_A3QR1_Feed;
             }
-        case SWITCH_ID_A3QR2:
+            break;
+        case DI_ID_A3QF1:
             {
-                return IO_A3QR2_Feed;
             }
-        case SWITCH_ID_SINGLE:
+            break;
+        case DI_ID_A3QF2:
             {
-                return IO_SINGLE_Feed;
             }
-        case SWITCH_ID_BUS1:
+            break;
+        case DI_ID_A3QS1:
             {
-                return IO_BUS1_Feed;
             }
-        case SWITCH_ID_SHORT:
+            break;
+        case DI_ID_A3K17:
             {
-                return IO_SHORT_Feed;
             }
+            break;
+        case DI_ID_A3QS2:
+            {
+            }
+            break;
+        case DI_ID_A3QS3:
+            {
+            }
+            break;
+        case DI_ID_A3TB3_1:
+            {
+            }
+            break;
+        case DI_ID_A3TB3_2:
+            {
+            }
+            break;
+        case DI_ID_A3ON_2:
+            {
+            }
+            break;
+        case DI_ID_A3OFF_2:
+            {
+            }
+            break;
+        case DI_ID_A3XCON_1:
+            {
+            }
+            break;
+        case DI_ID_A3XCOFF_2:
+            {
+            }
+            break;
         default:break;
-	}
+    }
     return 0;
 }
 
@@ -396,35 +460,91 @@ Hardware_VoltageRead(VoltageReadType_t VoltagePhaseType)
 {
     switch (VoltagePhaseType)
     {
-        case VOLTAGE_QS1_PHASE_A:
+        case VOLTAGE_U5_PHASE_A:
             {
                 return ADC0_CH0_Value;
             }
-            // QS1下口A相电压
-        case VOLTAGE_QS1_PHASE_B:
+        case VOLTAGE_U5_PHASE_B:
             {
                 return ADC0_CH1_Value;
             }
-            // QS1下口B相电压
-        case VOLTAGE_QS1_PHASE_C:
+        case VOLTAGE_U5_PHASE_C:
             {
                 return ADC0_CH2_Value;
             }
-            // QS1下口C相电压
-        case VOLTAGE_QCS1_PHASE_A:
+        case VOLTAGE_U6_PHASE_A:
             {
             }
-            break;// QCS1下口C相电压
-        case VOLTAGE_QCS1_PHASE_B:
+            break;
+        case VOLTAGE_U6_PHASE_B:
             {
             }
-            break;// QCS1下口C相电压
-        case VOLTAGE_QCS1_PHASE_C:
+            break;
+        case VOLTAGE_U6_PHASE_C:
             {
             }
-            break;// QCS1下口C相电压
+            break;
+        case VOLTAGE_U7_PHASE_A:
+            {
+            }
+            break;
+        case VOLTAGE_U7_PHASE_B:
+            {
+            }
+            break;
+        case VOLTAGE_U7_PHASE_C:
+            {
+            }
+            break;
         default:break; 
     }
+    return 0;
+}
+
+static uint16_t
+Hardware_CurrentRead(CurrentReadType_t CurrentPhaseType)
+{
+    switch (CurrentPhaseType)
+    {
+        case CURRENT_U5_PHASE_A:
+            {
+                return ADC0_CH3_Value;
+            }
+        case CURRENT_U5_PHASE_B:
+            {
+                return ADC0_CH4_Value;
+            }
+        case CURRENT_U5_PHASE_C:
+            {
+                return ADC0_CH5_Value;
+            }
+        case CURRENT_U6_PHASE_A:
+            {
+            }
+            break;
+        case CURRENT_U6_PHASE_B:
+            {
+            }
+            break;
+        case CURRENT_U6_PHASE_C:
+            {
+            }
+            break;
+        case CURRENT_U7_PHASE_A:
+            {
+            }
+            break;
+        case CURRENT_U7_PHASE_B:
+            {
+            }
+            break;
+        case CURRENT_U7_PHASE_C:
+            {
+            }
+            break;
+        default:break; 
+    }
+    return 0;
 }
 
 /* 硬件报警回调函数 */
