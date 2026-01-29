@@ -90,8 +90,9 @@ typedef struct
 {
     CabinetState_t state;                  // 当前状态
     CabinetState_t target_state;           // 保存的目标状态
-//    CabinetMode_t mode;                    // 当前模式
+//    CabinetMode_t mode;                  // 当前模式
     bool emergency_stop_status;            // 急停状态
+    bool panel_remote_degauss_flag;        // 面板或者远端消磁标志
     SwitchStateList_t switch_list;         // 所有开关
     PowerStatus_t power_status;            // 电源状态
     uint32_t power_op_timeout;             // 电源启动/关闭超时计数
@@ -124,5 +125,6 @@ extern ExecuteResult_t Cabinet_SetSwitches(CabinetContext_t* Context,
                                     SwitchState_t short_state,
                                     bool emergency);
 extern CabinetState_t Cabinet_GetState(const CabinetContext_t* Context);
+extern ExecuteResult_t Cabinet_RecoverFromEmergency(CabinetContext_t* Context);
 
 #endif /* SERVICES_LOGIC_SECTION_CABINET_H_ */

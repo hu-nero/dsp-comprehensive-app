@@ -147,15 +147,12 @@ typedef enum
 // 三相电流采集点类型
 typedef enum
 {
-    CURRENT_U5_PHASE_A = 0,   // U5_A相电流
-    CURRENT_U5_PHASE_B,       // U5_B相电流
-    CURRENT_U5_PHASE_C,       // U5_C相电流
-    CURRENT_U6_PHASE_A,       // U6_A相电流
-    CURRENT_U6_PHASE_B,       // U6_B相电流
-    CURRENT_U6_PHASE_C,       // U6_C相电流
-    CURRENT_U7_PHASE_A,       // U7_A相电流
-    CURRENT_U7_PHASE_B,       // U7_B相电流
-    CURRENT_U7_PHASE_C        // U7_C相电流
+    CURRENT_I5_PHASE_A = 0,   // I5_A相电流
+    CURRENT_I5_PHASE_B,       // I5_B相电流
+    CURRENT_I5_PHASE_C,       // I5_C相电流
+    CURRENT_I6_PHASE_A,       // I6_A相电流
+    CURRENT_I6_PHASE_B,       // I6_B相电流
+    CURRENT_I6_PHASE_C,       // I6_C相电流
 } CurrentReadType_t;
 
 #endif /* SERVICES_LOGIC_SECTION_COMMON_H_ */

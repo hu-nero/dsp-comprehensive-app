@@ -506,39 +506,27 @@ Hardware_CurrentRead(CurrentReadType_t CurrentPhaseType)
 {
     switch (CurrentPhaseType)
     {
-        case CURRENT_U5_PHASE_A:
+        case CURRENT_I5_PHASE_A:
             {
                 return ADC0_CH3_Value;
             }
-        case CURRENT_U5_PHASE_B:
+        case CURRENT_I5_PHASE_B:
             {
                 return ADC0_CH4_Value;
             }
-        case CURRENT_U5_PHASE_C:
+        case CURRENT_I5_PHASE_C:
             {
                 return ADC0_CH5_Value;
             }
-        case CURRENT_U6_PHASE_A:
+        case CURRENT_I6_PHASE_A:
             {
             }
             break;
-        case CURRENT_U6_PHASE_B:
+        case CURRENT_I6_PHASE_B:
             {
             }
             break;
-        case CURRENT_U6_PHASE_C:
-            {
-            }
-            break;
-        case CURRENT_U7_PHASE_A:
-            {
-            }
-            break;
-        case CURRENT_U7_PHASE_B:
-            {
-            }
-            break;
-        case CURRENT_U7_PHASE_C:
+        case CURRENT_I6_PHASE_C:
             {
             }
             break;
