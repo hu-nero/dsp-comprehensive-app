@@ -101,6 +101,7 @@ Cabinet_Process(CabinetContext_t* Context)
     }
 
     // 急停流程
+    // 急停到底1是急停还是0是
     Cabinet_ExecuteEmergencyProcedure(Context);
     // 急停下只允许面板消磁
     if (Context->emergency_stop_status == true)
@@ -317,7 +318,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     // 读取电源柜状态
                     Context->power_status = CAN_Adapter_GetPowerStatus();
                     if (!((Context->power_status.run_state == POWER_SINGLE_RUNNING) ||
-                                (Context->power_status.run_state == POWER_PARALLEL)))
+                                (Context->power_status.run_state == POWER_PARALLEL_RUNNING)))
                     {
                         // 发出警告
                         Cabinet_SetAlarm(Context, ALARM_NONE, "power status abnormal");
@@ -1042,14 +1043,15 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
     uint16_t res = 0;
     // 读取急停反馈
     Context->switch_list.emergency_stop_switch = (SwitchState_t)Context->switch_feed(DI_ID_EMERGENCY_STOP);
-    if (Context->switch_list.emergency_stop_switch == SWITCH_OFF)
+    // 默认读取的FPGA的IO值为1时，认为急停触发（IO_scan()可以加取反）
+    if (Context->switch_list.emergency_stop_switch == SWITCH_ON)
     {
         // 设置急停状态
         Context->emergency_stop_status = true;
         Context->target_state = CABINET_STATE_INVALID;
 
         // 判断单机回路
-        if (Context->switch_feed(SWITCH_ID_A3QF1))
+        if (Context->switch_feed(DI_ID_A3QF1))
         {
             Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
@@ -1062,7 +1064,7 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
         }
         res = 0;
         // 判断并机回路状态
-        if (Context->switch_feed(SWITCH_ID_A3QF2))
+        if (Context->switch_feed(DI_ID_A3QF2))
         {
             Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
@@ -1099,8 +1101,8 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
     if (Context->switch_list.manual_switch == SWITCH_ON)
     {
         // 消磁面板闭合
-        Context->switch_list.A3QF3_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3TB3_2);
-        if (Context->switch_list.emergency_stop_switch == SWITCH_OFF)
+        Context->switch_list.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3TB3_2);
+        if (Context->switch_list.short_switch == SWITCH_OFF)
         {
             return RESULT_INVALID_STATE;
         }
@@ -1113,8 +1115,9 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
     }
 
     // 判断是否发生状态转换
-    if ((Context->state != Context->target_state) ||
-            (Context->state != CABINET_STATE_STANDBY))
+    if (((Context->state != Context->target_state)  &&
+		 (Context->target_state != CABINET_STATE_INVALID)) ||
+		 (Context->state != CABINET_STATE_STANDBY))
     {
         Cabinet_SetAlarm(Context, ALARM_NONE, "Execution of panel demagnetization failed");
         return RESULT_FAILED;

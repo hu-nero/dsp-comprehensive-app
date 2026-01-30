@@ -164,9 +164,11 @@ void main(void)
 	memset(&iIsrBuf, 0, sizeof(iIsrBuf));
 
 	CPLDSWVerRead();
+
+    //test
+    CAN_App_Test();
     for(;;)
     {
-    	IO_Scan();
         CAN_App_MainLoop();
     }
 
