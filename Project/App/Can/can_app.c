@@ -214,8 +214,8 @@ CAN_App_Test(void)
     // switch enable test
     Hardware_SwitchControl(DO_ID_A3QF1,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QF2,SWITCH_OFF);
-    Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_OFF);
-    Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_OFF);
+    Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_ON);
+    Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_ON);
     /*uint16_t res = Hardware_SwitchFeed(SWITCH_ID_A3QF1);*/
     IO_Scan();
 }
@@ -413,9 +413,21 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             {
             }
             break;
+        case DI_ID_SINGLE:
+            {
+                return IOInput1.DataBit.Bit12;
+            }
+            break;
+        case DI_ID_BUS1:
+            {
+            }
+            break;
+        case DI_ID_Short:
+            {
+            }
+            break;
         case DI_ID_A3QF1:
             {
-                return IOInput1.DataBit.Bit13;
             }
             break;
         case DI_ID_A3QF2:
@@ -447,7 +459,7 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             break;
         case DI_ID_A3TB3_2:// 消磁面板
             {
-                return IOInput1.DataBit.Bit15;
+                return IOInput1.DataBit.Bit11;
             }
             break;
         case DI_ID_A3ON_2:

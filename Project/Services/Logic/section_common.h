@@ -21,30 +21,11 @@ typedef enum
     POWER_UNKNOWN                // 未知
 } PowerRunState_t;
 
-// 电源并机状态
-typedef enum
-{
-    POWER_SINGLE = 0,   // 单机
-    POWER_PARALLEL,     // 并机
-    POWER_COMB_UNKNOWN  // 未知
-} PowerCombState_t;
-
-// 电源控制模式
-typedef enum
-{
-    CONTROL_LOCAL = 0,  // 就地
-    CONTROL_REMOTE,     // 远控
-    CONTROL_MODE_UNKNOWN
-} ControlMode_t;
-
 // 电源状态结构体
 typedef struct
 {
     PowerRunState_t run_state;     // 运行状态
-    PowerCombState_t comb_state;   // 并机状态
-    ControlMode_t ctrl_mode;       // 控制模式
     uint32_t status_word;          // 状态字原始值
-    uint16_t is_using;             // 是否正在使用
 } PowerStatus_t;
 
 // 区段柜面板模式
@@ -100,6 +81,9 @@ typedef enum
     DI_ID_LOCALREMOTE = 0,     // 本地远端
     DI_ID_EMERGENCY_STOP,      // 急停
     DI_ID_RESET,               // 复位
+    DI_ID_SINGLE,              // 单机按钮
+    DI_ID_BUS1,                // 并机按钮
+    DI_ID_Short,               // 短接按钮
     DI_ID_A3QF1,               // 单机QF1
     DI_ID_A3QF2,               // 并机QF2
     DI_ID_A3QS1,               // 单机/并机母线刀闸

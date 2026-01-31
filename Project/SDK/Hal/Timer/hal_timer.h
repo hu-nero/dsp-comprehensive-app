@@ -31,9 +31,9 @@ extern uint16_t hal_timer_init(uint16_t PortId, float Freq, float Period);
  */
 extern uint16_t hal_timer_deinit(uint16_t PortId);
 
-extern uint32_t hal_timer_get_timercounter(void);
+extern uint32_t hal_timer_get_timestamp(void);
+extern uint32_t hal_timer_get_runtime(void);
 extern bool hal_timer_get_50ms_flag(void);
-extern uint32_t hal_timer_get_time(void);
 
 extern void hal_timer_set_50ms_flag(bool Flag);
 /**

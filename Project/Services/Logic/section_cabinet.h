@@ -10,20 +10,6 @@
 
 #include "section_common.h"
 
-#define SWITCH_ID_A3QF1         0x01    // A3QF1开关
-#define SWITCH_ID_A3QR1         0x02    // A3QR1开关
-#define SWITCH_ID_A3QF2         0x03    // A3QF2开关
-#define SWITCH_ID_A3QR2         0x04    // A3QR2开关
-#define SWITCH_ID_SINGLE        0x05    // 单机开关
-#define SWITCH_ID_BUS1          0x06    // 母线1开关
-#define SWITCH_ID_SHORT         0x07    // 短接开关
-
-#define POWER_START_TIMEOUT_MS  1000    // 电源启动超时（1秒）
-#define OP_INTERVAL_BETWEEN_THYRISTOR   500    // 晶闸管间的控制间隔（500ms=50ms*10）
-#define TIMER_50MS_INTERVAL     50      // 50ms计时单位
-#define DEMAGNETIZE_5S          5000    // 消磁5s
-#define DEMAGNETIZE_10S         10000   // 消磁10s (50ms*200)
-
 // 开关控制回调函数
 typedef ExecuteResult_t (*SwitchControlFunc_t)(uint16_t SwitchId, SwitchState_t State);
 typedef uint16_t (*SwitchFeedFunc_t)(uint16_t SwitchId);
@@ -43,15 +29,7 @@ typedef enum
     DEMAGNETIZE_FAILED         // 消磁失败
 } DemagnetizeState_t;
 
-// 电源操作状态枚举
-typedef enum
-{
-    POWER_OP_IDLE = 0,         // 空闲状态
-    POWER_OP_STARTING,         // 正在启动电源
-    POWER_OP_CLOSING           // 正在关闭电源
-} PowerOpState_t;
-
-// 电源操作状态枚举
+// 晶闸管操作状态枚举
 typedef enum
 {
     THYRISTOR_OP_IDLE = 0,             // 空闲状态
@@ -94,15 +72,14 @@ typedef struct
     bool emergency_stop_status;            // 急停状态
     bool panel_remote_degauss_flag;        // 面板或者远端消磁标志
     SwitchStateList_t switch_list;         // 所有开关
-    PowerStatus_t power_status;            // 电源状态
-    uint32_t power_op_timeout;             // 电源启动/关闭超时计数
-    uint32_t power_op_counter;             // 电源操作计数器
-    PowerOpState_t power_op_state;         // 电源操作状态
+    PowerStatus_t power_status;			   // 电源柜状态
     DemagnetizeState_t demagnetize_state;  // 消磁状态
-    uint16_t demagnetize_counter;          // 消磁计数器（50ms为单位）
+    uint16_t demagnetize_counter;          // 消磁计数器（ms）
+    uint32_t demagnetize_start_time;       // 消磁开始时间戳
     ThyristorOpState_t op_interval_between_thyristor_status;
-    uint16_t op_interval_between_thyristor_timeout;         // 晶闸管操作间隔计数（50ms为单位）
-    uint16_t op_interval_between_thyristor_counter;         // 晶闸管操作间隔计数（50ms为单位）
+    uint16_t op_interval_between_thyristor_timeout;         // 超时时间（ms）
+    uint16_t op_interval_between_thyristor_counter;         // 间隔计数
+    uint32_t op_interval_start_time;                        // 开始时间戳
 
     // 回调函数指针
     SwitchControlFunc_t switch_control;

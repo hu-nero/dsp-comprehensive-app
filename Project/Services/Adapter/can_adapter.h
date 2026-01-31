@@ -23,9 +23,7 @@ union WordPowerStatus_t
 	struct
 	{
 		unsigned run_state:			2;		// bit0-1
-		unsigned local_remote:		1;		// bit2
-		unsigned single_parallel:	1;		// bit3
-		unsigned reserve:	    	12;		// bit4-15
+		unsigned reserve:	    	14;		// bit2-15
 	}	bit;
 };
 

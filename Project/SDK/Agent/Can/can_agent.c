@@ -370,7 +370,7 @@ CAN_Agent_TimeoutCheck(void)
     static uint32_t last_tick = 0;
     uint32_t current_tick;
 
-    current_tick = hal_timer_get_timercounter();
+    current_tick = hal_timer_get_timestamp();
 
     // 计算时间差
     uint32_t delta = current_tick - last_tick;
@@ -432,7 +432,7 @@ CAN_Agent_StartCmdTimeout(uint16_t DstAddr, FuncCode_t FunCode, uint16_t *Data)
     }
 
     g_pending_cmds[slot].is_waiting = true;
-    g_pending_cmds[slot].tick = hal_timer_get_timercounter();
+    g_pending_cmds[slot].tick = hal_timer_get_timestamp();
     g_pending_cmds[slot].dst_addr = DstAddr;
     g_pending_cmds[slot].func_code = FunCode;
     g_pending_cmds[slot].resp_times = 0;
@@ -482,7 +482,7 @@ static void
 CAN_Agent_CheckCmdTimeouts(void)
 {
 	int i;
-    uint32_t current_tick = hal_timer_get_timercounter();
+    uint32_t current_tick = hal_timer_get_timestamp();
 
     for (i = 0; i < MAX_PENDING_CMDS; i++)
     {
@@ -503,7 +503,7 @@ CAN_Agent_CheckCmdTimeouts(void)
                             {
                                 g_pending_cmds[i].resp_times ++;
                                 g_pending_cmds[i].is_waiting = true;
-                                g_pending_cmds[i].tick = hal_timer_get_timercounter();
+                                g_pending_cmds[i].tick = hal_timer_get_timestamp();
                                 CAN_SendFrame(FUNC_CONTROL, g_pending_cmds[i].dst_addr, g_pending_cmds[i].data, 8);
                             }
                         }
@@ -514,7 +514,7 @@ CAN_Agent_CheckCmdTimeouts(void)
                             {
                                 g_pending_cmds[i].resp_times ++;
                                 g_pending_cmds[i].is_waiting = true;
-                                g_pending_cmds[i].tick = hal_timer_get_timercounter();
+                                g_pending_cmds[i].tick = hal_timer_get_timestamp();
                                 CAN_SendFrame(FUNC_PARAM_CMD, g_pending_cmds[i].dst_addr, g_pending_cmds[i].data, 8);
                             }
                             else

@@ -92,34 +92,4 @@ CAN_Adapter_ParsePowerStatus(uint16_t *Data, uint16_t Dlc)
         default:break;
 
     }
-    switch (status_word.bit.local_remote)
-    {
-        case 0:
-            {
-                gPowerStatus.ctrl_mode = CONTROL_LOCAL;
-            }
-            break;
-        case 1:
-            {
-                gPowerStatus.ctrl_mode = CONTROL_REMOTE;
-            }
-            break;
-        default:break;
-
-    }
-    switch (status_word.bit.single_parallel)
-    {
-        case 0:
-            {
-                gPowerStatus.comb_state = POWER_SINGLE;
-            }
-            break;
-        case 1:
-            {
-                gPowerStatus.comb_state = POWER_PARALLEL;
-            }
-            break;
-        default:break;
-
-    }
 }

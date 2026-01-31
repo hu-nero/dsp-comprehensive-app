@@ -78,10 +78,10 @@ hal_timer_deinit(uint16_t PortId)
 }
 
 /**
- * @brief :get run time
+ * @brief :get time stamp(ms)
  */
 uint32_t
-hal_timer_get_timercounter(void)
+hal_timer_get_timestamp(void)
 {
     uint32_t temp;
 
@@ -92,21 +92,7 @@ hal_timer_get_timercounter(void)
 }
 
 /**
- * @brief :get run time
- */
-bool
-hal_timer_get_50ms_flag(void)
-{
-    bool temp;
-
-    ENTER_CRITICAL();
-    temp = gboolTimer50msflag;
-    EXIT_CRITICAL();
-    return temp;
-}
-
-/**
- * @brief :get run time
+ * @brief :get run time(s)
  */
 uint32_t
 hal_timer_get_time(void)
@@ -120,7 +106,21 @@ hal_timer_get_time(void)
 }
 
 /**
- * @brief :get run time
+ * @brief :get 50ms flag
+ */
+bool
+hal_timer_get_50ms_flag(void)
+{
+    bool temp;
+
+    ENTER_CRITICAL();
+    temp = gboolTimer50msflag;
+    EXIT_CRITICAL();
+    return temp;
+}
+
+/**
+ * @brief :set 50ms flag
  */
 void
 hal_timer_set_50ms_flag(bool Flag)
