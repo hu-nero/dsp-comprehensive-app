@@ -17,6 +17,7 @@ interrupt void CANB_TxRx_ISR(void);
 interrupt void CANB_Error_ISR(void);
 
 interrupt void TIM0_ISR(void);
+interrupt void WDG_ISR(void);
 
 
 #endif /* SDK_HAL_EVENT_EVENT_H_ */

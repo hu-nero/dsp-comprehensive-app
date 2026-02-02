@@ -390,7 +390,6 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             break;
         default:break;
     }
-    IO_Scan();
     return RESULT_SUCCESS;
 }
 

@@ -135,6 +135,8 @@ Cabinet_Process(CabinetContext_t* Context)
                     Cabinet_SetAlarm(Context, ALARM_NONE, "Demagnetize failed");
                     // 根据状态进行回调
                     Cabinet_ErrBranch(Context);
+                    // 消磁状态回到未触发
+                    Context->demagnetize_state = DEMAGNETIZE_IDLE;
                 }
                 break;
             default:break;
@@ -869,11 +871,11 @@ Cabinet_BackToStandby(CabinetContext_t* Context)
         (void)Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
+        // 调用IO_Scan()
+        (void)Context->switch_feed(0);
     }
 
     Context->state = CABINET_STATE_STANDBY;
-    Context->switch_list.single_switch = SWITCH_OFF;
-    Context->switch_list.bus1_switch = SWITCH_OFF;
     Context->target_state = CABINET_STATE_INVALID;
 
     return RESULT_SUCCESS;
@@ -890,11 +892,11 @@ Cabinet_BackToSingle(CabinetContext_t* Context)
         (void)Context->switch_control(DO_ID_A3QR1, SWITCH_ON);
         (void)Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
+        // 调用IO_Scan()
+        (void)Context->switch_feed(0);
     }
 
     Context->state = CABINET_STATE_SINGLE;
-    Context->switch_list.single_switch = SWITCH_ON;
-    Context->switch_list.bus1_switch = SWITCH_OFF;
     Context->target_state = CABINET_STATE_INVALID;
 
     return RESULT_SUCCESS;
@@ -911,11 +913,11 @@ Cabinet_BackToParallel(CabinetContext_t* Context)
         (void)Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QF2, SWITCH_ON);
         (void)Context->switch_control(DO_ID_A3QR2, SWITCH_ON);
+        // 调用IO_Scan()
+        (void)Context->switch_feed(0);
     }
 
     Context->state = CABINET_STATE_PARALLEL;
-    Context->switch_list.single_switch = SWITCH_OFF;
-    Context->switch_list.bus1_switch = SWITCH_ON;
     Context->target_state = CABINET_STATE_INVALID;
 
     return RESULT_SUCCESS;
@@ -932,11 +934,11 @@ Cabinet_BackToBackup(CabinetContext_t* Context)
         (void)Context->switch_control(DO_ID_A3QR1, SWITCH_ON);
         (void)Context->switch_control(DO_ID_A3QF2, SWITCH_ON);
         (void)Context->switch_control(DO_ID_A3QR2, SWITCH_ON);
+        // 调用IO_Scan()
+        (void)Context->switch_feed(0);
     }
 
     Context->state = CABINET_STATE_BACKUP;
-    Context->switch_list.single_switch = SWITCH_ON;
-    Context->switch_list.bus1_switch = SWITCH_ON;
     Context->target_state = CABINET_STATE_INVALID;
 
     return RESULT_SUCCESS;

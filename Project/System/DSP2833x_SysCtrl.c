@@ -44,7 +44,7 @@ void DisableDog(void)
 void EnableDog(void)
 {
     EALLOW;
-    SysCtrlRegs.WDCR= 0x0028;
+    SysCtrlRegs.WDCR= 0x002f;//279ms
     EDIS;
 }
 

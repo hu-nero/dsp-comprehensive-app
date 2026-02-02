@@ -138,3 +138,13 @@ TIM0_ISR(void)
 	EDIS;
 
 }
+
+interrupt void
+WDG_ISR(void)
+{
+	hal_wdg_callback();
+	EALLOW;
+	// Acknowledge this interrupt to get more from group 1
+	PieCtrlRegs.PIEACK.all = PIEACK_GROUP1;
+	EDIS;
+}

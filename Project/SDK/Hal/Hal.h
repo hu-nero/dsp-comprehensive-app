@@ -10,6 +10,7 @@
 
 #include "SDK/Hal/Can/hal_can.h"
 #include "SDK/Hal/Timer/hal_timer.h"
+#include "SDK/Hal/Watchdog/hal_wdg.h"
 #include "SDK/Hal/Event/event.h"
 
 
