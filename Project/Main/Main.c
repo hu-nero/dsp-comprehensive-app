@@ -120,7 +120,7 @@ void main(void)
 
 	InitXintf();
 	InitCpuTimers();
-	HAL_WDG_Init();
+//	hal_wdg_init();
 	CAN_App_Init();
 //	InitECana();
 //	InitECanb();
@@ -170,7 +170,7 @@ void main(void)
     for(;;)
     {
         CAN_App_MainLoop();
-        HAL_WDG_Feed();
+//        hal_wdg_feed();
     }
 
 	/*{*/

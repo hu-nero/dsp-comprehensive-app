@@ -10,10 +10,10 @@
 
 typedef void (*halWdgCallbackFunc)(void);
 
-void HAL_WDG_Init(void);
-void HAL_WDG_Enable(void);
-void HAL_WDG_Disable(void);
-void HAL_WDG_Feed(void);
+void hal_wdg_init(void);
+void hal_wdg_enable(void);
+void hal_wdg_disable(void);
+void hal_wdg_feed(void);
 void hal_wdg_callback(void);
 
 extern interrupt void WDG_ISR(void);

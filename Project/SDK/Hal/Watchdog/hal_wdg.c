@@ -12,26 +12,21 @@
 
 halWdgCallbackFunc ghalWdgCallback = NULL;
 static volatile uint32_t gu32WdgCounter = 0;
+
 /**
  * @brief 看门狗初始化函数
- * 
- * @param None
- * @return None
  */
 void
-HAL_WDG_Init(void)
+hal_wdg_init(void)
 {
-    HAL_WDG_Enable();
+	hal_wdg_enable();
 }
 
 /**
  * @brief 看门狗使能函数
- * 
- * @param None
- * @return None
  */
 void
-HAL_WDG_Enable(void)
+hal_wdg_enable(void)
 {
     EALLOW;
     // 设置SCSR寄存器
@@ -39,25 +34,21 @@ HAL_WDG_Enable(void)
     // 设置WDCR寄存器启用看门狗
     EnableDog();
 
-    EALLOW;	// This is needed to write to EALLOW protected registers
+    EALLOW;
     PieVectTable.WAKEINT = &WDG_ISR;
-    EDIS;   // This is needed to disable write to EALLOW protected registers
+    EDIS;
 
     PieCtrlRegs.PIECTRL.bit.ENPIE = 1;   // Enable the PIE block
 	PieCtrlRegs.PIEIER1.bit.INTx8 = 1;   // Enable PIE Gropu 1 INT8
 	IER |= M_INT1;                       // Enable CPU int1
 	EINT;                                // Enable Global Interrupts
-
 }
 
 /**
  * @brief 看门狗禁用函数
- * 
- * @param None
- * @return None
  */
 void
-HAL_WDG_Disable(void)
+hal_wdg_disable(void)
 {
     // 使用与SysCtrl.c中DisableDog函数相同的配置
     DisableDog();
@@ -65,12 +56,9 @@ HAL_WDG_Disable(void)
 
 /**
  * @brief 看门狗喂狗函数
- * 
- * @param None
- * @return None
  */
 void
-HAL_WDG_Feed(void)
+hal_wdg_feed(void)
 {
     // 重置看门狗计数器
     ServiceDog();
