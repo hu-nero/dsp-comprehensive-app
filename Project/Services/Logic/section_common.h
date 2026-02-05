@@ -91,7 +91,8 @@ typedef enum
     DI_ID_A3QS2,               // 补偿电容刀闸
     DI_ID_A3QS3,               // 消磁刀闸
     DI_ID_A3TB3_1,             // UPS供电
-    DI_ID_A3TB3_2,             // 消磁接通反馈
+    DI_ID_A3TB3_2,             // 市电反馈
+    DI_ID_A3QF3,               // 消磁晶闸管反馈
     DI_ID_A3ON_2,              // 远控启动(预留)
     DI_ID_A3OFF_2,             // 远控停止(预留)
     DI_ID_A3XCON_1,            // 远控消磁启动(预留)

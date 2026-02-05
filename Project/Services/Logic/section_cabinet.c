@@ -28,6 +28,7 @@ static ExecuteResult_t Cabinet_BackToBackup(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ErrBranch(CabinetContext_t* Context);
 static void Cabinet_ContinueAction(CabinetContext_t* Context);
 static void Cabinet_ProcessDemagnetizeWait(CabinetContext_t* Context);
+static ExecuteResult_t Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, SwitchState_t TargetState, uint32_t TimeoutMs, uint32_t StableTime, uint32_t DelayMs);
 
 static inline void Cabinet_ReadAllSwitchStatus(CabinetContext_t* Context);
 static inline bool Cabinet_SwitchIsMatchMode(CabinetContext_t* Context);
@@ -81,6 +82,12 @@ Cabinet_Init(CabinetContext_t* Context,
     Context->op_interval_between_thyristor_timeout = 0;
     Context->op_interval_between_thyristor_counter = 0;
 
+    // 初始化开关反馈等待状态
+    Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
+    Context->switch_feedback_start_time = 0;
+    Context->switch_feedback_id = 0;
+    Context->switch_feedback_target_state = SWITCH_OFF;
+    Context->switch_feedback_current_value = 0;
 
     return true;
 }
@@ -153,10 +160,9 @@ Cabinet_ReadAllSwitchStatus(CabinetContext_t* Context)
     Context->switch_list.manual_switch = (SwitchState_t)Context->switch_feed(DI_ID_LOCALREMOTE);
     Context->switch_list.emergency_stop_switch = (SwitchState_t)Context->switch_feed(DI_ID_EMERGENCY_STOP);
     Context->switch_list.reset_switch = (SwitchState_t)Context->switch_feed(DI_ID_RESET);
-    // TODO:待完善按钮反馈
-//    Context->switch_list.single_switch = (SwitchState_t)Context->switch_feed();
-//    Context->switch_list.bus1_switch = (SwitchState_t)Context->switch_feed();
-//    Context->short_switch = (SwitchState_t)Context->switch_feed();
+    Context->switch_list.single_switch = (SwitchState_t)Context->switch_feed(DI_ID_SINGLE);
+    Context->switch_list.bus1_switch = (SwitchState_t)Context->switch_feed(DI_ID_BUS1);
+    Context->switch_list.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_Short);
     // 读取内部开关状态
     Context->switch_list.A3QS1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QS1);
     Context->switch_list.A3K17_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3K17);
@@ -164,7 +170,7 @@ Cabinet_ReadAllSwitchStatus(CabinetContext_t* Context)
     Context->switch_list.A3QS3_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QS3);
     Context->switch_list.A3QF1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF1);
     Context->switch_list.A3QF2_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF2);
-    Context->switch_list.A3QF3_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3TB3_2);
+    Context->switch_list.A3QF3_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF3);
 }
 
 static inline bool
@@ -303,13 +309,17 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 // ① 待机->单机
                 if (target_state == CABINET_STATE_SINGLE)
                 {
-                    // 柜内开关是否匹配柜体模式
-                    Cabinet_ReadAllSwitchStatus(Context);
-                    if (!Cabinet_SwitchIsMatchMode(Context))
+                    // 开关反馈等待期间，不进行柜体开关状态匹配
+                    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
                     {
-                        // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
-                        return;
+                        // 柜内开关是否匹配柜体模式
+                        Cabinet_ReadAllSwitchStatus(Context);
+                        if (!Cabinet_SwitchIsMatchMode(Context))
+                        {
+                            // 发出警告
+                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            return;
+                        }
                     }
                     // 读取电源柜状态
                     Context->power_status = CAN_Adapter_GetPowerStatus();
@@ -332,13 +342,17 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 // ② 待机->并机
                 else if (target_state == CABINET_STATE_PARALLEL)
                 {
-                    // 柜内开关是否匹配柜体模式
-                    Cabinet_ReadAllSwitchStatus(Context);
-                    if (!Cabinet_SwitchIsMatchMode(Context))
+                    // 开关反馈等待期间，不进行柜体开关状态匹配
+                    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
                     {
-                        // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
-                        return;
+                        // 柜内开关是否匹配柜体模式
+                        Cabinet_ReadAllSwitchStatus(Context);
+                        if (!Cabinet_SwitchIsMatchMode(Context))
+                        {
+                            // 发出警告
+                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            return;
+                        }
                     }
                     // 判断是否满足并机系数
                     if (!Cabinet_IsSatisfyPowerParallel(Context))
@@ -367,13 +381,17 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 {
                     ExecuteResult_t result;
 
-                    // 柜内开关是否匹配柜体模式
-                    Cabinet_ReadAllSwitchStatus(Context);
-                    if (!Cabinet_SwitchIsMatchMode(Context))
+                    // 开关反馈等待期间，不进行柜体开关状态匹配
+                    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
                     {
-                        // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
-                        return;
+                        // 柜内开关是否匹配柜体模式
+                        Cabinet_ReadAllSwitchStatus(Context);
+                        if (!Cabinet_SwitchIsMatchMode(Context))
+                        {
+                            // 发出警告
+                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            return;
+                        }
                     }
                     result = Cabinet_ExecuteStandbyProcedure(Context);
                     if (result == RESULT_SUCCESS)
@@ -404,13 +422,17 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 {
                     ExecuteResult_t result;
 
-                    // 柜内开关是否匹配柜体模式
-                    Cabinet_ReadAllSwitchStatus(Context);
-                    if (!Cabinet_SwitchIsMatchMode(Context))
+                    // 开关反馈等待期间，不进行柜体开关状态匹配
+                    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
                     {
-                        // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
-                        return;
+                        // 柜内开关是否匹配柜体模式
+                        Cabinet_ReadAllSwitchStatus(Context);
+                        if (!Cabinet_SwitchIsMatchMode(Context))
+                        {
+                            // 发出警告
+                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            return;
+                        }
                     }
                     // 读取电源柜状态
                     Context->power_status = CAN_Adapter_GetPowerStatus();
@@ -456,13 +478,17 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 {
                     ExecuteResult_t result;
 
-                    // 柜内开关是否匹配柜体模式
-                    Cabinet_ReadAllSwitchStatus(Context);
-                    if (!Cabinet_SwitchIsMatchMode(Context))
+                    // 开关反馈等待期间，不进行柜体开关状态匹配
+                    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
                     {
-                        // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
-                        return;
+                        // 柜内开关是否匹配柜体模式
+                        Cabinet_ReadAllSwitchStatus(Context);
+                        if (!Cabinet_SwitchIsMatchMode(Context))
+                        {
+                            // 发出警告
+                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            return;
+                        }
                     }
                     result = Cabinet_ExecuteStandbyProcedure(Context);
                     if (result == RESULT_SUCCESS)
@@ -486,14 +512,18 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 else if (Context->target_state == CABINET_STATE_BACKUP)
                 {
                     ExecuteResult_t result;
-                    // 柜内开关是否匹配柜体模式
 
-                    Cabinet_ReadAllSwitchStatus(Context);
-                    if (!Cabinet_SwitchIsMatchMode(Context))
+                    // 开关反馈等待期间，不进行柜体开关状态匹配
+                    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
                     {
-                        // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
-                        return;
+                        // 柜内开关是否匹配柜体模式
+                        Cabinet_ReadAllSwitchStatus(Context);
+                        if (!Cabinet_SwitchIsMatchMode(Context))
+                        {
+                            // 发出警告
+                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            return;
+                        }
                     }
                     // 读取电源柜状态
                     Context->power_status = CAN_Adapter_GetPowerStatus();
@@ -532,13 +562,17 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 {
                     ExecuteResult_t result;
 
-                    // 柜内开关是否匹配柜体模式
-                    Cabinet_ReadAllSwitchStatus(Context);
-                    if (!Cabinet_SwitchIsMatchMode(Context))
+                    // 开关反馈等待期间，不进行柜体开关状态匹配
+                    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
                     {
-                        // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
-                        return;
+                        // 柜内开关是否匹配柜体模式
+                        Cabinet_ReadAllSwitchStatus(Context);
+                        if (!Cabinet_SwitchIsMatchMode(Context))
+                        {
+                            // 发出警告
+                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            return;
+                        }
                     }
                     result = Cabinet_ExecuteSingleProcedure(Context);
                     if (result == RESULT_SUCCESS)
@@ -561,13 +595,17 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 {
                     ExecuteResult_t result;
 
-                    // 柜内开关是否匹配柜体模式
-                    Cabinet_ReadAllSwitchStatus(Context);
-                    if (!Cabinet_SwitchIsMatchMode(Context))
+                    // 开关反馈等待期间，不进行柜体开关状态匹配
+                    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
                     {
-                        // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
-                        return;
+                        // 柜内开关是否匹配柜体模式
+                        Cabinet_ReadAllSwitchStatus(Context);
+                        if (!Cabinet_SwitchIsMatchMode(Context))
+                        {
+                            // 发出警告
+                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            return;
+                        }
                     }
                     result = Cabinet_ExecuteParallelProcedure(Context);
                     if (result == RESULT_SUCCESS)
@@ -585,7 +623,6 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         Context->target_state = CABINET_STATE_INVALID;
                     }
                 }
-
             }
             break;
         default:break;
@@ -614,46 +651,55 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                 if (Context->target_state == CABINET_STATE_SINGLE)
                 {
                     // 判断延时状态
-                    if (Context->op_interval_between_thyristor_status != THYRISTOR_OP_IDLE)
-                    {
-                        demag_result = Cabinet_StartThyristorOpIntervalCount(Context, 500);
-                        if (demag_result == RESULT_SUCCESS)
-                        {
-                            ;
-                        }
-                        else if (demag_result == RESULT_WAIT)
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            Cabinet_SetAlarm(Context, ALARM_NONE, "delay 500ms failed");
-                        }
-                    }
+                    /*if (Context->op_interval_between_thyristor_status != THYRISTOR_OP_IDLE)*/
+                    /*{*/
+                        /*demag_result = Cabinet_StartThyristorOpIntervalCount(Context, 500);*/
+                        /*if (demag_result == RESULT_SUCCESS)*/
+                        /*{*/
+                            /*;*/
+                        /*}*/
+                        /*else if (demag_result == RESULT_WAIT)*/
+                        /*{*/
+                            /*return;*/
+                        /*}*/
+                        /*else*/
+                        /*{*/
+                            /*Cabinet_SetAlarm(Context, ALARM_NONE, "delay 500ms failed");*/
+                        /*}*/
+                    /*}*/
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
-                    demag_result = Context->switch_feed(DI_ID_A3TB3_2);
-                    if (demag_result != 0)
-                    {
-                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
-                        return;
-                    }
-                    // 延时500ms
-                    result = Cabinet_StartThyristorOpIntervalCount(Context, 500);
-                    if (result == RESULT_SUCCESS)
+                    // 等待开关反馈稳定3秒
+                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 50);
+                    if (demag_result == RESULT_SUCCESS)
                     {
                         ;
                     }
-                    else if (result == RESULT_WAIT)
+                    else if (demag_result == RESULT_WAIT)
                     {
                         return;
                     }
                     else
                     {
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "delay 500ms failed");
-                        Context->op_interval_between_thyristor_status = THYRISTOR_OP_IDLE;
-                        Context->op_interval_start_time = 0;
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
+                        return;
                     }
+                    /*// 延时500ms*/
+                    /*result = Cabinet_StartThyristorOpIntervalCount(Context, 500);*/
+                    /*if (result == RESULT_SUCCESS)*/
+                    /*{*/
+                        /*;*/
+                    /*}*/
+                    /*else if (result == RESULT_WAIT)*/
+                    /*{*/
+                        /*return;*/
+                    /*}*/
+                    /*else*/
+                    /*{*/
+                        /*Cabinet_SetAlarm(Context, ALARM_NONE, "delay 500ms failed");*/
+                        /*Context->op_interval_between_thyristor_status = THYRISTOR_OP_IDLE;*/
+                        /*Context->op_interval_start_time = 0;*/
+                    /*}*/
 
                     // 判断电源单机还是并机
                     Context->power_status = CAN_Adapter_GetPowerStatus();
@@ -676,6 +722,13 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                             return;
                         }
                     }
+                    else
+                    {
+                        Cabinet_SetAlarm(Context, ALARM_NONE, "The power is not running");
+                        Context->target_state = CABINET_STATE_INVALID;
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
+                        return;
+                    }
 
                     result = Cabinet_ExecuteSingleProcedure(Context);
                     if (result == RESULT_SUCCESS)
@@ -686,6 +739,10 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                         Context->demagnetize_state = DEMAGNETIZE_IDLE;
                         Context->op_interval_between_thyristor_status = THYRISTOR_OP_IDLE;
                         Context->op_interval_start_time = 0;
+                    }
+                    else if (result == RESULT_WAIT)
+                    {
+                    	return;
                     }
                     else
                     {
@@ -719,8 +776,17 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     }
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
-                    demag_result = Context->switch_feed(DI_ID_A3TB3_2);
-                    if (demag_result != 0)
+                    // 等待开关反馈稳定3秒
+                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 50);
+                    if (demag_result == RESULT_SUCCESS)
+                    {
+                        ;
+                    }
+                    else if (demag_result == RESULT_WAIT)
+                    {
+                        return;
+                    }
+                    else
                     {
                         Context->demagnetize_state = DEMAGNETIZE_FAILED;
                         return;
@@ -772,18 +838,23 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                 {
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
-                    demag_result = Context->switch_feed(DI_ID_A3TB3_2);
-                    if (demag_result != 0)
-                    {
-                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
-                        Context->target_state = CABINET_STATE_INVALID;
-                        return;
-                    }
-                    else
+                    // 等待开关反馈稳定3秒
+                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 50);
+                    if (demag_result == RESULT_SUCCESS)
                     {
                         Context->demagnetize_state = DEMAGNETIZE_IDLE;
                         Context->state = CABINET_STATE_STANDBY;
                         Context->target_state = CABINET_STATE_INVALID;
+                    }
+                    else if (demag_result == RESULT_WAIT)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
+                        Context->target_state = CABINET_STATE_INVALID;
+                        return;
                     }
                 }
             }
@@ -795,18 +866,24 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                 {
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
-                    demag_result = Context->switch_feed(DI_ID_A3TB3_2);
-                    if (demag_result != 0)
-                    {
-                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
-                        Context->target_state = CABINET_STATE_INVALID;
-                        return;
-                    }
-                    else
+                    // 等待开关反馈稳定3秒
+                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 50);
+                    if (demag_result == RESULT_SUCCESS)
                     {
                         Context->demagnetize_state = DEMAGNETIZE_IDLE;
                         Context->state = CABINET_STATE_STANDBY;
                         Context->target_state = CABINET_STATE_INVALID;
+                        return;
+                    }
+                    else if (demag_result == RESULT_WAIT)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
+                        Context->target_state = CABINET_STATE_INVALID;
+                        return;
                     }
                 }
             }
@@ -1032,7 +1109,7 @@ Cabinet_StartThyristorOpIntervalCount(CabinetContext_t* Context, uint32_t DelayM
 static ExecuteResult_t
 Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
 {
-    uint16_t res = 0;
+    ExecuteResult_t res;
     // 读取急停反馈
     Context->switch_list.emergency_stop_switch = (SwitchState_t)Context->switch_feed(DI_ID_EMERGENCY_STOP);
     // 默认读取的FPGA的IO值为1时，认为急停触发（IO_scan()可以加取反）
@@ -1047,21 +1124,38 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
-            res = Context->switch_feed(DI_ID_A3QF1);
-            if (res != 0)
+            // 等待开关反馈稳定3秒
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 5000, 3000, 50);
+            if (res == RESULT_SUCCESS)
+            {
+                ;
+            }
+            else if (res == RESULT_WAIT)
+            {
+                return res;
+            }
+            else
             {
                 Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to disconnect A3QF1");
                 return RESULT_FAILED;
             }
         }
-        res = 0;
         // 判断并机回路状态
         if (Context->switch_feed(DI_ID_A3QF2))
         {
             Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
-            res = Context->switch_feed(DI_ID_A3QF2);
-            if (res != 0)
+            // 等待开关反馈稳定3秒
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 5000, 3000, 50);
+            if (res == RESULT_SUCCESS)
+            {
+                ;
+            }
+            else if (res == RESULT_WAIT)
+            {
+                return res;
+            }
+            else
             {
                 Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to disconnect A3QF2");
                 return RESULT_FAILED;
@@ -1085,7 +1179,7 @@ static ExecuteResult_t
 Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
 {
     SwitchState_t switchStateS1_1,switchStateS1_2;
-    uint16_t demag_result=0;
+    ExecuteResult_t demag_result;
 
     // 手动/自动
     Context->switch_list.manual_switch = (SwitchState_t)Context->switch_feed(DI_ID_LOCALREMOTE);
@@ -1093,7 +1187,7 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
     if (Context->switch_list.manual_switch == SWITCH_ON)
     {
         // 消磁面板闭合
-        Context->switch_list.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3TB3_2);
+        Context->switch_list.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_Short);
         if (Context->switch_list.short_switch == SWITCH_OFF)
         {
             return RESULT_INVALID_STATE;
@@ -1152,17 +1246,21 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
 
         // 闭合消磁
         Context->switch_control(DO_ID_A3QR3, SWITCH_ON);
-        demag_result = Context->switch_feed(DI_ID_A3TB3_2);
-        if (demag_result != 1)
-        {
-            // 发出警告
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Execution of panel demagnetization failed");
-            return RESULT_FAILED;
-        }
-        else
+        // 等待开关反馈稳定3秒
+        demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_ON, 5000, 3000, 50);
+        if (demag_result == RESULT_SUCCESS)
         {
             Context->panel_remote_degauss_flag = true;
             // TODO:消磁灯常亮
+        }
+        else if (demag_result == RESULT_WAIT)
+        {
+            return RESULT_WAIT;
+        }
+        else
+        {
+            Cabinet_SetAlarm(Context, ALARM_NONE, "first Demagnetization failed");
+            return RESULT_FAILED;
         }
     }
     // 第二次闭合消磁按钮
@@ -1170,17 +1268,21 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
     {
         // 断开消磁
         Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
-        demag_result = Context->switch_feed(DI_ID_A3TB3_2);
-        if (demag_result != 0)
-        {
-            // 发出警告
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Demagnetization failed");
-            return RESULT_FAILED;
-        }
-        else
+        // 等待开关反馈稳定3秒
+        demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 50);
+        if (demag_result == RESULT_SUCCESS)
         {
             Context->panel_remote_degauss_flag = false;
             // TODO:消磁灯熄灭
+        }
+        else if (demag_result == RESULT_WAIT)
+        {
+            return demag_result;
+        }
+        else
+        {
+            Cabinet_SetAlarm(Context, ALARM_NONE, "second Demagnetization failed");
+            return RESULT_FAILED;
         }
     }
     return RESULT_SUCCESS;
@@ -1190,20 +1292,24 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
 static ExecuteResult_t
 Cabinet_ExecuteAutoDegaussProcedure(CabinetContext_t* Context, uint16_t DelayMs)
 {
+	ExecuteResult_t demag_result;
     // 启动消磁流程
     if (Context->switch_control)
     {
-        uint16_t demag_result;
         Context->switch_control(DO_ID_A3QR3, SWITCH_ON);
-        demag_result = Context->switch_feed(DI_ID_A3TB3_2);
-
-        if (demag_result == 1)
+        // 等待开关反馈稳定3秒
+        demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_ON, 5000, 3000, 50);
+        if (demag_result == RESULT_SUCCESS)
         {
             // 消磁命令执行成功，开始等待
             Context->demagnetize_state = DEMAGNETIZE_WAITING;
             Context->demagnetize_counter = DelayMs;  // 存储延迟毫秒数
             Context->demagnetize_start_time = hal_timer_get_timestamp();  // 记录开始时间
             return RESULT_SUCCESS;
+        }
+        else if (demag_result == RESULT_WAIT)
+        {
+            return demag_result;
         }
         else
         {
@@ -1230,7 +1336,7 @@ Cabinet_ExecuteAutoDegaussProcedure(CabinetContext_t* Context, uint16_t DelayMs)
 static ExecuteResult_t
 Cabinet_ExecuteStandbyProcedure(CabinetContext_t* Context)
 {
-    uint16_t res = 0;
+    ExecuteResult_t res;
     uint16_t current;
 
     // 单机时
@@ -1242,20 +1348,29 @@ Cabinet_ExecuteStandbyProcedure(CabinetContext_t* Context)
             Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
         }
         // I<50A
-        current = Context->current_read(CURRENT_I5_PHASE_A);
-        if (current >= 50.0)
-        {
-            return RESULT_FAILED;
-        }
-        res = 0;
+        /*current = Context->current_read(CURRENT_I5_PHASE_A);*/
+        /*if (current >= 50.0)*/
+        /*{*/
+            /*return RESULT_FAILED;*/
+        /*}*/
+
         // 断开 A3QF1
         if (Context->switch_control)
         {
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
-            res = Context->switch_feed(DI_ID_A3QF1);
-            if (res != 0)
+            // 等待开关反馈稳定3秒
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 5000, 3000, 50);
+            if (res == RESULT_SUCCESS)
             {
-                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
+                ;
+            }
+            else if (res == RESULT_WAIT)
+            {
+                return res;
+            }
+            else
+            {
+                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF1");
                 return RESULT_FAILED;
             }
         }
@@ -1269,19 +1384,27 @@ Cabinet_ExecuteStandbyProcedure(CabinetContext_t* Context)
             Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
         }
         // I<50A
-        current = Context->current_read(CURRENT_I5_PHASE_A);
-        if (current >= 50.0)
-        {
-            return RESULT_FAILED;
-        }
+        /*current = Context->current_read(CURRENT_I5_PHASE_A);*/
+        /*if (current >= 50.0)*/
+        /*{*/
+            /*return RESULT_FAILED;*/
+        /*}*/
 
-        res = 0;
         // 断开 A3QF2
         if (Context->switch_control)
         {
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
-            res = Context->switch_feed(DI_ID_A3QF2);
-            if (res != 0)
+            // 等待开关反馈稳定3秒
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 5000, 3000, 50);
+            if (res == RESULT_SUCCESS)
+            {
+                ;
+            }
+            else if (res == RESULT_WAIT)
+            {
+                return res;
+            }
+            else
             {
                 Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
                 return RESULT_FAILED;
@@ -1295,7 +1418,7 @@ Cabinet_ExecuteStandbyProcedure(CabinetContext_t* Context)
 static ExecuteResult_t
 Cabinet_ExecuteSingleProcedure(CabinetContext_t* Context)
 {
-    uint16_t res = 0;
+    ExecuteResult_t res;
     uint16_t voltage = 0;
 
     // 待机时
@@ -1305,8 +1428,17 @@ Cabinet_ExecuteSingleProcedure(CabinetContext_t* Context)
         if (Context->switch_control)
         {
             Context->switch_control(DO_ID_A3QF1, SWITCH_ON);
-            res = Context->switch_feed(DI_ID_A3QF1);
-            if (res != 1)
+            // 等待开关反馈稳定3秒
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_ON, 5000, 3000, 50);
+            if (res == RESULT_SUCCESS)
+            {
+                ;
+            }
+            else if (res == RESULT_WAIT)
+            {
+                return res;
+            }
+            else
             {
                 Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to connect A3QF1");
                 return RESULT_FAILED;
@@ -1314,24 +1446,23 @@ Cabinet_ExecuteSingleProcedure(CabinetContext_t* Context)
         }
 
         // U<36V
-        voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);
-        if (voltage >= 36.0)
-        {
-            return RESULT_FAILED;
-        }
+        /*voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);*/
+        /*if (voltage >= 36.0)*/
+        /*{*/
+            /*return RESULT_FAILED;*/
+        /*}*/
 
-        res = 0;
         // 闭合 A3QR1
         if (Context->switch_control)
         {
             uint16_t voltage;
             Context->switch_control(DO_ID_A3QR1, SWITCH_ON);
             // U>50V
-            voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);
-            if (voltage < 50.0)
-            {
-                return RESULT_FAILED;
-            }
+            /*voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);*/
+            /*if (voltage < 50.0)*/
+            /*{*/
+                /*return RESULT_FAILED;*/
+            /*}*/
         }
     }
     // 备用时
@@ -1342,13 +1473,22 @@ Cabinet_ExecuteSingleProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
         }
-        res = 0;
+
         // 断开 A3QF2
         if (Context->switch_control)
         {
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
-            res = Context->switch_feed(DI_ID_A3QF2);
-            if (res != 0)
+            // 等待开关反馈稳定3秒
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 5000, 3000, 50);
+            if (res == RESULT_SUCCESS)
+            {
+                ;
+            }
+            else if (res == RESULT_WAIT)
+            {
+                return res;
+            }
+            else
             {
                 Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
                 return RESULT_FAILED;
@@ -1363,7 +1503,7 @@ Cabinet_ExecuteSingleProcedure(CabinetContext_t* Context)
 static ExecuteResult_t
 Cabinet_ExecuteParallelProcedure(CabinetContext_t* Context)
 {
-    uint16_t res = 0;
+    ExecuteResult_t res;
     uint16_t voltage;
 
     // 待机时
@@ -1373,8 +1513,17 @@ Cabinet_ExecuteParallelProcedure(CabinetContext_t* Context)
         if (Context->switch_control)
         {
             Context->switch_control(DO_ID_A3QF2, SWITCH_ON);
-            res = Context->switch_feed(DI_ID_A3QF2);
-            if (res != 1)
+            // 等待开关反馈稳定3秒
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_ON, 5000, 3000, 50);
+            if (res == RESULT_SUCCESS)
+            {
+                ;
+            }
+            else if (res == RESULT_WAIT)
+            {
+                return res;
+            }
+            else
             {
                 Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
                 return RESULT_FAILED;
@@ -1382,24 +1531,23 @@ Cabinet_ExecuteParallelProcedure(CabinetContext_t* Context)
         }
 
         // U<36V
-        voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);
-        if (voltage >= 36.0)
-        {
-            return RESULT_FAILED;
-        }
+        /*voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);*/
+        /*if (voltage >= 36.0)*/
+        /*{*/
+            /*return RESULT_FAILED;*/
+        /*}*/
 
-        res = 0;
         // 闭合 A3QR2
         if (Context->switch_control)
         {
             uint16_t voltage;
             Context->switch_control(DO_ID_A3QR2, SWITCH_ON);
             // U>50V
-            voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);
-            if (voltage < 50.0)
-            {
-                return RESULT_FAILED;
-            }
+            /*voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);*/
+            /*if (voltage < 50.0)*/
+            /*{*/
+                /*return RESULT_FAILED;*/
+            /*}*/
         }
     }
 
@@ -1411,13 +1559,22 @@ Cabinet_ExecuteParallelProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
         }
-        res = 0;
+
         // 断开 A3QF1
         if (Context->switch_control)
         {
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
-            res = Context->switch_feed(DI_ID_A3QF1);
-            if (res != 0)
+            // 等待开关反馈稳定3秒
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 5000, 3000, 50);
+            if (res == RESULT_SUCCESS)
+            {
+                ;
+            }
+            else if (res == RESULT_WAIT)
+            {
+                return res;
+            }
+            else
             {
                 Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF1");
                 return RESULT_FAILED;
@@ -1431,7 +1588,7 @@ Cabinet_ExecuteParallelProcedure(CabinetContext_t* Context)
 static ExecuteResult_t
 Cabinet_ExecuteBackupProcedure(CabinetContext_t* Context)
 {
-    uint16_t res = 0;
+    ExecuteResult_t res;
     uint16_t voltage;
 
     // 单机时
@@ -1441,8 +1598,17 @@ Cabinet_ExecuteBackupProcedure(CabinetContext_t* Context)
         if (Context->switch_control)
         {
             Context->switch_control(DO_ID_A3QF2, SWITCH_ON);
-            res = Context->switch_feed(DI_ID_A3QF2);
-            if (res != 1)
+            // 等待开关反馈稳定3秒
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_ON, 5000, 3000, 50);
+            if (res == RESULT_SUCCESS)
+            {
+                ;
+            }
+            else if (res == RESULT_WAIT)
+            {
+                return res;
+            }
+            else
             {
                 Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
                 return RESULT_FAILED;
@@ -1450,24 +1616,23 @@ Cabinet_ExecuteBackupProcedure(CabinetContext_t* Context)
         }
 
         // U<36V
-        voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);
-        if (voltage >= 36.0)
-        {
-            return RESULT_FAILED;
-        }
+        /*voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);*/
+        /*if (voltage >= 36.0)*/
+        /*{*/
+            /*return RESULT_FAILED;*/
+        /*}*/
 
-        res = 0;
         // 闭合 A3QR2
         if (Context->switch_control)
         {
             uint16_t voltage;
             Context->switch_control(DO_ID_A3QR2, SWITCH_ON);
             // U>50V
-            voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);
-            if (voltage < 50.0)
-            {
-                return RESULT_FAILED;
-            }
+            /*voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);*/
+            /*if (voltage < 50.0)*/
+            /*{*/
+                /*return RESULT_FAILED;*/
+            /*}*/
         }
     }
 
@@ -1478,8 +1643,17 @@ Cabinet_ExecuteBackupProcedure(CabinetContext_t* Context)
         if (Context->switch_control)
         {
             Context->switch_control(DO_ID_A3QF1, SWITCH_ON);
-            res = Context->switch_feed(DI_ID_A3QF1);
-            if (res != 1)
+            // 等待开关反馈稳定3秒
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_ON, 5000, 3000, 50);
+            if (res == RESULT_SUCCESS)
+            {
+                ;
+            }
+            else if (res == RESULT_WAIT)
+            {
+                return res;
+            }
+            else
             {
                 Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF1");
                 return RESULT_FAILED;
@@ -1487,24 +1661,23 @@ Cabinet_ExecuteBackupProcedure(CabinetContext_t* Context)
         }
 
         // U<36V
-        voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);
-        if (voltage >= 36.0)
-        {
-            return RESULT_FAILED;
-        }
+        /*voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);*/
+        /*if (voltage >= 36.0)*/
+        /*{*/
+            /*return RESULT_FAILED;*/
+        /*}*/
 
-        res = 0;
         // 闭合 A3QR1
         if (Context->switch_control)
         {
             uint16_t voltage;
             Context->switch_control(DO_ID_A3QR1, SWITCH_ON);
             // U>50V
-            voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);
-            if (voltage < 50.0)
-            {
-                return RESULT_FAILED;
-            }
+            /*voltage = Context->voltage_read(VOLTAGE_U7_PHASE_A);*/
+            /*if (voltage < 50.0)*/
+            /*{*/
+                /*return RESULT_FAILED;*/
+            /*}*/
         }
     }
     return RESULT_SUCCESS;
@@ -1540,5 +1713,105 @@ Cabinet_IsSatisfyPowerParallel(CabinetContext_t* Context)
     return true;
 }
 
+// 等待开关反馈稳定
+static ExecuteResult_t
+Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, SwitchState_t TargetState, uint32_t TimeoutMs, uint32_t StableTime, uint32_t DelayMs)
+{
+    static uint16_t check_count = 0;
+    uint32_t current_time = hal_timer_get_timestamp();
+    uint16_t current_feedback = 0;
+
+    // 是否等待不同的开关
+    if ((Context->switch_feedback_wait_state != SWITCH_FEEDBACK_IDLE) && 
+        (Context->switch_feedback_id != SwitchId))
+    {
+        // 立即返回等待状态
+        Context->switch_feedback_current_value = Context->switch_feed(SwitchId);
+        return RESULT_SUCCESS;
+    }
+
+    // 空闲
+    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
+    {
+        check_count = 0;
+        Context->switch_feedback_id = SwitchId;
+        Context->switch_feedback_target_state = TargetState;
+        Context->switch_feedback_start_time = current_time;
+        Context->switch_feedback_wait_state = SWITCH_FEEDBACK_WAITING;
+        Context->switch_feedback_current_value = Context->switch_feed(SwitchId);
+        return RESULT_WAIT;
+    }
+    // 等待
+    else if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_WAITING)
+    {
+        // 传播延迟
+        if ((current_time - Context->switch_feedback_start_time) < DelayMs)
+        {
+            return RESULT_WAIT;
+        }
+        Context->switch_feedback_wait_state = SWITCH_FEEDBACK_CHECKING;
+        Context->switch_feedback_start_time = current_time;
+        return RESULT_WAIT;
+    }
+    // 检查
+    else if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_CHECKING)
+    {
+        // 是否超时
+        if ((current_time - Context->switch_feedback_start_time) >= TimeoutMs)
+        {
+            check_count = 0;
+            Context->switch_feedback_wait_state = SWITCH_FEEDBACK_TIMEOUT;
+            return RESULT_FAILED;
+        }
+        // 检查反馈
+        current_feedback = Context->switch_feed(SwitchId);
+        if ((SwitchState_t)current_feedback == TargetState)
+        {
+            // 是否稳定
+            if ((current_time - Context->switch_feedback_start_time) >= StableTime)
+            {
+                check_count = 0;
+                Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
+                Context->switch_feedback_start_time = 0;
+                Context->switch_feedback_id = 0;
+                Context->switch_feedback_target_state = SWITCH_OFF;
+                Context->switch_feedback_current_value = 0;
+                return RESULT_SUCCESS;
+            }
+            else
+            {
+                return RESULT_WAIT;
+            }
+        }
+        else
+        {
+            if (check_count < 3)
+            {
+                check_count ++;
+                return RESULT_WAIT;
+            }
+            check_count = 0;
+            Context->switch_feedback_wait_state = SWITCH_FEEDBACK_TIMEOUT;
+            return RESULT_FAILED;
+        }
+    }
+    else if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_TIMEOUT)
+    {
+        // 重置等待状态
+        check_count = 0;
+        Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
+        Context->switch_feedback_start_time = 0;
+        Context->switch_feedback_id = 0;
+        Context->switch_feedback_target_state = SWITCH_OFF;
+        Context->switch_feedback_current_value = 0;
+        return RESULT_FAILED;
+    }
+
+    // 失败
+    check_count = 0;
+    Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
+    return RESULT_FAILED;
+
+}
 
 

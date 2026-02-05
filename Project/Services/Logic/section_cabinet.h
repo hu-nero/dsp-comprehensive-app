@@ -37,6 +37,14 @@ typedef enum
     THYRISTOR_OP_DONE                  // 控制间隔结束
 } ThyristorOpState_t;
 
+// 开关反馈等待状态枚举
+typedef enum {
+    SWITCH_FEEDBACK_IDLE = 0,
+    SWITCH_FEEDBACK_WAITING,
+    SWITCH_FEEDBACK_CHECKING,
+    SWITCH_FEEDBACK_TIMEOUT
+} SwitchFeedbackWaitState_t;
+
 // 区段柜所有开关
 typedef struct
 {
@@ -80,6 +88,13 @@ typedef struct
     uint16_t op_interval_between_thyristor_timeout;         // 超时时间（ms）
     uint16_t op_interval_between_thyristor_counter;         // 间隔计数
     uint32_t op_interval_start_time;                        // 开始时间戳
+
+    // 开关反馈等待相关状态
+    SwitchFeedbackWaitState_t switch_feedback_wait_state;    // 反馈等待状态
+    uint32_t switch_feedback_start_time;                     // 反馈检测开始时间
+    uint16_t switch_feedback_id;                             // 反馈的开关ID
+    SwitchState_t switch_feedback_target_state;              // 反馈需要的目标状态
+    uint16_t switch_feedback_current_value;                  // 当前反馈值
 
     // 回调函数指针
     SwitchControlFunc_t switch_control;

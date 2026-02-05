@@ -14,33 +14,34 @@
 #include "Main/Variable.h"
 #include "GPIO\Custom_IOMacro.H"
 
-/*#define IO_A3QF1_En					    IOOutput1.DataBit.Bit0 = 1*/
-/*#define IO_A3QF1_Dis	  				IOOutput1.DataBit.Bit0 = 0*/
-/*#define IO_A3QF1_Feed   				IOInput1.DataBit.Bit0*/
+#define IO_A3QF1_En					    IOOutput1.DataBit.Bit0 = 1
+#define IO_A3QF1_Dis	  				IOOutput1.DataBit.Bit0 = 0
+#define IO_A3QF1_Feed   				IOInput1.DataBit.Bit9
 
-/*#define IO_A3QR1_En					    IOOutput1.DataBit.Bit1 = 1*/
-/*#define IO_A3QR1_Dis	  				IOOutput1.DataBit.Bit1 = 0*/
-/*#define IO_A3QR1_Feed					IOInput1.DataBit.Bit1*/
+#define IO_A3QR1_En					    IOOutput1.DataBit.Bit1 = 1
+#define IO_A3QR1_Dis	  				IOOutput1.DataBit.Bit1 = 0
 
-/*#define IO_A3QF2_En					    IOOutput1.DataBit.Bit2 = 1*/
-/*#define IO_A3QF2_Dis	  				IOOutput1.DataBit.Bit2 = 0*/
-/*#define IO_A3QF2_Feed   				IOInput1.DataBit.Bit2*/
+#define IO_A3QF2_En					    IOOutput1.DataBit.Bit2 = 1
+#define IO_A3QF2_Dis	  				IOOutput1.DataBit.Bit2 = 0
+#define IO_A3QF2_Feed   				IOInput1.DataBit.Bit11
 
-/*#define IO_A3QR2_En					    IOOutput1.DataBit.Bit3 = 1*/
-/*#define IO_A3QR2_Dis	  				IOOutput1.DataBit.Bit3 = 0*/
-/*#define IO_A3QR2_Feed					IOInput1.DataBit.Bit3*/
+#define IO_A3QR2_En					    IOOutput1.DataBit.Bit3 = 1
+#define IO_A3QR2_Dis	  				IOOutput1.DataBit.Bit3 = 0
 
-/*#define IO_SINGLE_En					IOOutput1.DataBit.Bit4 = 1*/
-/*#define IO_SINGLE_Dis	  				IOOutput1.DataBit.Bit4 = 0*/
-/*#define IO_SINGLE_Feed					IOInput1.DataBit.Bit15*/
+#define IO_A3QR3_En					    IOOutput1.DataBit.Bit4 = 1
+#define IO_A3QR3_Dis	  				IOOutput1.DataBit.Bit4 = 0
+#define IO_A3QF3_Feed   				IOInput1.DataBit.Bit13
 
-/*#define IO_BUS1_En					    IOOutput1.DataBit.Bit5 = 1*/
-/*#define IO_BUS1_Dis	  				    IOOutput1.DataBit.Bit5 = 0*/
-/*#define IO_BUS1_Feed					IOInput1.DataBit.Bit14*/
+#define IO_A3QS1_Feed   				IOInput1.DataBit.Bit6
+#define IO_A3K17_Feed   				IOInput1.DataBit.Bit15
+#define IO_A3QS2_Feed   				IOInput1.DataBit.Bit5
+#define IO_A3QS3_Feed   				IOInput1.DataBit.Bit5
 
-/*#define IO_SHORT_En					    IOOutput1.DataBit.Bit6 = 1*/
-/*#define IO_SHORT_Dis	  				IOOutput1.DataBit.Bit6 = 0*/
-/*#define IO_SHORT_Feed					IOInput1.DataBit.Bit15*/
+#define IO_LOCALREMOTE_Feed				IOInput1.DataBit.Bit0
+#define IO_EMERGENCY_STOP_Feed			IOInput1.DataBit.Bit1
+#define IO_SINGLE_Feed					IOInput1.DataBit.Bit2
+#define IO_BUS1_Feed					IOInput1.DataBit.Bit3
+#define IO_SHORT_Feed					IOInput1.DataBit.Bit4
 
 #define ADC0_CH0_Value					*(unsigned  int *)(0x4010)
 #define ADC0_CH1_Value					*(unsigned  int *)(0x4020)
@@ -211,11 +212,18 @@ CAN_App_MainLoop(void)
 void
 CAN_App_Test(void)
 {
+	uint32_t delay=0x5FFFFF;
     // switch enable test
-    Hardware_SwitchControl(DO_ID_A3QF1,SWITCH_OFF);
-    Hardware_SwitchControl(DO_ID_A3QF2,SWITCH_OFF);
+    Hardware_SwitchControl(DO_ID_A3QF1,SWITCH_ON);
+    Hardware_SwitchControl(DO_ID_A3QF2,SWITCH_ON);
     Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_ON);
     Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_ON);
+    IO_Scan();
+    for (;delay>0;delay--);
+    Hardware_SwitchControl(DO_ID_A3QF1,SWITCH_OFF);
+    Hardware_SwitchControl(DO_ID_A3QF2,SWITCH_OFF);
+    Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_OFF);
+    Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_OFF);
     /*uint16_t res = Hardware_SwitchFeed(SWITCH_ID_A3QF1);*/
     IO_Scan();
 }
@@ -268,35 +276,15 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
 {
     switch (SwitchId)
     {
-        case DO_ID_LOCALREMOTE:
-            {
-                if (State == SWITCH_ON)
-                {
-                }
-                else if (State == SWITCH_OFF)
-                {
-                }
-            }
-            break;
-        case DO_ID_DEGAUSS:
-            {
-                if (State == SWITCH_ON)
-                {
-                }
-                else if (State == SWITCH_OFF)
-                {
-                }
-            }
-            break;
         case DO_ID_A3QF1:
             {
                 if (State == SWITCH_ON)
                 {
-                    IOOutput1.DataBit.Bit0 = 1;
+                    IO_A3QF1_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IOOutput1.DataBit.Bit0 = 0;
+                    IO_A3QF1_Dis;
                 }
             }
             break;
@@ -304,11 +292,11 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             {
                 if (State == SWITCH_ON)
                 {
-                    IOOutput1.DataBit.Bit1 = 1;
+                    IO_A3QR1_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IOOutput1.DataBit.Bit1 = 0;
+                    IO_A3QR1_Dis;
                 }
             }
             break;
@@ -316,11 +304,11 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             {
                 if (State == SWITCH_ON)
                 {
-                    IOOutput1.DataBit.Bit2 = 1;
+                    IO_A3QF2_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IOOutput1.DataBit.Bit2 = 0;
+                    IO_A3QF2_Dis;
                 }
             }
             break;
@@ -328,11 +316,11 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             {
                 if (State == SWITCH_ON)
                 {
-                    IOOutput1.DataBit.Bit3 = 1;
+                    IO_A3QR2_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IOOutput1.DataBit.Bit3 = 0;
+                    IO_A3QR2_Dis;
                 }
             }
             break;
@@ -340,11 +328,11 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             {
                 if (State == SWITCH_ON)
                 {
-                    IOOutput1.DataBit.Bit4 = 1;
+                    IO_A3QR3_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IOOutput1.DataBit.Bit4 = 0;
+                    IO_A3QR3_Dis;
                 }
             }
             break;
@@ -401,66 +389,64 @@ Hardware_SwitchFeed(uint16_t SwitchId)
     {
         case DI_ID_LOCALREMOTE:
             {
-                return IOInput1.DataBit.Bit12;
+                return IO_LOCALREMOTE_Feed;
             }
-            break;
         case DI_ID_EMERGENCY_STOP:
             {
+                return IO_EMERGENCY_STOP_Feed;
             }
-            break;
         case DI_ID_RESET:
             {
             }
             break;
         case DI_ID_SINGLE:
             {
-                return IOInput1.DataBit.Bit12;
+                return IO_SINGLE_Feed;
             }
-            break;
         case DI_ID_BUS1:
             {
+                return IO_BUS1_Feed;
             }
-            break;
         case DI_ID_Short:
             {
+                return IO_SHORT_Feed;
             }
-            break;
         case DI_ID_A3QF1:
             {
+                return IO_A3QF1_Feed;
             }
-            break;
         case DI_ID_A3QF2:
             {
+                return IO_A3QF2_Feed;
             }
-            break;
         case DI_ID_A3QS1:
             {
-                return IOInput1.DataBit.Bit12;
+                return IO_A3QS1_Feed;
             }
-            break;
         case DI_ID_A3K17:
             {
+                return IO_A3K17_Feed;
             }
-            break;
         case DI_ID_A3QS2:
             {
-                return IOInput1.DataBit.Bit12;
+                return IO_A3QS2_Feed;
             }
-            break;
         case DI_ID_A3QS3:
             {
-                return IOInput1.DataBit.Bit12;
+                return IO_A3QS3_Feed;
             }
-            break;
         case DI_ID_A3TB3_1:
             {
             }
             break;
-        case DI_ID_A3TB3_2:// 消磁面板
+        case DI_ID_A3TB3_2:
             {
-                return IOInput1.DataBit.Bit11;
             }
             break;
+        case DI_ID_A3QF3:
+            {
+            	return IO_A3QF3_Feed;
+            }
         case DI_ID_A3ON_2:
             {
             }
