@@ -269,7 +269,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             // 读取电源状态,电源状态影响目标状态
             Context->power_status = CAN_Adapter_GetPowerStatus();
             if (!((Context->power_status.run_state == POWER_SINGLE_RUNNING) ||
-                  (Context->power_status.run_state == POWER_SINGLE_RUNNING)))
+                  (Context->power_status.run_state == POWER_PARALLEL_RUNNING)))
             {
                 if (Context->switch_list.bus1_switch == SWITCH_OFF)
                 {
@@ -580,6 +580,10 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         Context->state = CABINET_STATE_SINGLE;
                         Context->target_state = CABINET_STATE_INVALID;
                     }
+                    else if (result == RESULT_WAIT)
+                    {
+                        ;
+                    }
                     else
                     {
                         // 发出警告
@@ -612,6 +616,10 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     {
                         Context->state = CABINET_STATE_PARALLEL;
                         Context->target_state = CABINET_STATE_INVALID;
+                    }
+                    else if (result == RESULT_WAIT)
+                    {
+                        ;
                     }
                     else
                     {
@@ -758,22 +766,22 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                 else if (Context->target_state == CABINET_STATE_PARALLEL)
                 {
                     // 判断延时状态
-                    if (Context->op_interval_between_thyristor_status != THYRISTOR_OP_IDLE)
-                    {
-                        demag_result = Cabinet_StartThyristorOpIntervalCount(Context, 500);
-                        if (demag_result == RESULT_SUCCESS)
-                        {
-                            ;
-                        }
-                        else if (demag_result == RESULT_WAIT)
-                        {
-                            return;
-                        }
-                        else
-                        {
-                            Cabinet_SetAlarm(Context, ALARM_NONE, "delay 500ms failed");
-                        }
-                    }
+//                    if (Context->op_interval_between_thyristor_status != THYRISTOR_OP_IDLE)
+//                    {
+//                        demag_result = Cabinet_StartThyristorOpIntervalCount(Context, 500);
+//                        if (demag_result == RESULT_SUCCESS)
+//                        {
+//                            ;
+//                        }
+//                        else if (demag_result == RESULT_WAIT)
+//                        {
+//                            return;
+//                        }
+//                        else
+//                        {
+//                            Cabinet_SetAlarm(Context, ALARM_NONE, "delay 500ms failed");
+//                        }
+//                    }
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                     // 等待开关反馈稳定3秒
@@ -791,22 +799,22 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                         Context->demagnetize_state = DEMAGNETIZE_FAILED;
                         return;
                     }
-                    // 延时500ms
-                    result = Cabinet_StartThyristorOpIntervalCount(Context, 500);
-                    if (result == RESULT_SUCCESS)
-                    {
-                        ;
-                    }
-                    else if (result == RESULT_WAIT)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "delay 500ms failed");
-                        Context->op_interval_between_thyristor_status = THYRISTOR_OP_IDLE;
-                        Context->op_interval_start_time = 0;
-                    }
+//                    // 延时500ms
+//                    result = Cabinet_StartThyristorOpIntervalCount(Context, 500);
+//                    if (result == RESULT_SUCCESS)
+//                    {
+//                        ;
+//                    }
+//                    else if (result == RESULT_WAIT)
+//                    {
+//                        return;
+//                    }
+//                    else
+//                    {
+//                        Cabinet_SetAlarm(Context, ALARM_NONE, "delay 500ms failed");
+//                        Context->op_interval_between_thyristor_status = THYRISTOR_OP_IDLE;
+//                        Context->op_interval_start_time = 0;
+//                    }
 
                     // 闭合并机回路
                     result = Cabinet_ExecuteParallelProcedure(Context);
@@ -819,6 +827,10 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                         Context->demagnetize_state = DEMAGNETIZE_IDLE;
                         Context->op_interval_between_thyristor_status = THYRISTOR_OP_IDLE;
                         Context->op_interval_start_time = 0;
+                    }
+                    else if (result == RESULT_WAIT)
+                    {
+                    	return;
                     }
                     else
                     {
@@ -905,6 +917,8 @@ Cabinet_ResetFromEmergency(CabinetContext_t* Context)
         (void)Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
+        // 调用IO_Scan()
+        (void)Context->switch_feed(0);
     }
 
     // 系统状态设置为待机
@@ -1126,6 +1140,8 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
             // 等待开关反馈稳定3秒
             res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 5000, 3000, 50);
+            // 防止急停后，再面板消磁 switch_feedback_wait_state状态干扰
+            Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
             if (res == RESULT_SUCCESS)
             {
                 ;
@@ -1147,6 +1163,8 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
             // 等待开关反馈稳定3秒
             res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 5000, 3000, 50);
+            // 防止急停后，再面板消磁 switch_feedback_wait_state状态干扰
+            Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
             if (res == RESULT_SUCCESS)
             {
                 ;
@@ -1161,6 +1179,8 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
                 return RESULT_FAILED;
             }
         }
+        Context->state = CABINET_STATE_STANDBY;
+        Context->target_state = CABINET_STATE_INVALID;
         return RESULT_EMERGENCY_STOP;
     }
     else
@@ -1187,10 +1207,21 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
     if (Context->switch_list.manual_switch == SWITCH_ON)
     {
         // 消磁面板闭合
-        Context->switch_list.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_Short);
-        if (Context->switch_list.short_switch == SWITCH_OFF)
+        if (Context->panel_remote_degauss_flag == false)
         {
-            return RESULT_INVALID_STATE;
+            Context->switch_list.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_Short);
+            if (Context->switch_list.short_switch == SWITCH_OFF)
+            {
+                return RESULT_INVALID_STATE;
+            }
+        }
+        else if (Context->panel_remote_degauss_flag == true)
+        {
+            Context->switch_list.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_Short);
+            if (Context->switch_list.short_switch == SWITCH_ON)
+            {
+                return RESULT_INVALID_STATE;
+            }
         }
     }
     // 自动模式

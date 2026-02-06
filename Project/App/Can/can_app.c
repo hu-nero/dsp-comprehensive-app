@@ -224,6 +224,7 @@ CAN_App_Test(void)
     Hardware_SwitchControl(DO_ID_A3QF2,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_OFF);
+    Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_OFF);
     /*uint16_t res = Hardware_SwitchFeed(SWITCH_ID_A3QF1);*/
     IO_Scan();
 }
