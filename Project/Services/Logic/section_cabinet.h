@@ -29,14 +29,6 @@ typedef enum
     DEMAGNETIZE_FAILED         // 消磁失败
 } DemagnetizeState_t;
 
-// 晶闸管操作状态枚举
-typedef enum
-{
-    THYRISTOR_OP_IDLE = 0,             // 空闲状态
-    THYRISTOR_OP_WAITTING,             // 正在等待控制间隔结束
-    THYRISTOR_OP_DONE                  // 控制间隔结束
-} ThyristorOpState_t;
-
 // 开关反馈等待状态枚举
 typedef enum {
     SWITCH_FEEDBACK_IDLE = 0,
@@ -84,10 +76,6 @@ typedef struct
     DemagnetizeState_t demagnetize_state;  // 消磁状态
     uint16_t demagnetize_counter;          // 消磁计数器（ms）
     uint32_t demagnetize_start_time;       // 消磁开始时间戳
-    ThyristorOpState_t op_interval_between_thyristor_status;
-    uint16_t op_interval_between_thyristor_timeout;         // 超时时间（ms）
-    uint16_t op_interval_between_thyristor_counter;         // 间隔计数
-    uint32_t op_interval_start_time;                        // 开始时间戳
 
     // 开关反馈等待相关状态
     SwitchFeedbackWaitState_t switch_feedback_wait_state;    // 反馈等待状态
