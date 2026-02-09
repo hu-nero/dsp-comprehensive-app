@@ -231,67 +231,70 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
 {
     CabinetState_t target_state;
 
-    Context->switch_list.manual_switch = (SwitchState_t)Context->switch_feed(DI_ID_LOCALREMOTE);
-    // 手动模式
-    if (Context->switch_list.manual_switch == SWITCH_ON)
+    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
     {
-        // 读取旋钮状态
-        Context->switch_list.single_switch = (SwitchState_t)Context->switch_feed(DI_ID_SINGLE);
-        Context->switch_list.bus1_switch = (SwitchState_t)Context->switch_feed(DI_ID_BUS1);
-        // 根据开关状态确定目标状态
-        if ((Context->switch_list.single_switch == SWITCH_OFF) && (Context->switch_list.bus1_switch == SWITCH_OFF))
+        Context->switch_list.manual_switch = (SwitchState_t)Context->switch_feed(DI_ID_LOCALREMOTE);
+        // 手动模式
+        if (Context->switch_list.manual_switch == SWITCH_ON)
         {
-            target_state = CABINET_STATE_STANDBY;
-        }
-        else if ((Context->switch_list.single_switch == SWITCH_ON) && (Context->switch_list.bus1_switch == SWITCH_OFF))
-        {
-            target_state = CABINET_STATE_SINGLE;
-        }
-        else if ((Context->switch_list.single_switch == SWITCH_OFF) && (Context->switch_list.bus1_switch == SWITCH_ON))
-        {
-            target_state = CABINET_STATE_PARALLEL;
-        }
-        else
-        {
-            target_state = CABINET_STATE_BACKUP;
-        }
-
-        if ((Context->state == CABINET_STATE_BACKUP) ||
-            (Context->state == CABINET_STATE_SINGLE))
-        {
-            // 读取电源状态,电源状态影响目标状态
-            Context->power_status = CAN_Adapter_GetPowerStatus();
-            if (!((Context->power_status.run_state == POWER_SINGLE_RUNNING) ||
-                  (Context->power_status.run_state == POWER_PARALLEL_RUNNING)))
+            // 读取旋钮状态
+            Context->switch_list.single_switch = (SwitchState_t)Context->switch_feed(DI_ID_SINGLE);
+            Context->switch_list.bus1_switch = (SwitchState_t)Context->switch_feed(DI_ID_BUS1);
+            // 根据开关状态确定目标状态
+            if ((Context->switch_list.single_switch == SWITCH_OFF) && (Context->switch_list.bus1_switch == SWITCH_OFF))
             {
-                if (Context->switch_list.bus1_switch == SWITCH_OFF)
+                target_state = CABINET_STATE_STANDBY;
+            }
+            else if ((Context->switch_list.single_switch == SWITCH_ON) && (Context->switch_list.bus1_switch == SWITCH_OFF))
+            {
+                target_state = CABINET_STATE_SINGLE;
+            }
+            else if ((Context->switch_list.single_switch == SWITCH_OFF) && (Context->switch_list.bus1_switch == SWITCH_ON))
+            {
+                target_state = CABINET_STATE_PARALLEL;
+            }
+            else
+            {
+                target_state = CABINET_STATE_BACKUP;
+            }
+
+            if ((Context->state == CABINET_STATE_BACKUP) ||
+                    (Context->state == CABINET_STATE_SINGLE))
+            {
+                // 读取电源状态,电源状态影响目标状态
+                Context->power_status = CAN_Adapter_GetPowerStatus();
+                if (!((Context->power_status.run_state == POWER_SINGLE_RUNNING) ||
+                            (Context->power_status.run_state == POWER_PARALLEL_RUNNING)))
                 {
-                    target_state = CABINET_STATE_STANDBY;
-                }
-                else if (Context->switch_list.bus1_switch == SWITCH_ON)
-                {
-                    target_state = CABINET_STATE_PARALLEL;
+                    if (Context->switch_list.bus1_switch == SWITCH_OFF)
+                    {
+                        target_state = CABINET_STATE_STANDBY;
+                    }
+                    else if (Context->switch_list.bus1_switch == SWITCH_ON)
+                    {
+                        target_state = CABINET_STATE_PARALLEL;
+                    }
                 }
             }
-        }
 
-        // 状态没有变化
-        if (target_state == Context->state)
+            // 状态没有变化
+            if (target_state == Context->state)
+            {
+                Context->target_state = CABINET_STATE_INVALID;
+                return;
+            }
+
+            // 保存目标状态
+            Context->target_state = target_state;
+        }
+        // 自动模式
+        else
         {
-            Context->target_state = CABINET_STATE_INVALID;
+            // TODO:接收DCS/监控的单机启动标志
+            // 预计是置远程启动标志位
+            // 目前先return
             return;
         }
-
-        // 保存目标状态
-        Context->target_state = target_state;
-    }
-    // 自动模式
-    else
-    {
-        // TODO:接收DCS/监控的单机启动标志
-        // 预计是置远程启动标志位
-        // 目前先return
-        return;
     }
 
     // 状态转换处理
@@ -300,7 +303,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
         case CABINET_STATE_STANDBY:
             {
                 // ① 待机->单机
-                if (target_state == CABINET_STATE_SINGLE)
+                if (Context->target_state == CABINET_STATE_SINGLE)
                 {
                     // 开关反馈等待期间，不进行柜体开关状态匹配
                     if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
@@ -333,7 +336,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     (void)Cabinet_ExecuteAutoDegaussProcedure(Context, 5000);
                 }
                 // ② 待机->并机
-                else if (target_state == CABINET_STATE_PARALLEL)
+                else if (Context->target_state == CABINET_STATE_PARALLEL)
                 {
                     // 开关反馈等待期间，不进行柜体开关状态匹配
                     if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
