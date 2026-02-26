@@ -5,6 +5,9 @@
 
 static void InitCanaDrive(uint16_t Bps);
 static void InitCanbDrive(uint16_t Bps);
+
+static void ECana_Gpio_Init(void);
+static void ECanb_Gpio_Init(void);
 static void InitCanaPinConfig(int canSysClk, int brp);
 static void InitCanbPinConfig(int canSysClk, int brp);
 static void DeinitCanaDrive(void);
@@ -106,7 +109,7 @@ static void InitCanaDrive(uint16_t Bps)
     EDIS;
     
     // 配置GPIO
-    InitECanaGpio();
+    ECana_Gpio_Init();
     
     // 配置CAN时序
     InitCanaPinConfig(canSysClk, Bps);
@@ -129,7 +132,7 @@ static void InitCanbDrive(uint16_t Bps)
     EDIS;
     
     // 配置GPIO
-    InitECanbGpio();
+    ECanb_Gpio_Init();
     
     // 配置CAN时序
     InitCanbPinConfig(canSysClk, Bps);
@@ -202,6 +205,41 @@ static void DeinitCanbDrive(void)
     EALLOW;
     SysCtrlRegs.PCLKCR0.bit.ECANBENCLK = 0;
     EDIS;
+}
+
+static void ECana_Gpio_Init(void)
+{
+	EALLOW;
+	/*
+	GpioCtrlRegs.GPACTRL.bit.QUALPRD3=0; //GPIO24~31,Sampling Period = TSYSCLKOUT
+	GpioCtrlRegs.GPAQSEL2.bit.GPIO30 = 3;// Asynch qual for GPIO30 (CANRXA)
+	GpioCtrlRegs.GPAMUX2.bit.GPIO30 = 1; // Configure GPIO30 for CANRXA operation
+	GpioCtrlRegs.GPAMUX2.bit.GPIO31 = 1; // Configure GPIO31 for CANTXA operation
+	GpioCtrlRegs.GPAPUD.bit.GPIO30 = 0;	 // Enable pull-up for GPIO30 (CANRXA)
+	GpioCtrlRegs.GPAPUD.bit.GPIO31 = 0;	 // Enable pull-up for GPIO31 (CANTXA)
+	EDIS;
+	*/
+
+	GpioCtrlRegs.GPACTRL.bit.QUALPRD3=0; //GPIO24~31,Sampling Period = TSYSCLKOUT
+	GpioCtrlRegs.GPAQSEL2.bit.GPIO18 = 3;// Asynch qual for GPIO30 (CANRXA)
+	GpioCtrlRegs.GPAMUX2.bit.GPIO18 = 3; // Configure GPIO30 for CANRXA operation
+	GpioCtrlRegs.GPAMUX2.bit.GPIO19 =3; // Configure GPIO31 for CANTXA operation
+	GpioCtrlRegs.GPAPUD.bit.GPIO18 = 0;	 // Enable pull-up for GPIO30 (CANRXA)
+	GpioCtrlRegs.GPAPUD.bit.GPIO19 = 0;	 // Enable pull-up for GPIO31 (CANTXA)
+
+	EDIS;
+}
+
+static void ECanb_Gpio_Init(void)
+{
+	EALLOW;
+	GpioCtrlRegs.GPACTRL.bit.QUALPRD2=0; //GPIO24~31,Sampling Period = TSYSCLKOUT
+	GpioCtrlRegs.GPAQSEL2.bit.GPIO17 = 3;// Asynch qual for GPIO30 (CANRXA)
+	GpioCtrlRegs.GPAMUX2.bit.GPIO17 = 2; // Configure GPIO30 for CANRXB operation
+	GpioCtrlRegs.GPAMUX2.bit.GPIO16 =2; // Configure GPIO31 for CANTXB operation
+	GpioCtrlRegs.GPAPUD.bit.GPIO17 = 0;	 // Enable pull-up for GPIO30 (CANRXA)
+	GpioCtrlRegs.GPAPUD.bit.GPIO16 = 0;	 // Enable pull-up for GPIO31 (CANTXA)
+	EDIS;
 }
 
 static void InitCanaPinConfig(int canSysClk, int baudrate)
