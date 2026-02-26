@@ -280,43 +280,39 @@ can_tx_result CAN_FIFO_Write(TeCanPort port, const TsCanFrame* frame)
             SbTxPortAvailable[port] = false;
 
             // Use the HAL to transmit a frame.
-            hal_res = hal_can_send(port, CAN_TX_STD_MAILBOX_INDEX,
-                    &temp_frame);
+            hal_res = hal_can_send(port, CAN_TX_STD_MAILBOX_INDEX, &temp_frame);
 
             if (hal_res == eErrorOk)
             {
                 tx_res = TX_OK;
-            }else
-            {
-                SbTxPortAvailable[port] = true;  // 释放端口
-                fifo_res = Write_Buffer(&temp_frame, SsCAN_TxBuffer[port],
-                        &Su8CAN_TxHead[port], &Su8CAN_TxSize[port],
-                        &Su8CAN_TxMaxSize[port], Su8CAN_TxLength[port]);
-
-                if ((SbTxPortAvailable[port] == true)&&(SpCAN_CallbackTx[port] != NULL))
-                {
-                    (*SpCAN_CallbackTx[port])(port, CAN_TX_STD_MAILBOX_INDEX);
-                }
             }
         }
-		// The port isn't available, so use the FIFO buffer instead.
+
+        // The port isn't available, so use the FIFO buffer instead.
         else
         {
+            ENTER_CRITICAL();
             fifo_res = Write_Buffer(&temp_frame, SsCAN_TxBuffer[port],
                     &Su8CAN_TxHead[port], &Su8CAN_TxSize[port],
                     &Su8CAN_TxMaxSize[port], Su8CAN_TxLength[port]);
 
+            if ((SbTxPortAvailable[port] == true)&&(SpCAN_CallbackTx[port] != NULL))
+            {
+                (*SpCAN_CallbackTx[port])(port, CAN_TX_STD_MAILBOX_INDEX);
+            }
+            EXIT_CRITICAL();
+
             switch (fifo_res)
             {
-            case eCanFifoWriteResult_FullBefore_Write:
-                tx_res = FAIL_CANx_TX_BUFFER_FULL;
-                break;
+                case eCanFifoWriteResult_FullBefore_Write:
+                    tx_res = FAIL_CANx_TX_BUFFER_FULL;
+                    break;
 
-            case eCanFifoWriteResult_FullAfterWrite:
-            case eCanFifoWriteResult_NotFull:
-            default:
-                tx_res = TX_OK;
-                break;
+                case eCanFifoWriteResult_FullAfterWrite:
+                case eCanFifoWriteResult_NotFull:
+                default:
+                    tx_res = TX_OK;
+                    break;
             }
         }
     }
@@ -327,3 +323,6 @@ can_tx_result CAN_FIFO_Write(TeCanPort port, const TsCanFrame* frame)
 
     return tx_res;
 }
+
+
+
