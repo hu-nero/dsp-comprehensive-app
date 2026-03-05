@@ -28,28 +28,28 @@ CAN_Adapter_Init(void)
 bool
 CAN_Adapter_SendPowerStart(void)
 {
-    return CAN_Agent_SendControl(POWER_DEVICE_ADDR, CMD_START, 0x01);
+    return CAN_Agent_SendControl(eCanPort_0, POWER_DEVICE_ADDR, CMD_START, 0x01);
 }
 
 // 发送关闭电源命令
 bool
 CAN_Adapter_SendPowerClose(void)
 {
-    return CAN_Agent_SendControl(POWER_DEVICE_ADDR, CMD_STOP, 0x01);
+    return CAN_Agent_SendControl(eCanPort_0, POWER_DEVICE_ADDR, CMD_STOP, 0x01);
 }
 // 发送状态查询命令
 bool
 CAN_Adapter_SendStatusQuery(void)
 {
     // 通过发送控制命令查询状态
-    return CAN_Agent_SendControl(POWER_DEVICE_ADDR, CMD_ACK, 0x00);
+    return CAN_Agent_SendControl(eCanPort_0, POWER_DEVICE_ADDR, CMD_ACK, 0x00);
 }
 
 // 发送控制响应
 bool
 CAN_Adapter_SendControlResponse(uint16_t DstAddr, ResponseStatus_t Status)
 {
-    return CAN_Agent_SendCtrlResp(DstAddr, Status);
+    return CAN_Agent_SendCtrlResp(eCanPort_0, DstAddr, Status);
 }
 
 

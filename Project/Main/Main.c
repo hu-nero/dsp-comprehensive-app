@@ -121,7 +121,6 @@ void main(void)
 	InitXintf();
 	InitCpuTimers();
 //	hal_wdg_init();
-	CAN_App_Init();
 //	InitECana();
 //	InitECanb();
 	Sci_Monitor_init(&ScibRegs);
@@ -165,6 +164,9 @@ void main(void)
 
 	CPLDSWVerRead();
 
+	for(i=0;i<1000;i++)
+		for(j=0;j<10000;j++);
+	CAN_App_Init();
     //test
     CAN_App_Test();
     for(;;)

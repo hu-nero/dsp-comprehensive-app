@@ -128,35 +128,34 @@ typedef struct
     uint16_t data[CAN_DRIVER_MAX_DLC];
 } PendingCmd_t ;
 
-extern ParamState_t CAN_Agent_get_send_param_state(void);
-extern void CAN_Agent_set_send_param_state(ParamState_t State);
-extern void CAN_Agent_clr_send_param_state();
+extern ParamState_t CAN_Agent_get_send_param_state(TeCanPort port);
+extern void CAN_Agent_set_send_param_state(TeCanPort port, ParamState_t State);
+extern void CAN_Agent_clr_send_param_state(TeCanPort port);
 
 // 代理初始化
 extern void CAN_Agent_Init(TeCanPort port);
 
 // 主循环处理
-extern void CAN_Agent_Process(void);
+extern void CAN_Agent_Process(TeCanPort port);
 
-extern bool CAN_Agent_SendFault(uint16_t DstAddr, FaultLevel_t Level, uint16_t FaultCode);
-extern bool CAN_Agent_SendControl(uint16_t DstAddr, CtrlCmd_t Cmd, uint16_t Param);
-extern bool CAN_Agent_SendCtrlResp(uint16_t DstAddr, ResponseStatus_t Status);
-extern bool CAN_Agent_SendStatus(DeviceStatus_t Status);
+extern bool CAN_Agent_SendFault(TeCanPort port, uint16_t DstAddr, FaultLevel_t Level, uint16_t FaultCode);
+extern bool CAN_Agent_SendControl(TeCanPort port, uint16_t DstAddr, CtrlCmd_t Cmd, uint16_t Param);
+extern bool CAN_Agent_SendCtrlResp(TeCanPort port, uint16_t DstAddr, ResponseStatus_t Status);
+extern bool CAN_Agent_SendStatus(TeCanPort port, DeviceStatus_t Status);
 
-extern bool CAN_Agent_SendParamCmd(uint16_t DstAddr, ParamDevice_t Dev, ParamCmd_t Cmd, uint16_t Piece, uint16_t FrameLen);
-extern bool CAN_Agent_SendParamResp(uint16_t DstAddr, ResponseStatus_t Status);
-extern bool CAN_Agent_SendParamData(uint16_t DstAddr, uint16_t PieceIndex, uint16_t *Data, uint16_t FrameLen);
-extern bool CAN_Agent_StartSendParamTranmit(uint16_t DstAddr, ParamDevice_t Device, uint16_t *Data, uint16_t TotalLen);
-
+extern bool CAN_Agent_SendParamCmd(TeCanPort port, uint16_t DstAddr, ParamDevice_t Dev, ParamCmd_t Cmd, uint16_t Piece, uint16_t FrameLen);
+extern bool CAN_Agent_SendParamResp(TeCanPort port, uint16_t DstAddr, ResponseStatus_t Status);
+extern bool CAN_Agent_SendParamData(TeCanPort port, uint16_t DstAddr, uint16_t PieceIndex, uint16_t *Data, uint16_t FrameLen);
+extern bool CAN_Agent_StartSendParamTranmit(TeCanPort port, uint16_t DstAddr, ParamDevice_t Device, uint16_t *Data, uint16_t TotalLen);
 
 // TODO: 其他通信方式待实现
 
 // 发送心跳帧
-extern bool CAN_Agent_SendHeartbeat(void);
+extern bool CAN_Agent_SendHeartbeat(TeCanPort port);
 
 // 接收消息回调函数定义
-typedef void (*CAN_RxHandler_t)(FuncCode_t func, uint16_t src_addr, uint16_t *data, uint16_t dlc);
-extern void CAN_SetRxHandler(CAN_RxHandler_t handler);
+typedef void (*CAN_RxHandler_t)(TeCanPort port, FuncCode_t func, uint16_t src_addr, uint16_t *data, uint16_t dlc);
+extern void CAN_SetRxHandler(TeCanPort port, CAN_RxHandler_t handler);
 
 
 #endif /* SERVICES_CAN_AGENT_CAN_AGENT_H_ */

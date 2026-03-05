@@ -7,7 +7,8 @@
 #include "hal_can.h"
 #include "string.h"
 
-static Can_TypeDef *halCanDevicePtr[eCanPort_Count] = {NULL,NULL};
+static Can_TypeDef *gHalCanDevPtr[eCanPort_Count] = {NULL,NULL};
+static Can_TypeDef gHalCanDevStruct[eCanPort_Count];
 static uint16_t canRxBuf[eCanPort_Count][CAN_DRIVER_RX_NUM][CAN_DRIVER_MAX_DLC];
 static HAL_CAN_Rx_Struct gHalCanRxStruct[eCanPort_Count];
 uint32_t gHalCanErrorCount = 0;
@@ -25,17 +26,20 @@ hal_can_init(uint8_t PortId, TeCanPortSpeed Baud)
     {
         return 1;
     }
+    // init fifo
     CAN_FIFO_Init((TeCanPort)PortId);
     CAN_FIFO_InitCallbacks((TeCanPort)PortId);
     CAN_InitWrite((TeCanPort)PortId);
+
+    // init can struct
+    gHalCanDevPtr[PortId] = &gHalCanDevStruct[PortId];
 
     switch(PortId)
     {
         case eCanPort_0:
             {
-                halCanDevicePtr[eCanPort_0]->MsgChn = CANCHNA;
+                gHalCanDevPtr[eCanPort_0]->MsgChn = CANCHNA;
                 //init can device
-                //sample points = 75%
             	switch (Baud)
             	{
                     case eCanPortSpeed_125kbps:
@@ -64,14 +68,13 @@ hal_can_init(uint8_t PortId, TeCanPortSpeed Baud)
                     	}
                 		break;
             	}
-                InitCanDrive(halCanDevicePtr[eCanPort_0], u32CanBaudValue);
+                InitCanDrive(gHalCanDevPtr[eCanPort_0], u32CanBaudValue);
             }
             break;
         case eCanPort_1:
             {
-                halCanDevicePtr[eCanPort_1]->MsgChn = CANCHNB;
+                gHalCanDevPtr[eCanPort_1]->MsgChn = CANCHNB;
                 //init can device
-                //sample points = 75%
                 switch (Baud)
                 {
                     case eCanPortSpeed_125kbps:
@@ -100,7 +103,7 @@ hal_can_init(uint8_t PortId, TeCanPortSpeed Baud)
                         }
                         break;
                 }
-                InitCanDrive(halCanDevicePtr[eCanPort_1], u32CanBaudValue);
+                InitCanDrive(gHalCanDevPtr[eCanPort_1], u32CanBaudValue);
             }
             break;
         default:return 3;
@@ -128,7 +131,7 @@ hal_can_deinit(uint8_t PortId)
         case eCanPort_0:
             {
                 //deinit can device
-                DeinitCanDrive(halCanDevicePtr[eCanPort_0]);
+                DeinitCanDrive(gHalCanDevPtr[eCanPort_0]);
                 // 重置状态变量
                 gHalCanRxStruct[eCanPort_0].u8IdxHead = 0;
                 gHalCanRxStruct[eCanPort_0].u8IdxTail = 0;
@@ -142,7 +145,7 @@ hal_can_deinit(uint8_t PortId)
         case eCanPort_1:
             {
                 //deinit can device
-                DeinitCanDrive(halCanDevicePtr[eCanPort_1]);
+                DeinitCanDrive(gHalCanDevPtr[eCanPort_1]);
                 // 重置状态变量
                 gHalCanRxStruct[eCanPort_1].u8IdxHead = 0;
                 gHalCanRxStruct[eCanPort_1].u8IdxTail = 0;
@@ -181,7 +184,7 @@ hal_can_send(uint8_t PortId, uint8_t Mb, TsCanFrame* Frame)
         sCanMsg.dlc = Frame->dlc <= 8 ? Frame->dlc : 8;
     }
     memcpy(sCanMsg.data, Frame->data, sCanMsg.dlc);
-    CanSendDrive(halCanDevicePtr[PortId], Mb, &sCanMsg);
+    CanSendDrive(gHalCanDevPtr[PortId], Mb, &sCanMsg);
 
     return eErrorOk;
 }
@@ -246,7 +249,7 @@ hal_can_rx_callback(uint8_t PortId, uint8_t Mb)
         gHalCanErrorCount++;  // 溢出错误
         return;
     }
-    CanRecvDrive(halCanDevicePtr[PortId], Mb, &gHalCanRxStruct[PortId].sCanRxTFrame[gHalCanRxStruct[PortId].u8IdxTail]);
+    CanRecvDrive(gHalCanDevPtr[PortId], Mb, &gHalCanRxStruct[PortId].sCanRxTFrame[gHalCanRxStruct[PortId].u8IdxTail]);
     if(gHalCanRxStruct[PortId].sCanRxTFrame[gHalCanRxStruct[PortId].u8IdxTail].dlc > CAN_DRIVER_MAX_DLC)
     {
         gHalCanRxStruct[PortId].sCanRxTFrame[gHalCanRxStruct[PortId].u8IdxTail].dlc = CAN_DRIVER_MAX_DLC;
@@ -262,7 +265,7 @@ hal_can_error_callback(uint8_t PortId, HAL_CAN_ER_TYPE u8CanErrorType)
     {
         case HAL_CAN_ER_ERROR:
             {
-                //CAN_GetError(halCanDevicePtr[PortId], &u32ErrorMask);
+                //CAN_GetError(gHalCanDevPtr[PortId], &u32ErrorMask);
                 gHalCanErrorCount ++;
             }
             break;

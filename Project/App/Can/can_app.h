@@ -12,7 +12,7 @@
 
 extern void CAN_App_Init(void);
 extern void CAN_App_MainLoop(void);
-extern bool CAN_App_SendParam(uint16_t DstAddr, ParamDevice_t Device, uint16_t *Data, uint16_t TotalLength);
+extern bool CAN_App_SendParam(TeCanPort port, uint16_t DstAddr, ParamDevice_t Device, uint16_t *Data, uint16_t TotalLength);
 
 typedef void (*CAN_App_func_status_handler_t)(uint16_t *Data, uint16_t Len);
 extern void CAN_App_Set_func_status_handler(CAN_App_func_status_handler_t Handler);
