@@ -1,0 +1,119 @@
+#include "Custom_ModbusRTU.h"
+#include "Main\Variable.H"
+#include "Main\Comm_Variable.H"
+#include "SCI_Modbus\Sci_Modbus_config.H"
+#include "GPIO\Custom_IOMacro.H"
+/***************************************************************************************************/
+extern int GroupCtrl[35];
+
+void Modbus_Send_To_HMI(void)
+{
+	InputRegBuf[0]  = UabSl_rmsf *10;
+	InputRegBuf[1]  = UbcSl_rmsf *10;
+	InputRegBuf[2]  = UcaSl_rmsf *10;
+	InputRegBuf[3]  = UabPar_rmsf *10;
+	InputRegBuf[4]  = UbcPar_rmsf *10;
+	InputRegBuf[5]  = UcaPar_rmsf *10;
+	InputRegBuf[6]  = UaOut_rmsf *10;
+	InputRegBuf[7]  = UbOut_rmsf *10;
+	InputRegBuf[8]  = UcOut_rmsf *10;
+	InputRegBuf[9]  = UabOut_rmsf *10;
+	InputRegBuf[10] = UbcOut_rmsf *10;
+	InputRegBuf[11] = UcaOut_rmsf *10;
+	InputRegBuf[12] = IaOut_rmsf *10;
+	InputRegBuf[13] = IbOut_rmsf *10;
+	InputRegBuf[14] = IcOut_rmsf *10;
+	InputRegBuf[15] = P_Sys *10;
+	InputRegBuf[16] = Q_Sys *10;
+	InputRegBuf[17] = S_Sys *10;
+	InputRegBuf[18] = PF_Sys *100;
+
+	if(ParaDownloadCtrlWord == 0)
+	{
+		HoldRegBuf[0] = AlmCntThr_UnderVolt_Phase;
+		HoldRegBuf[1] = AlmThr_UnderVolt_Phase;
+		HoldRegBuf[2] = AlmCntThr_OverVolt_Work1;
+		HoldRegBuf[3] = AlmThr_OverVolt_Work1;
+		HoldRegBuf[4] = FltThr_OverVolt_Work1;
+		HoldRegBuf[5] = AlmCntThr_OverVolt_Work2;
+		HoldRegBuf[6] = AlmThr_OverVolt_Work2;
+		HoldRegBuf[7] = FltThr_OverVolt_Work2;
+		HoldRegBuf[8] = AlmCntThr_UnderVolt_Work1;
+		HoldRegBuf[9] = AlmThr_UnderVolt_Work1;
+		HoldRegBuf[10] = FltThr_UnderVolt_Work1;
+		HoldRegBuf[11] = AlmCntThr_UnderVolt_Work2;
+		HoldRegBuf[12] = AlmThr_UnderVolt_Work2;
+		HoldRegBuf[13] = FltThr_UnderVolt_Work2;
+		HoldRegBuf[14] = AlmCntThr_OverImba_Volt;
+		HoldRegBuf[15] = AlmThr_OverImba_Volt * 100;
+		HoldRegBuf[16] = FltCntThr_OverImba_Volt;
+		HoldRegBuf[17] = FltThr_OverImba_Volt * 100;
+		HoldRegBuf[18] = AlmCntThr_OverImba_Curr;
+		HoldRegBuf[19] = AlmThr_OverImba_Curr * 100;
+		HoldRegBuf[20] = FltCntThr_OverImba_Curr;
+		HoldRegBuf[21] = FltThr_OverImba_Curr * 100;
+		HoldRegBuf[22] = AlmCntThr_OverCurr_Work1;
+		HoldRegBuf[23] = AlmThr_OverCurr_Work1;
+		HoldRegBuf[24] = FltThr_OverCurr_Work1;
+		HoldRegBuf[25] = AlmCntThr_OverCurr_Work2;
+		HoldRegBuf[26] = AlmThr_OverCurr_Work2;
+		HoldRegBuf[27] = FltThr_OverCurr_Work2;
+		HoldRegBuf[28] = AlmCntThr_OverLow_Flow1;
+		HoldRegBuf[29] = FltThr_OverLow_Flow1;
+		HoldRegBuf[30] = AlmCntThr_OverLow_Flow2;
+		HoldRegBuf[31] = FltThr_OverLow_Flow2;
+	}
+}
+
+void Modbus_Recv_For_HMI(void)
+{
+	if(ParaDownloadCtrlWord == 0)
+	{
+		AlmCntThr_UnderVolt_Phase = HoldRegBuf[0];
+		AlmThr_UnderVolt_Phase = HoldRegBuf[1];
+		AlmCntThr_OverVolt_Work1 = HoldRegBuf[2];
+		AlmThr_OverVolt_Work1 = HoldRegBuf[3];
+		FltThr_OverVolt_Work1 = HoldRegBuf[4];
+		AlmCntThr_OverVolt_Work2 = HoldRegBuf[5];
+		AlmThr_OverVolt_Work2 = HoldRegBuf[6];
+		FltThr_OverVolt_Work2 = HoldRegBuf[7];
+		AlmCntThr_UnderVolt_Work1 = HoldRegBuf[8];
+		AlmThr_UnderVolt_Work1 = HoldRegBuf[9];
+		FltThr_UnderVolt_Work1 = HoldRegBuf[10];
+		AlmCntThr_UnderVolt_Work2 = HoldRegBuf[11];
+		AlmThr_UnderVolt_Work2 = HoldRegBuf[12];
+		FltThr_UnderVolt_Work2 = HoldRegBuf[13];
+		AlmCntThr_OverImba_Volt = HoldRegBuf[14];
+		AlmThr_OverImba_Volt = HoldRegBuf[15] *0.01;
+		FltCntThr_OverImba_Volt = HoldRegBuf[16];
+		FltThr_OverImba_Volt = HoldRegBuf[17] *0.01;
+		AlmCntThr_OverImba_Curr = HoldRegBuf[18];
+		AlmThr_OverImba_Curr = HoldRegBuf[19] *0.01;
+		FltCntThr_OverImba_Curr = HoldRegBuf[20];
+		FltThr_OverImba_Curr = HoldRegBuf[21] *0.01;
+		AlmCntThr_OverCurr_Work1 = HoldRegBuf[22];
+		AlmThr_OverCurr_Work1 = HoldRegBuf[23];
+		FltThr_OverCurr_Work1 = HoldRegBuf[24];
+		AlmCntThr_OverCurr_Work2 = HoldRegBuf[25];
+		AlmThr_OverCurr_Work2 = HoldRegBuf[26];
+		FltThr_OverCurr_Work2 = HoldRegBuf[27];
+		AlmCntThr_OverLow_Flow1 = HoldRegBuf[28];
+		FltThr_OverLow_Flow1 = HoldRegBuf[29];
+		AlmCntThr_OverLow_Flow2 = HoldRegBuf[30];
+		FltThr_OverLow_Flow2 = HoldRegBuf[31];
+
+		if(ParaSaveFlag != ParaSaveFlagOld)
+		{
+			ParaSaveFlagOld = ParaSaveFlag;
+			ParaDownloadCtrlWord = 2;
+			GroupCtrl[6] |= 0x0100;
+			GroupCtrl[7] |= 0x0100;
+			GroupCtrl[8] |= 0x0100;
+			GroupCtrl[9] |= 0x0100;
+			GroupCtrl[10] |= 0x0100;
+			GroupCtrl[11] |= 0x0100;
+			GroupCtrl[15] |= 0x0100;
+		}
+	}
+}
+
