@@ -100,24 +100,26 @@ typedef struct
 } PendingCmd_t ;
 
 // 代理初始化
-extern void CAN_Agent_Init(TeCanPort port);
+extern void CAN_Agent_Init(TeCanPort Port);
 
 // 主循环处理
-extern void CAN_Agent_Process(TeCanPort port);
+extern void CAN_Agent_Process(TeCanPort Port);
 
-extern bool CAN_Agent_SendFault(TeCanPort port, uint16_t DstAddr, FaultLevel_t Level, uint16_t FaultCode);
-extern bool CAN_Agent_SendControl(TeCanPort port, uint16_t DstAddr, CtrlCmd_t Cmd, uint16_t Param);
-extern bool CAN_Agent_SendCtrlResp(TeCanPort port, uint16_t DstAddr, ResponseStatus_t Status);
-extern bool CAN_Agent_SendStatus(TeCanPort port, DeviceStatus_t Status);
+extern bool CAN_Agent_SendFault(TeCanPort Port, uint16_t DstAddr, FaultLevel_t Level, uint16_t FaultCode);
+extern bool CAN_Agent_SendControl(TeCanPort Port, uint16_t DstAddr, CtrlCmd_t Cmd, uint16_t Param);
+extern bool CAN_Agent_SendCtrlResp(TeCanPort Port, uint16_t DstAddr, ResponseStatus_t Status);
+extern bool CAN_Agent_SendStatus(TeCanPort Port, uint16_t DstAddr, uint16_t *Data);
 
 // TODO: 其他通信方式待实现
 
 // 发送心跳帧
-extern bool CAN_Agent_SendHeartbeat(TeCanPort port);
+extern bool CAN_Agent_SendHeartbeat(TeCanPort Port);
 
-// 接收消息回调函数定义
+// 回调函数定义
 typedef void (*CAN_RxHandler_t)(TeCanPort port, FuncCode_t func, uint16_t src_addr, uint16_t *data, uint16_t dlc);
-extern void CAN_SetRxHandler(TeCanPort port, CAN_RxHandler_t handler);
+typedef void (*CAN_TxHandler_t)(TeCanPort port, FuncCode_t func, uint16_t src_addr);
+extern void CAN_SetRxHandler(TeCanPort Port, CAN_RxHandler_t Handler);
+extern void CAN_Agent_Set_SendStatus_Callback(TeCanPort Port, CAN_TxHandler_t Handler);
 
 
 #endif /* SERVICES_CAN_AGENT_CAN_AGENT_H_ */

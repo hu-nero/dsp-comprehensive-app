@@ -97,6 +97,7 @@ typedef struct
     CabinetState_t target_state;           // 保存的目标状态
 //    CabinetMode_t mode;                  // 当前模式
     bool emergency_stop_status;            // 急停状态
+    bool fault_status;                     // 故障状态
     bool panel_remote_degauss_flag;        // 面板或者远端消磁标志
     SwitchStateList_t switch_list;         // 所有开关
     PowerStatus_t power_status;			   // 电源柜状态

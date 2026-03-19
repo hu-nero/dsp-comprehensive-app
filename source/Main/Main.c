@@ -99,7 +99,7 @@ void main(void)
 
 	Dis_PWM();
 	ParaDownloadCtrlWord=1;
-
+	CAN_App_Test();
 	for(; ;)
 	{
         CAN_App_MainLoop();
@@ -934,7 +934,7 @@ interrupt void EPWM1_INT_Underflow_isr(void)
 	for(i=0; i<70; i++);
 	// Get System Ctrl 1ms
 	SysCnt_1msBase ++;
-	if(SysCnt_1msBase >= 31)
+	if(SysCnt_1msBase >= 16)
 	{
 		SysCnt_1msBase = 0;
 		SCIBSend_1ms ++;

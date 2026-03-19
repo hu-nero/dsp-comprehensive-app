@@ -322,8 +322,8 @@ void GPIO_init(void)
 	IOInputFpga1.DataInt = 0;
 	IOInput1.DataInt = 0;
 	IOInput2.DataInt = 0;
-	IOInputEn.DataInt = 0;
-	IOInputLogic.DataInt = 0;
+	IOInputEn.DataInt = 0xFFFF;
+	IOInputLogic.DataInt = 0xF000;
 	IOInputDisValue.DataInt = 0;
 
 	IOOutFpga1.DataInt = 0;
@@ -334,7 +334,7 @@ void GPIO_init(void)
 	IOOutFpga2Old.DataInt = 0;
 	IOOutput2.DataInt = 0;
 
-	IOOutCtrl1Word.DataInt = 0;
+	IOOutCtrl1Word.DataInt = 0xFFFF;
 
 	IO_PreChar_OFF;
 	IO_FCC_OFF;

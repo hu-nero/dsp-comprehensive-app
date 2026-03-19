@@ -111,17 +111,6 @@ CAN_App_CanRxHandler(TeCanPort Port, FuncCode_t Func, uint16_t SrcAddr, uint16_t
 
         case FUNC_STATUS://0x03
             {
-                uint16_t u16Data[8] = {};
-                DeviceStatus_t status;
-                memcpy(u16Data, Data, Dlc);
-
-                status.run_status = 1;
-                status.fault_flag = 0;
-                status.local_remote = 1;
-                status.work_mode = 1;
-                status.power_status = 1;
-                CAN_Agent_SendStatus(Port, status);
-
                 // 回调
                 if (g_func_status_handler)
                 {
@@ -227,13 +216,14 @@ CAN_App_Test(void)
     Hardware_SwitchControl(DO_ID_A3QF2,SWITCH_ON);
     Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_ON);
     Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_ON);
-    IO_Scan();
-    for (;delay>0;delay--);
-    Hardware_SwitchControl(DO_ID_A3QF1,SWITCH_OFF);
-    Hardware_SwitchControl(DO_ID_A3QF2,SWITCH_OFF);
-    Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_OFF);
-    Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_OFF);
-    Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_OFF);
+    Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_ON);
+//    IO_Scan();
+//    for (;delay>0;delay--);
+//    Hardware_SwitchControl(DO_ID_A3QF1,SWITCH_OFF);
+//    Hardware_SwitchControl(DO_ID_A3QF2,SWITCH_OFF);
+//    Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_OFF);
+//    Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_OFF);
+//    Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_OFF);
     /*uint16_t res = Hardware_SwitchFeed(SWITCH_ID_A3QF1);*/
     IO_Scan();
 }

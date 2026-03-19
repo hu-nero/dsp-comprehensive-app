@@ -176,8 +176,8 @@ extern float vLine_Alarm_Low,vLine_Alarm_High;
 // x > 0;  TBCLK = SYSCLKOUT / (2x X 2^y)
 #define PWM_BlockClock     75000000
 ////////////////////////////////////////////////////////////////
-#define PWM_SwitchFreq     31000
-#define PWM_ControlFreq    31000
+#define PWM_SwitchFreq     15500
+#define PWM_ControlFreq    15500
 #define PWM_CountMode      TB_COUNT_UPDOWN
 
 #define PWM_PeriodReg      (PWM_BlockClock/PWM_SwitchFreq/PWM_CountMode)

@@ -5,7 +5,7 @@
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROGRAM.Texas Instruments XDS100v3 USB Debug Probe_0/C28xx" value="${build_artifact:NPR_600kW}"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROJECT.Texas Instruments XDS100v3 USB Debug Probe_0/C28xx" value="NPR_600kW"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_TARGET_CONFIG" value="${target_config_active_default:NPR_600kW}"/>
-<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.Texas Instruments XDS100v3 USB Debug Probe_0/C28xx" value="F:/WorkSpace_Work\25-12-29\f_Grid_Ctrl500\DSP28335_Project\Project\Debug\NPR_600kW.out"/>
+<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.Texas Instruments XDS100v3 USB Debug Probe_0/C28xx" value="D:/workspaces\work\section_cabinet\f_Grid_Ctrl500\DSP28335_Project\Project\Debug\NPR_600kW.out"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/NPR_600kW"/>
 </listAttribute>
