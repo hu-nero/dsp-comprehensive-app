@@ -29,20 +29,15 @@ union NPR_Status_Word_Type
 	struct
 	{
 		unsigned LocRem:	1;			// bit0: 0-self 1-master
+		unsigned Running:	1;
 		unsigned Estop:		1;			// bit1: 0-mode1 1-mode2
-		unsigned SingQF1:	1;			// bit2: 0-local 1-remod
-		unsigned ParaQF2:	1;			// bit3: 0-single 1-parall
-		unsigned WorkLpSw:	1;			// bit4: 0-stop 1-run
-		unsigned CheckLpSw:	1;			// bit5: 0-normal 1-flaut
-		unsigned CompCapSw:	1;			// bit6: 0-stop 1-run
-		unsigned DegaussSw:	1;			// bit7: 0-normal 1-flaut
 		unsigned PwrUps:	1;			// bit8: 0-normal 1-fastchar
 		unsigned PwrGrid:	1;			// bit9: 0-disconnect 1-connect
-		unsigned DegaussKM1:1;			// bit10: 0-disconnect 1-connect
-		unsigned ImpactCarIn:	1;		// Bit11: 0-disconnect 1-connect
+		unsigned ShockCarIn:1;			// Bit11: 0-disconnect 1-connect
 		unsigned CompCarIn:	1;			// Bit12: 0-disconnect 1-connect
-		unsigned MprRun:	1;
-		unsigned Rsvd:		1;			// bit14:
+		unsigned Rsvd:		6;
+		unsigned Alarm:		1;			// bit14:
+		unsigned Fault:		1;			// bit14:
 		unsigned Toggle:	1;			// bit15: 0-low 1-high
 	}	DataBit;
 };
@@ -52,13 +47,18 @@ union NPR_Status_Word2_Type
 	unsigned int DataInt;
 	struct
 	{
-		unsigned FanReactReq:	1;
-		unsigned FanReactAck:	1;
-		unsigned FanIgbtReq:	1;
-		unsigned FanIgbtAck:	1;
-		unsigned Rsvd:			10;
-		unsigned ComMpr:		1;
-		unsigned ComHMI:		1;
+		unsigned SingQR1:	1;
+		unsigned SingQF1:	1;
+		unsigned ParaQR2:	1;
+		unsigned ParaQF2:	1;
+		unsigned WorkLpQS1:	1;
+		unsigned CheckLpQS1:1;
+		unsigned CompCapQS2:1;
+		unsigned DgssQS3:	1;
+		unsigned DgssKM1:	1;
+		unsigned Rsvd:		5;
+		unsigned ComPwr:	1;
+		unsigned ComHMI:	1;
 	}	DataBit;
 };
 /***********************************************************/

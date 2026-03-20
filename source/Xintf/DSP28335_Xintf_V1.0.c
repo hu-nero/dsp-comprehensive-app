@@ -5,6 +5,7 @@
 #include "main\Custom_GlobalMacro.H"
 #include "GPIO\Custom_IOMacro.H"
 #include "IQmathLib.h"
+#include "stdbool.h"
 
 int ADValue[16]={0};
 
@@ -161,7 +162,7 @@ void Palarell_Extern_ADCScan(void)
 	IbOvh = IbOvh_ad * KGIAD;
 	IcOvh = IcOvh_ad * KGIAD;
 
-	UabSl = (UabSl_ad * KGVAD);
+	UabSl = (UabSl_ad * KGVAD); //single parallel
 	UbcSl = (UbcSl_ad * KGVAD);
 	UcaSl = -UabSl -UbcSl;
 
@@ -172,150 +173,213 @@ void Palarell_Extern_ADCScan(void)
 	UaOut = UaOut_ad * KGVAD;
 	UbOut = UbOut_ad * KGVAD;
 	UcOut = UcOut_ad * KGVAD;
+
+	UabOut = UaOut - UbOut;
+	UbcOut = UbOut - UcOut;
+	UcaOut = UcOut - UaOut;
 //J9 water
 	uFlowRate = -(uflowad * KREAL);
 }
 /**********************************************************************/
 void IOInMapLogic(void)
 {
-	IOInput1.DataBit.Bit0 = (((!IOInputEn.DataBit.Bit0) & IOInputDisValue.DataBit.Bit0)
-							   |(IOInputEn.DataBit.Bit0 & ((IOInputFpga1.DataBit.Bit0^IOInputLogic.DataBit.Bit0)^1)));
-	IOInput1.DataBit.Bit1 = (((!IOInputEn.DataBit.Bit1) & IOInputDisValue.DataBit.Bit1)
-							   |(IOInputEn.DataBit.Bit1 & ((IOInputFpga1.DataBit.Bit1^IOInputLogic.DataBit.Bit1)^1)));
-	IOInput1.DataBit.Bit2 = (((!IOInputEn.DataBit.Bit2) & IOInputDisValue.DataBit.Bit2)
-							   |(IOInputEn.DataBit.Bit2 & ((IOInputFpga1.DataBit.Bit2^IOInputLogic.DataBit.Bit2)^1)));
-	IOInput1.DataBit.Bit3 = (((!IOInputEn.DataBit.Bit3) & IOInputDisValue.DataBit.Bit3)
-							   |(IOInputEn.DataBit.Bit3 & ((IOInputFpga1.DataBit.Bit3^IOInputLogic.DataBit.Bit3)^1)));
-	IOInput1.DataBit.Bit4 = (((!IOInputEn.DataBit.Bit4) & IOInputDisValue.DataBit.Bit4)
-							   |(IOInputEn.DataBit.Bit4 & ((IOInputFpga1.DataBit.Bit4^IOInputLogic.DataBit.Bit4)^1)));
-	IOInput1.DataBit.Bit5 = (((!IOInputEn.DataBit.Bit5) & IOInputDisValue.DataBit.Bit5)
-							   |(IOInputEn.DataBit.Bit5 & ((IOInputFpga1.DataBit.Bit5^IOInputLogic.DataBit.Bit5)^1)));
-	IOInput1.DataBit.Bit6 = (((!IOInputEn.DataBit.Bit6) & IOInputDisValue.DataBit.Bit6)
-							   |(IOInputEn.DataBit.Bit6 & ((IOInputFpga1.DataBit.Bit6^IOInputLogic.DataBit.Bit6)^1)));
-	IOInput1.DataBit.Bit7 = (((!IOInputEn.DataBit.Bit7) & IOInputDisValue.DataBit.Bit7)
-							   |(IOInputEn.DataBit.Bit7 & ((IOInputFpga1.DataBit.Bit7^IOInputLogic.DataBit.Bit7)^1)));
-	IOInput1.DataBit.Bit8 = (((!IOInputEn.DataBit.Bit8) & IOInputDisValue.DataBit.Bit8)
-							   |(IOInputEn.DataBit.Bit8 & ((IOInputFpga1.DataBit.Bit8^IOInputLogic.DataBit.Bit8)^1)));
-	IOInput1.DataBit.Bit9 = (((!IOInputEn.DataBit.Bit9) & IOInputDisValue.DataBit.Bit9)
-							   |(IOInputEn.DataBit.Bit9 & ((IOInputFpga1.DataBit.Bit9^IOInputLogic.DataBit.Bit9)^1)));
-	IOInput1.DataBit.Bit10 = (((!IOInputEn.DataBit.Bit10) & IOInputDisValue.DataBit.Bit10)
-							   |(IOInputEn.DataBit.Bit10 & ((IOInputFpga1.DataBit.Bit10^IOInputLogic.DataBit.Bit10)^1)));
-	IOInput1.DataBit.Bit11 = (((!IOInputEn.DataBit.Bit11) & IOInputDisValue.DataBit.Bit11)
-							   |(IOInputEn.DataBit.Bit11 & ((IOInputFpga1.DataBit.Bit11^IOInputLogic.DataBit.Bit11)^1)));
-	IOInput1.DataBit.Bit12 = (((!IOInputEn.DataBit.Bit12) & IOInputDisValue.DataBit.Bit12)
-							   |(IOInputEn.DataBit.Bit12 & ((IOInputFpga1.DataBit.Bit12^IOInputLogic.DataBit.Bit12)^1)));
-	IOInput1.DataBit.Bit13 = (((!IOInputEn.DataBit.Bit13) & IOInputDisValue.DataBit.Bit13)
-							   |(IOInputEn.DataBit.Bit13 & ((IOInputFpga1.DataBit.Bit13^IOInputLogic.DataBit.Bit13)^1)));
-	IOInput1.DataBit.Bit14 = (((!IOInputEn.DataBit.Bit14) & IOInputDisValue.DataBit.Bit14)
-							   |(IOInputEn.DataBit.Bit14 & ((IOInputFpga1.DataBit.Bit14^IOInputLogic.DataBit.Bit14)^1)));
-	IOInput1.DataBit.Bit15 = (((!IOInputEn.DataBit.Bit15) & IOInputDisValue.DataBit.Bit15)
-							   |(IOInputEn.DataBit.Bit15 & ((IOInputFpga1.DataBit.Bit15^IOInputLogic.DataBit.Bit15)^1)));
-
+	IOInput1.DataBit.Bit0 = (((!IOInput1En.DataBit.Bit0) & IOInput1DisValue.DataBit.Bit0)
+	                           |(IOInput1En.DataBit.Bit0 & ((IOInput1Fpga.DataBit.Bit0^IOInput1Logic.DataBit.Bit0)^1)));
+	IOInput1.DataBit.Bit1 = (((!IOInput1En.DataBit.Bit1) & IOInput1DisValue.DataBit.Bit1)
+	                           |(IOInput1En.DataBit.Bit1 & ((IOInput1Fpga.DataBit.Bit1^IOInput1Logic.DataBit.Bit1)^1)));
+	IOInput1.DataBit.Bit2 = (((!IOInput1En.DataBit.Bit2) & IOInput1DisValue.DataBit.Bit2)
+	                           |(IOInput1En.DataBit.Bit2 & ((IOInput1Fpga.DataBit.Bit2^IOInput1Logic.DataBit.Bit2)^1)));
+	IOInput1.DataBit.Bit3 = (((!IOInput1En.DataBit.Bit3) & IOInput1DisValue.DataBit.Bit3)
+	                           |(IOInput1En.DataBit.Bit3 & ((IOInput1Fpga.DataBit.Bit3^IOInput1Logic.DataBit.Bit3)^1)));
+	IOInput1.DataBit.Bit4 = (((!IOInput1En.DataBit.Bit4) & IOInput1DisValue.DataBit.Bit4)
+	                           |(IOInput1En.DataBit.Bit4 & ((IOInput1Fpga.DataBit.Bit4^IOInput1Logic.DataBit.Bit4)^1)));
+	IOInput1.DataBit.Bit5 = (((!IOInput1En.DataBit.Bit5) & IOInput1DisValue.DataBit.Bit5)
+	                           |(IOInput1En.DataBit.Bit5 & ((IOInput1Fpga.DataBit.Bit5^IOInput1Logic.DataBit.Bit5)^1)));
+	IOInput1.DataBit.Bit6 = (((!IOInput1En.DataBit.Bit6) & IOInput1DisValue.DataBit.Bit6)
+	                           |(IOInput1En.DataBit.Bit6 & ((IOInput1Fpga.DataBit.Bit6^IOInput1Logic.DataBit.Bit6)^1)));
+	IOInput1.DataBit.Bit7 = (((!IOInput1En.DataBit.Bit7) & IOInput1DisValue.DataBit.Bit7)
+	                           |(IOInput1En.DataBit.Bit7 & ((IOInput1Fpga.DataBit.Bit7^IOInput1Logic.DataBit.Bit7)^1)));
+	IOInput1.DataBit.Bit8 = (((!IOInput1En.DataBit.Bit8) & IOInput1DisValue.DataBit.Bit8)
+	                           |(IOInput1En.DataBit.Bit8 & ((IOInput1Fpga.DataBit.Bit8^IOInput1Logic.DataBit.Bit8)^1)));
+	IOInput1.DataBit.Bit9 = (((!IOInput1En.DataBit.Bit9) & IOInput1DisValue.DataBit.Bit9)
+	                           |(IOInput1En.DataBit.Bit9 & ((IOInput1Fpga.DataBit.Bit9^IOInput1Logic.DataBit.Bit9)^1)));
+	IOInput1.DataBit.Bit10 = (((!IOInput1En.DataBit.Bit10) & IOInput1DisValue.DataBit.Bit10)
+	                           |(IOInput1En.DataBit.Bit10 & ((IOInput1Fpga.DataBit.Bit10^IOInput1Logic.DataBit.Bit10)^1)));
+	IOInput1.DataBit.Bit11 = (((!IOInput1En.DataBit.Bit11) & IOInput1DisValue.DataBit.Bit11)
+	                           |(IOInput1En.DataBit.Bit11 & ((IOInput1Fpga.DataBit.Bit11^IOInput1Logic.DataBit.Bit11)^1)));
+	IOInput1.DataBit.Bit12 = (((!IOInput1En.DataBit.Bit12) & IOInput1DisValue.DataBit.Bit12)
+	                           |(IOInput1En.DataBit.Bit12 & ((IOInput1Fpga.DataBit.Bit12^IOInput1Logic.DataBit.Bit12)^1)));
+	IOInput1.DataBit.Bit13 = (((!IOInput1En.DataBit.Bit13) & IOInput1DisValue.DataBit.Bit13)
+	                           |(IOInput1En.DataBit.Bit13 & ((IOInput1Fpga.DataBit.Bit13^IOInput1Logic.DataBit.Bit13)^1)));
+	IOInput1.DataBit.Bit14 = (((!IOInput1En.DataBit.Bit14) & IOInput1DisValue.DataBit.Bit14)
+	                           |(IOInput1En.DataBit.Bit14 & ((IOInput1Fpga.DataBit.Bit14^IOInput1Logic.DataBit.Bit14)^1)));
+	IOInput1.DataBit.Bit15 = (((!IOInput1En.DataBit.Bit15) & IOInput1DisValue.DataBit.Bit15)
+	                           |(IOInput1En.DataBit.Bit15 & ((IOInput1Fpga.DataBit.Bit15^IOInput1Logic.DataBit.Bit15)^1)));
+	////////////////////////////////////////////////////////////////////////////////
+	IOInput2.DataBit.Bit0 = (((!IOInput2En.DataBit.Bit0) & IOInput2DisValue.DataBit.Bit0)
+	                           |(IOInput2En.DataBit.Bit0 & ((IOInput2Fpga.DataBit.Bit0^IOInput2Logic.DataBit.Bit0)^1)));
+	IOInput2.DataBit.Bit1 = (((!IOInput2En.DataBit.Bit1) & IOInput2DisValue.DataBit.Bit1)
+	                           |(IOInput2En.DataBit.Bit1 & ((IOInput2Fpga.DataBit.Bit1^IOInput2Logic.DataBit.Bit1)^1)));
+	IOInput2.DataBit.Bit2 = (((!IOInput2En.DataBit.Bit2) & IOInput2DisValue.DataBit.Bit2)
+	                           |(IOInput2En.DataBit.Bit2 & ((IOInput2Fpga.DataBit.Bit2^IOInput2Logic.DataBit.Bit2)^1)));
+	IOInput2.DataBit.Bit3 = (((!IOInput2En.DataBit.Bit3) & IOInput2DisValue.DataBit.Bit3)
+	                           |(IOInput2En.DataBit.Bit3 & ((IOInput2Fpga.DataBit.Bit3^IOInput2Logic.DataBit.Bit3)^1)));
+	IOInput2.DataBit.Bit4 = (((!IOInput2En.DataBit.Bit4) & IOInput2DisValue.DataBit.Bit4)
+	                           |(IOInput2En.DataBit.Bit4 & ((IOInput2Fpga.DataBit.Bit4^IOInput2Logic.DataBit.Bit4)^1)));
+	IOInput2.DataBit.Bit5 = (((!IOInput2En.DataBit.Bit5) & IOInput2DisValue.DataBit.Bit5)
+	                           |(IOInput2En.DataBit.Bit5 & ((IOInput2Fpga.DataBit.Bit5^IOInput2Logic.DataBit.Bit5)^1)));
+	IOInput2.DataBit.Bit6 = (((!IOInput2En.DataBit.Bit6) & IOInput2DisValue.DataBit.Bit6)
+	                           |(IOInput2En.DataBit.Bit6 & ((IOInput2Fpga.DataBit.Bit6^IOInput2Logic.DataBit.Bit6)^1)));
+	IOInput2.DataBit.Bit7 = (((!IOInput2En.DataBit.Bit7) & IOInput2DisValue.DataBit.Bit7)
+	                           |(IOInput2En.DataBit.Bit7 & ((IOInput2Fpga.DataBit.Bit7^IOInput2Logic.DataBit.Bit7)^1)));
 }
-
-void IOInputFaultCtrl(void)
+void IOInputCtrlFlag(void)
 {
-	int i;
-	CtrlCnt_IOFltDelay ++;
-	if(CtrlCnt_IOFltDelay > 1000)
+	static bool bool_io_rst = false;
+	static bool bool_io_single = false;
+	static bool bool_io_parallel = false;
+	static bool bool_io_degauss = false;
+
+	if((bool_io_rst == false)&&(IO_RstRef_Feed == 1))
 	{
-		CtrlCnt_IOFltDelay = 1000;
-
-		for(i=0; i<1; i++)
+		if(CtrlCnt_IORstRefFeed < 20)
 		{
-			if( ( (IOInput1.DataInt>>i) & 0x0001) == 0x0001 )
-			if(FaultMask_Map(i+2) == 0x0001)
-			{
-				if(!NPR_FaultCode)
-				{
-					FunFaultReact();
-					NPR_FaultCode = i+2;
-				}
-				FaultWord_Map(i+2);
-			}
+			CtrlCnt_IORstRefFeed ++;
 		}
-
-
-		for(i=5; i<8; i++)
+		else
 		{
-			if(((IOInput1.DataInt >> i)&0x0001) == 0x0001)
-			if(FaultMask_Map(i+2) == 0x0001)
-			{
-				if(!NPR_FaultCode)
-				{
-					FunFaultReact();
-					NPR_FaultCode = i+2;
-				}
-				FaultWord_Map(i+2);
-			}
-		}
-
-		for(i=10; i<11; i++)
-		{
-			if(((IOInput1.DataInt >> i)&0x0001) == 0x0001)
-			if(FaultMask_Map(i+2) == 0x0001)
-			{
-				if(!NPR_FaultCode)
-				{
-					FunFaultReact();
-					NPR_FaultCode = i+2;
-				}
-				FaultWord_Map(i+2);
-			}
+			bool_io_rst = true;
+			CtrlCnt_IORstRefFeed = 0;
 		}
 	}
-
-	if(IO_RunRef_Feed == 1)
+	else if((bool_io_rst == true)&&(IO_RstRef_Feed == 0))
 	{
-		CtrlCnt_IORunRefFeed ++;
-		if(CtrlCnt_IORunRefFeed > 20)
+		if(CtrlCnt_IORstRefFeed < 20)
 		{
-			CtrlCnt_IORunRefFeed = 20;
-			Flag_IORunRef = 1;
+			CtrlCnt_IORstRefFeed ++;
 		}
-	}
-	else
-	{
-		CtrlCnt_IORunRefFeed --;
-		if(CtrlCnt_IORunRefFeed < -20)
+		else
 		{
-			CtrlCnt_IORunRefFeed = -20;
-			Flag_IORunRef = 0;
-		}
-	}
-
-	if(IO_RstRef_Feed == 1)
-	{
-		CtrlCnt_IORstRefFeed ++;
-		if(CtrlCnt_IORstRefFeed > 50)
-		{
-			CtrlCnt_IORstRefFeed = 50;
+			bool_io_rst = false;
+			CtrlCnt_IORstRefFeed = 0;
 			Flag_IORstRef = 1;
 		}
 	}
-	else
+
+	if((bool_io_single == false)&&(IO_SingCtrl_Feed == 1))
 	{
-		CtrlCnt_IORstRefFeed --;
-		if(CtrlCnt_IORstRefFeed < 1)
+		if(CtrlCnt_IOSingCtrl < 20)
 		{
-			CtrlCnt_IORstRefFeed = 1;
-			Flag_IORstRef = 0;
+			CtrlCnt_IOSingCtrl ++;
 		}
+		else
+		{
+            bool_io_single = true;
+			CtrlCnt_IOSingCtrl = 0;
+		}
+	}
+    else if((bool_io_single == true)&&(IO_SingCtrl_Feed == 0))
+	{
+		if(CtrlCnt_IOSingCtrl < 20)
+		{
+			CtrlCnt_IOSingCtrl ++;
+		}
+		else
+		{
+            bool_io_single = false;
+			CtrlCnt_IOSingCtrl = 0;
+			Flag_IOSingCtrl = 1;
+		}
+	}
+
+	if((bool_io_parallel == false)&&(IO_ParaCtrl_Feed == 1))
+	{
+	    if(CtrlCnt_IOParaCtrl < 20)
+	    {
+	        CtrlCnt_IOParaCtrl ++;
+	    }
+	    else
+	    {
+            bool_io_parallel = true;
+	        CtrlCnt_IOParaCtrl = 0;
+	    }
+	}
+	else if((bool_io_parallel == true)&&(IO_ParaCtrl_Feed == 0))
+	{
+	    if(CtrlCnt_IOParaCtrl < 20)
+	    {
+	        CtrlCnt_IOParaCtrl ++;
+	    }
+	    else
+	    {
+            bool_io_parallel = false;
+	        CtrlCnt_IOParaCtrl = 0;
+	        Flag_IOParaCtrl = 1;
+	    }
+	}
+
+	if((bool_io_degauss == false)&&(IO_DgssCtrl_Feed == 1))
+	{
+	    if(CtrlCnt_IODgssCtrl < 20)
+	    {
+	        CtrlCnt_IODgssCtrl ++;
+	    }
+	    else
+	    {
+            bool_io_degauss = true;
+            CtrlCnt_IODgssCtrl = 0;
+	    }
+	}
+	else if((bool_io_degauss == true)&&(IO_DgssCtrl_Feed == 0))
+	{
+	    if(CtrlCnt_IODgssCtrl < 20)
+	    {
+	        CtrlCnt_IODgssCtrl ++;
+	    }
+	    else
+	    {
+            bool_io_degauss = false;
+            CtrlCnt_IODgssCtrl = 0;
+	        Flag_IODgssCtrl = 1;
+	    }
 	}
 }
 /**********************************************************************************/
 void IOOutMapLogic(void)
 {
-	IOOutFpga1.DataBit.Bit0 = (IOOutput1.DataBit.Bit0 & IOOutCtrl1Word.DataBit.Bit0)^0;
-	IOOutFpga1.DataBit.Bit1 = (IOOutput1.DataBit.Bit1 & IOOutCtrl1Word.DataBit.Bit1)^0;
-	IOOutFpga1.DataBit.Bit2 = (IOOutput1.DataBit.Bit2 & IOOutCtrl1Word.DataBit.Bit2)^0;
-	IOOutFpga1.DataBit.Bit3 = (IOOutput1.DataBit.Bit3 & IOOutCtrl1Word.DataBit.Bit3)^0;
-	IOOutFpga1.DataBit.Bit4 = (IOOutput1.DataBit.Bit4 & IOOutCtrl1Word.DataBit.Bit4)^0;
-	IOOutFpga1.DataBit.Bit5 = (IOOutput1.DataBit.Bit5 & IOOutCtrl1Word.DataBit.Bit5)^0;
-	IOOutFpga1.DataBit.Bit6 = (IOOutput1.DataBit.Bit6 & IOOutCtrl1Word.DataBit.Bit6)^0;
-	IOOutFpga1.DataBit.Bit7 = (IOOutput1.DataBit.Bit7 & IOOutCtrl1Word.DataBit.Bit7)^0;
-	IOOutFpga1.DataBit.Bit8 = (IOOutput1.DataBit.Bit8 & IOOutCtrl1Word.DataBit.Bit8)^0;
-	IOOutFpga1.DataBit.Bit9 = (IOOutput1.DataBit.Bit9 & IOOutCtrl1Word.DataBit.Bit9)^0;
+	IOOutFpga1.DataBit.Bit0 = (IOOutput1.DataBit.Bit0 & IOOut1CtrlWord.DataBit.Bit0)^0;
+	IOOutFpga1.DataBit.Bit1 = (IOOutput1.DataBit.Bit1 & IOOut1CtrlWord.DataBit.Bit1)^0;
+	IOOutFpga1.DataBit.Bit2 = (IOOutput1.DataBit.Bit2 & IOOut1CtrlWord.DataBit.Bit2)^0;
+	IOOutFpga1.DataBit.Bit3 = (IOOutput1.DataBit.Bit3 & IOOut1CtrlWord.DataBit.Bit3)^0;
+	IOOutFpga1.DataBit.Bit4 = (IOOutput1.DataBit.Bit4 & IOOut1CtrlWord.DataBit.Bit4)^0;
+	IOOutFpga1.DataBit.Bit5 = (IOOutput1.DataBit.Bit5 & IOOut1CtrlWord.DataBit.Bit5)^0;
+	IOOutFpga1.DataBit.Bit6 = (IOOutput1.DataBit.Bit6 & IOOut1CtrlWord.DataBit.Bit6)^0;
+	IOOutFpga1.DataBit.Bit7 = (IOOutput1.DataBit.Bit7 & IOOut1CtrlWord.DataBit.Bit7)^0;
+	IOOutFpga1.DataBit.Bit8 = (IOOutput1.DataBit.Bit8 & IOOut1CtrlWord.DataBit.Bit8)^0;
+	IOOutFpga1.DataBit.Bit9 = (IOOutput1.DataBit.Bit9 & IOOut1CtrlWord.DataBit.Bit9)^0;
+	IOOutFpga1.DataBit.Bit10 = (IOOutput1.DataBit.Bit10 & IOOut1CtrlWord.DataBit.Bit10)^0;
+	IOOutFpga1.DataBit.Bit11 = (IOOutput1.DataBit.Bit11 & IOOut1CtrlWord.DataBit.Bit11)^0;
+	IOOutFpga1.DataBit.Bit12 = (IOOutput1.DataBit.Bit12 & IOOut1CtrlWord.DataBit.Bit12)^0;
+	IOOutFpga1.DataBit.Bit13 = (IOOutput1.DataBit.Bit13 & IOOut1CtrlWord.DataBit.Bit13)^0;
+	IOOutFpga1.DataBit.Bit14 = (IOOutput1.DataBit.Bit14 & IOOut1CtrlWord.DataBit.Bit14)^0;
+	IOOutFpga1.DataBit.Bit15 = (IOOutput1.DataBit.Bit15 & IOOut1CtrlWord.DataBit.Bit15)^0;
+
+	IOOutFpga2.DataBit.Bit0 = (IOOutput2.DataBit.Bit0 & IOOut2CtrlWord.DataBit.Bit0)^0;
+	IOOutFpga2.DataBit.Bit1 = (IOOutput2.DataBit.Bit1 & IOOut2CtrlWord.DataBit.Bit1)^0;
+	IOOutFpga2.DataBit.Bit2 = (IOOutput2.DataBit.Bit2 & IOOut2CtrlWord.DataBit.Bit2)^0;
+	IOOutFpga2.DataBit.Bit3 = (IOOutput2.DataBit.Bit3 & IOOut2CtrlWord.DataBit.Bit3)^0;
+	IOOutFpga2.DataBit.Bit4 = (IOOutput2.DataBit.Bit4 & IOOut2CtrlWord.DataBit.Bit4)^0;
+	IOOutFpga2.DataBit.Bit5 = (IOOutput2.DataBit.Bit5 & IOOut2CtrlWord.DataBit.Bit5)^0;
+	IOOutFpga2.DataBit.Bit6 = (IOOutput2.DataBit.Bit6 & IOOut2CtrlWord.DataBit.Bit6)^0;
+	IOOutFpga2.DataBit.Bit7 = (IOOutput2.DataBit.Bit7 & IOOut2CtrlWord.DataBit.Bit7)^0;
+	IOOutFpga2.DataBit.Bit8 = (IOOutput2.DataBit.Bit8 & IOOut2CtrlWord.DataBit.Bit8)^0;
+	IOOutFpga2.DataBit.Bit9 = (IOOutput2.DataBit.Bit9 & IOOut2CtrlWord.DataBit.Bit9)^0;
+	IOOutFpga2.DataBit.Bit10 = (IOOutput2.DataBit.Bit10 & IOOut2CtrlWord.DataBit.Bit10)^0;
+	IOOutFpga2.DataBit.Bit11 = (IOOutput2.DataBit.Bit11 & IOOut2CtrlWord.DataBit.Bit11)^0;
+	IOOutFpga2.DataBit.Bit12 = (IOOutput2.DataBit.Bit12 & IOOut2CtrlWord.DataBit.Bit12)^0;
+	IOOutFpga2.DataBit.Bit13 = (IOOutput2.DataBit.Bit13 & IOOut2CtrlWord.DataBit.Bit13)^0;
+	IOOutFpga2.DataBit.Bit14 = (IOOutput2.DataBit.Bit14 & IOOut2CtrlWord.DataBit.Bit14)^0;
+	IOOutFpga2.DataBit.Bit15 = (IOOutput2.DataBit.Bit15 & IOOut2CtrlWord.DataBit.Bit15)^0;
 }
 /***********************************************************************/
 void IO_Scan(void)
@@ -323,12 +387,12 @@ void IO_Scan(void)
 	int i;
 	//read IO status input
 	for(i=0; i<5; i++);
-	IOInputFpga1.DataInt = FPGARDIOSTS1;
+	IOInput1Fpga.DataInt = FPGARDIOSTS1;
 	for(i=0; i<5; i++);
-	IOInputFpga2.DataInt = FPGARDIOSTS2;
-	IOInputFpga3.DataInt = FPGARDIOSTS3;
+//	IOInputFpga2.DataInt = FPGARDIOSTS2;
+	IOInput2Fpga.DataInt = FPGARDIOSTS3;
 	IOInMapLogic();
-	IOInputFaultCtrl();
+	IOInputCtrlFlag();
 	//write IO output
 	IOOutMapLogic();
 

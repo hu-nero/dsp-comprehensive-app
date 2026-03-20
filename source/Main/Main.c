@@ -38,7 +38,6 @@ extern unsigned int RamfuncsLoadStart, RamfuncsLoadEnd, RamfuncsRunStart;
 void INT28335_process(void);
 void pwm_init(void);
 /******************************************************************/
-interrupt void EPWM1_TZINT_isr(void);   // PDP
 interrupt void EPWM1_INT_Underflow_isr(void);
 /******************************************************************/
 void FunFaultReact(void);
@@ -48,6 +47,7 @@ void FunStatusUpdate(void);
 void npr_1ms_protection(void);
 
 void GetVIRms(void);
+void CalImbalance(void);
 void GetPQ2r(void);
 void RealTime20msFun(void);
 void GetFlowRate_Calc(void);
@@ -146,8 +146,8 @@ void main(void)
 
 		if(RealTime1ms >= 20)
 		{
-			RealTime1ms = 0;
 			RealTime20msFun();
+			RealTime1ms = 0;
 		}
 //////////////////////////////////////////////////////////////////////////////
 		if(SysCnt_1s != SysCnt_1sOld)
@@ -163,7 +163,7 @@ void main(void)
 			IO_Scan();
 			Source_Select();
 			Inner_ADCScan();
-			GetPQ2r();
+			CalImbalance();
 			FunStatusUpdate();
 			FunResetAct();
 ///////////////////////////////////////////////////////////////////////////////////////////
@@ -194,7 +194,6 @@ void INT28335_process(void)
 	InitPieVectTable();
 
 	EALLOW;
-	PieVectTable.EPWM1_TZINT = &EPWM1_TZINT_isr;
 	PieVectTable.EPWM1_INT = &EPWM1_INT_Underflow_isr;
 	EDIS;
 
@@ -281,102 +280,95 @@ void FunFaultReact(void)
 /******************************************************************/
 void FunResetAct(void)
 {
-//	MainCtrlWord.DataBit.Reset = MainCtrlWord_PC.DataBit.Reset;
-//	if(MainStusWord.DataBit.PWM == 1)
-//		MainCtrlWord.DataBit.Reset = 0;
-//
-//	if(MainCtrlWord.DataBit.Reset == 1)
-//	{
-//		MainCtrlWord.DataInt = 0;
-//		MainCtrlWord.DataBit.Reset = 1;
-//
-//		MainCtrlWord_PC.DataInt = 0;
-//		MainCtrlWord_PC.DataBit.Reset = 1;
-//
-//		MainCtrlWord_CAN.DataInt = 0;
-//		MainCtrlWord_CAN.DataBit.Reset = 1;
-//
-//		IO_FPGARST_EN;
-//
-//		if(CtrlCnt_RstDelay == 0)
-//		{
-//			CtrlCnt_RstDelay = 1;
-//		}
-//	}
-//
-//	if(CtrlCnt_RstDelay != 0)
-//	{
-//		CtrlCnt_RstDelay ++;
-//		if(CtrlCnt_RstDelay < 100)
-//		{
-////			IO_PWM_LOCK;
-//			MainCtrlWord.DataBit.Reset = 1;
-//		}
-//		if(CtrlCnt_RstDelay > 1500)
-//		{
-//			CtrlCnt_RstDelay = 0;
-//
-//			MainCtrlWord.DataBit.Reset=0;
-//			MainCtrlWord_PC.DataBit.Reset=0;
-//			MainCtrlWord_CAN.DataBit.Reset=0;
-//		}
-//	}
-//
-//	if((MainCtrlWord.DataBit.Reset == 0) && ((Flag_RstCmdOld & 0x0001) == 1))
-//	{
-//		if(MainStusWord.DataBit.PWM == 0)
-//		{
-//			IO_PWM_UNLOCK;
-//
-//			IO_FPGARST_DIS;
-//
-//			EALLOW;
-//			EPwm1Regs.TZSEL.bit.OSHT1 = 0;
-//			EPwm1Regs.TZEINT.bit.OST = 0;
-//
-//			EPwm1Regs.TZCLR.bit.OST = 1;
-//			EPwm1Regs.TZCLR.bit.INT = 1;
-//			EPwm1Regs.TZEINT.bit.OST = 1;
-//			EPwm1Regs.TZSEL.bit.OSHT1 = 1;
-//
-//			EPwm2Regs.TZSEL.bit.OSHT1 = 0;
-//			EPwm2Regs.TZCLR.bit.OST = 1;
-//			EPwm2Regs.TZCLR.bit.INT = 1;
-//			EPwm2Regs.TZSEL.bit.OSHT1 = 1;
-//
-//			EPwm3Regs.TZSEL.bit.OSHT1 = 0;
-//			EPwm3Regs.TZCLR.bit.OST = 1;
-//			EPwm3Regs.TZCLR.bit.INT = 1;
-//			EPwm3Regs.TZSEL.bit.OSHT1 = 1;
-//			EDIS;
-//
-//			variable_algorithm_init();
-//
-//			IO_PreChar_OFF;
-//			IO_FCC_OFF;
-//			IO_ACT_OFF;
-////			IO_ACBON_Dis;
-////			IO_ACBOFF_Dis;
-//		}
-//	}
-//	Flag_RstCmdOld = MainCtrlWord.DataBit.Reset;
+	MainCtrlWord.DataBit.Reset = MainCtrlWord_PC.DataBit.Reset;
+	if(MainStusWord.DataBit.Running == 1)
+		MainCtrlWord.DataBit.Reset = 0;
+
+	if(MainCtrlWord.DataBit.Reset == 1)
+	{
+		MainCtrlWord.DataInt = 0;
+		MainCtrlWord.DataBit.Reset = 1;
+
+		MainCtrlWord_PC.DataInt = 0;
+		MainCtrlWord_PC.DataBit.Reset = 1;
+
+		MainCtrlWord_CAN.DataInt = 0;
+		MainCtrlWord_CAN.DataBit.Reset = 1;
+
+		IO_FPGARST_EN;
+
+		if(CtrlCnt_RstDelay == 0)
+		{
+			CtrlCnt_RstDelay = 1;
+		}
+	}
+
+	if(CtrlCnt_RstDelay != 0)
+	{
+		CtrlCnt_RstDelay ++;
+		if(CtrlCnt_RstDelay < 100)
+		{
+			MainCtrlWord.DataBit.Reset = 1;
+		}
+		if(CtrlCnt_RstDelay > 1500)
+		{
+			CtrlCnt_RstDelay = 0;
+
+			MainCtrlWord.DataBit.Reset=0;
+			MainCtrlWord_PC.DataBit.Reset=0;
+			MainCtrlWord_CAN.DataBit.Reset=0;
+		}
+	}
+
+	if((MainCtrlWord.DataBit.Reset == 0) && ((Flag_RstCmdOld & 0x0001) == 1))
+	{
+		if(MainStusWord.DataBit.Running == 0)
+		{
+			IO_PWM_UNLOCK;
+
+			IO_FPGARST_DIS;
+		}
+	}
+	Flag_RstCmdOld = MainCtrlWord.DataBit.Reset;
 }
 /******************************************************************/
 void FunStatusUpdate(void)
 {
-	union Main_Control_Word_Type Commandtemp;
-	/********************************************/
-	Commandtemp.DataInt = MainCtrlWord.DataInt;
-	if(Commandtemp.DataBit.Reset == 1)
-		MainCtrlWord.DataBit.Reset = 1;
-	if(Commandtemp.DataBit.Stop == 1)
-		MainCtrlWord.DataBit.Stop = 1;
-	if(MainCtrlWord.DataBit.Stop == 1)
+	MainStusWord.DataBit.LocRem = IO_LocRem_Feed;
+	MainStusWord.DataBit.Estop = IO_Estop_Feed;
+	MainSta2Word.DataBit.SingQF1 = IO_SingQF1_Feed;
+	MainSta2Word.DataBit.ParaQF2 = IO_ParaQF2_Feed;
+	MainSta2Word.DataBit.WorkLpQS1 = IO_WorkLpQS1_Feed;
+	MainSta2Word.DataBit.CheckLpQS1 = IO_CheckLpQS1_Feed;
+	MainSta2Word.DataBit.CompCapQS2 = IO_CompCapQS2_Feed;
+	MainStusWord.DataBit.PwrUps = IO_PwrUps_Feed;
+	MainStusWord.DataBit.PwrGrid = IO_PwrGrid_Feed;
+	MainSta2Word.DataBit.DgssKM1 = IO_DgssKM1_Feed;
+	MainStusWord.DataBit.ShockCarIn = IO_ShockCar_Feed;
+	MainStusWord.DataBit.CompCarIn = IO_CompCar_Feed;
+	MainSta2Word.DataBit.DgssQS3 = IO_DgssQS3_Feed;
+	MainSta2Word.DataBit.SingQR1 = IO_SingQR1_Feed;
+	MainSta2Word.DataBit.ParaQR2 = IO_ParaQR2_Feed;
+
+	if(NPR_FaultCode)
 	{
-		MainCtrlWord.DataBit.ACPrechar = 0;
-		MainCtrlWord.DataBit.ACTON = 0;
-		MainCtrlWord.DataBit.PWMON = 0;
+		MainStusWord.DataBit.Fault = 1;
+		MainStusWord.DataBit.Running = 0;
 	}
+	else
+	{
+		MainStusWord.DataBit.Fault = 0;
+
+		if(MainSta2Word.DataBit.WorkLpQS1 & MainSta2Word.DataBit.CheckLpQS1)
+		{
+			MainStusWord.DataBit.Running = 1;
+		}
+		else
+		{
+			MainStusWord.DataBit.Running = 0;
+		}
+	}
+
 }
 /******************************************************************/
 void npr_1ms_protection(void)
@@ -638,8 +630,29 @@ void npr_1ms_protection(void)
 		}
 	}
 	//////////////////////////////////////////////////////////
+	if(MainStusWord.DataBit.PwrGrid)
+	{
+		AlarmWord_Clear(11);
+	}
+	else
+	{
+		AlarmWord_Map(11);
+	}
 
-
+	if(MainStusWord.DataBit.PwrUps)
+	{
+		AlarmWord_Clear(12);
+	}
+	else
+	{
+		AlarmWord_Map(12);
+	}
+	////////////////////////////////////////////////////
+	if(MainStusWord.DataBit.Estop)
+	{
+		NPR_FaultCode = 26;
+		FaultWord_Map(26);
+	}
 }
 /******************************************************************/
 void GetFlowRate_Calc(void)
@@ -658,7 +671,7 @@ void GetFlowRate_Calc(void)
 /******************************************************************/
 void GetVIRms(void)
 {
-	// ===================== 1. UabSl/UbcSl/UcaSl 组 =====================
+	// ===================== 1. UabSl/UbcSl/UcaSl �?=====================
 	UabSl_rms -= UabSl_HalfMemory[SysCnt_10msRmsCalc];
 	UbcSl_rms -= UbcSl_HalfMemory[SysCnt_10msRmsCalc];
 	UcaSl_rms -= UcaSl_HalfMemory[SysCnt_10msRmsCalc];
@@ -674,7 +687,7 @@ void GetVIRms(void)
 	UabSl_rmsf = UabSl_rmsf * 0.875 + UabSl_rms * 0.125;
 	UbcSl_rmsf = UbcSl_rmsf * 0.875 + UbcSl_rms * 0.125;
 	UcaSl_rmsf = UcaSl_rmsf * 0.875 + UcaSl_rms * 0.125;
-	// ===================== 2. UabPar/UbcPar/UcaPar 组 =====================
+	// ===================== 2. UabPar/UbcPar/UcaPar �?=====================
 	UabPar_rms -= UabPar_HalfMemory[SysCnt_10msRmsCalc];
 	UbcPar_rms -= UbcPar_HalfMemory[SysCnt_10msRmsCalc];
 	UcaPar_rms -= UcaPar_HalfMemory[SysCnt_10msRmsCalc];
@@ -690,7 +703,7 @@ void GetVIRms(void)
 	UabPar_rmsf = UabPar_rmsf * 0.875 + UabPar_rms * 0.125;
 	UbcPar_rmsf = UbcPar_rmsf * 0.875 + UbcPar_rms * 0.125;
 	UcaPar_rmsf = UcaPar_rmsf * 0.875 + UcaPar_rms * 0.125;
-	// ===================== 3. IaPar/IbPar/IcPar 组 =====================
+	// ===================== 3. IaPar/IbPar/IcPar �?=====================
 	IaPar_rms -= IaPar_HalfMemory[SysCnt_10msRmsCalc];
 	IbPar_rms -= IbPar_HalfMemory[SysCnt_10msRmsCalc];
 	IcPar_rms -= IcPar_HalfMemory[SysCnt_10msRmsCalc];
@@ -706,7 +719,7 @@ void GetVIRms(void)
 	IaPar_rmsf = IaPar_rmsf * 0.875 + IaPar_rms * 0.125;
 	IbPar_rmsf = IbPar_rmsf * 0.875 + IbPar_rms * 0.125;
 	IcPar_rmsf = IcPar_rmsf * 0.875 + IcPar_rms * 0.125;
-	// ===================== 4. IaOvh/IbOvh/IcOvh 组 =====================
+	// ===================== 4. IaOvh/IbOvh/IcOvh �?=====================
 	IaOvh_rms -= IaOvh_HalfMemory[SysCnt_10msRmsCalc];
 	IbOvh_rms -= IbOvh_HalfMemory[SysCnt_10msRmsCalc];
 	IcOvh_rms -= IcOvh_HalfMemory[SysCnt_10msRmsCalc];
@@ -722,7 +735,7 @@ void GetVIRms(void)
 	IaOvh_rmsf = IaOvh_rmsf * 0.875 + IaOvh_rms * 0.125;
 	IbOvh_rmsf = IbOvh_rmsf * 0.875 + IbOvh_rms * 0.125;
 	IcOvh_rmsf = IcOvh_rmsf * 0.875 + IcOvh_rms * 0.125;
-	// ===================== 5. UaOut/UbOut/UcOut 组 =====================
+	// ===================== 5. UaOut/UbOut/UcOut �?=====================
 	UaOut_rms -= UaOut_HalfMemory[SysCnt_10msRmsCalc];
 	UbOut_rms -= UbOut_HalfMemory[SysCnt_10msRmsCalc];
 	UcOut_rms -= UcOut_HalfMemory[SysCnt_10msRmsCalc];
@@ -738,7 +751,7 @@ void GetVIRms(void)
 	UaOut_rmsf = UaOut_rmsf * 0.875 + UaOut_rms * 0.125;
 	UbOut_rmsf = UbOut_rmsf * 0.875 + UbOut_rms * 0.125;
 	UcOut_rmsf = UcOut_rmsf * 0.875 + UcOut_rms * 0.125;
-	// ===================== 6. UabOut/UbcOut/UcaOut 组 =====================
+	// ===================== 6. UabOut/UbcOut/UcaOut �?=====================
 	UabOut_rms -= UabOut_HalfMemory[SysCnt_10msRmsCalc];
 	UbcOut_rms -= UbcOut_HalfMemory[SysCnt_10msRmsCalc];
 	UcaOut_rms -= UcaOut_HalfMemory[SysCnt_10msRmsCalc];
@@ -759,6 +772,10 @@ void GetVIRms(void)
 	SysCnt_10msRmsCalc ++;
 	if(SysCnt_10msRmsCalc >= 20)
 		SysCnt_10msRmsCalc = 0;
+}
+
+void CalImbalance(void)
+{
 	///////////////////////////
 	vphase_min = UaOut_rmsf;
 	if(vphase_min > UbOut_rmsf)
@@ -780,7 +797,7 @@ void GetVIRms(void)
 	if(vLine_max < UcaOut_rmsf)
 		vLine_max = UcaOut_rmsf;
 
-	if(MainStusWord.DataBit.WorkLpSw)
+	if(MainSta2Word.DataBit.WorkLpQS1)
 	{
 		Uout_Imbalance = (vLine_max - vLine_min) / vLine_avg;
 	}
@@ -789,13 +806,13 @@ void GetVIRms(void)
 		Uout_Imbalance = 0;
 	}
 	///////////////////////////////////////////////
-	if( MainStusWord.DataBit.WorkLpSw & (!MainStusWord.DataBit.CheckLpSw) )
+	if( MainSta2Word.DataBit.WorkLpQS1 & (!MainSta2Word.DataBit.CheckLpQS1) )
 	{
 		IaOut_rmsf = IaPar_rmsf;
 		IbOut_rmsf = IbPar_rmsf;
 		IcOut_rmsf = IcPar_rmsf;
 	}
-	else if( (!MainStusWord.DataBit.WorkLpSw) & (MainStusWord.DataBit.CheckLpSw) )
+	else if( (!MainSta2Word.DataBit.WorkLpQS1) & (MainSta2Word.DataBit.CheckLpQS1) )
 	{
 		IaOut_rmsf = IaOvh_rmsf;
 		IbOut_rmsf = IbOvh_rmsf;
@@ -822,7 +839,7 @@ void GetVIRms(void)
 	if(Iphase_max < IcOut_rmsf)
 		Iphase_max = IcOut_rmsf;
 
-	if(1)//MainStusWord.DataBit.PWM)
+	if( MainSta2Word.DataBit.WorkLpQS1 | MainSta2Word.DataBit.CheckLpQS1 )
 	{
 		Iout_Imbalance = (Iphase_max - Iphase_min) / Iphase_avg;
 	}
@@ -857,9 +874,9 @@ void GetPQ2r(void)
 
 	PF_Ovh = atan2(Q_Ovh, P_Ovh);
 
-	if( MainStusWord.DataBit.WorkLpSw & (!MainStusWord.DataBit.CheckLpSw) )
+	if( MainSta2Word.DataBit.WorkLpQS1 & (!MainSta2Word.DataBit.CheckLpQS1) )
 	{
-		if(MainStusWord.DataBit.SingQF1 | MainStusWord.DataBit.ParaQF2)
+		if(MainSta2Word.DataBit.SingQF1 | MainSta2Word.DataBit.ParaQF2)
 		{
 			P_Sys = P_Work;
 			Q_Sys = P_Work;
@@ -874,7 +891,7 @@ void GetPQ2r(void)
 			PF_Sys = 0;
 		}
 	}
-	else if( (!MainStusWord.DataBit.WorkLpSw) & (MainStusWord.DataBit.CheckLpSw) )
+	else if( (!MainSta2Word.DataBit.WorkLpQS1) & (MainSta2Word.DataBit.CheckLpQS1) )
 	{
 		P_Sys = P_Ovh;
 		Q_Sys = P_Ovh;
@@ -888,36 +905,6 @@ void GetPQ2r(void)
 		S_Sys = 0;
 		PF_Sys = 0;
 	}
-}
-/******************************************************************/
-interrupt void EPWM1_TZINT_isr(void)
-{
-	IO_PWM_LOCK;
-	EINT;
-	FunFaultReact();
-	IO_Scan();
-
-	if(!NPR_FaultCode)
-	{
-		if(IOInput2.DataBit.Bit0==0)  	   NPR_FaultCode = 16;
-		else if(IOInput2.DataBit.Bit1==0)  NPR_FaultCode = 17;
-		else if(IOInput2.DataBit.Bit2==0)  NPR_FaultCode = 18;
-		else if(IOInput2.DataBit.Bit3==0)  NPR_FaultCode = 19;
-		else if(IOInput2.DataBit.Bit4==0)  NPR_FaultCode = 20;
-		else if(IOInput2.DataBit.Bit5==0)  NPR_FaultCode = 21;
-		else if(IOInput2.DataBit.Bit6==0)  NPR_FaultCode = 22;
-		else if(IOInput2.DataBit.Bit7==0)  NPR_FaultCode = 23;
-		else if(IOInput2.DataBit.Bit8==0)  NPR_FaultCode = 24;
-		else if(IOInput2.DataBit.Bit9==0)  NPR_FaultCode = 25;
-		else if(IOInput2.DataBit.Bit10==0) NPR_FaultCode = 26;
-		else if(IOInput2.DataBit.Bit11==0) NPR_FaultCode = 27;
-		else if(IOInput2.DataBit.Bit12==0) NPR_FaultCode = 28;
-		else if(IOInput2.DataBit.Bit13==0) NPR_FaultCode = 29;
-		else if(IOInput2.DataBit.Bit14==0) NPR_FaultCode = 30;
-//		else if(IOInput2.DataBit.Bit15==0) NPR_FaultCode = 31;//500 remove
-	}
-
-	PieCtrlRegs.PIEACK.all = PIEACK_GROUP2;
 }
 /******************************************************************/
 interrupt void EPWM1_INT_Underflow_isr(void)

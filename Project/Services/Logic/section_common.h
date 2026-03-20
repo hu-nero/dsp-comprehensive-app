@@ -81,10 +81,7 @@ typedef enum
 {
     DI_ID_LOCALREMOTE = 0,     // 本地远端
     DI_ID_EMERGENCY_STOP,      // 急停
-    DI_ID_RESET,               // 复位
-    DI_ID_SINGLE,              // 单机按钮
-    DI_ID_BUS1,                // 并机按钮
-    DI_ID_Short,               // 短接按钮
+    DI_ID_RESET,               // 复位(点动)
     DI_ID_A3QF1,               // 单机QF1
     DI_ID_A3QF2,               // 并机QF2
     DI_ID_A3QS1,               // 单机/并机母线刀闸
@@ -94,26 +91,32 @@ typedef enum
     DI_ID_A3TB3_1,             // UPS供电
     DI_ID_A3TB3_2,             // 市电反馈
     DI_ID_A3QF3,               // 消磁晶闸管反馈
-    DI_ID_A3ON_2,              // 远控启动(预留)
-    DI_ID_A3OFF_2,             // 远控停止(预留)
-    DI_ID_A3XCON_1,            // 远控消磁启动(预留)
-    DI_ID_A3XCOFF_2            // 远控消磁停止(预留)
+    DI_ID_SINGLE,              // 单机按钮(点动)
+    DI_ID_BUS1,                // 并机按钮(点动)
+    DI_ID_Short,               // 短接按钮(点动)
+    DI_ID_IMPACT_VEHICLE,      // 冲击车
+    DI_ID_COMPENSATION_VEHICLE // 补偿车
 } DigitalInputType_t;
 
 // 按钮输出
 typedef enum
 {
-    DO_ID_LOCALREMOTE = 0,   // 本地远端
+    DO_ID_RUNACK = 0,   // 本地远端
     DO_ID_DEGAUSS,       // 消磁按键K2
     DO_ID_A3QF1,       // 单机QF1
-    DO_ID_A3QR1,       // 单机QR1
+    DO_ID_RESERVE1,
     DO_ID_A3QF2,       // 并机QF2
-    DO_ID_A3QR2,       // 并机QR2
+    DO_ID_RESERVE2,
     DO_ID_A3QR3,       // 消磁回路QR3
     DO_ID_A3QR4,       // 补偿电容
     DO_ID_A3QR5,       // 补偿电容
     DO_ID_A3QR6,       // 补偿电容
     DO_ID_A3QR7,       // 补偿电容
+    DO_ID_RESERVE3,
+    DO_ID_RUNLED,       // 运行灯
+    DO_ID_FLTLED,       // 故障灯
+    DO_ID_A3QR1,       // 消磁回路QR3
+    DO_ID_A3QR2        // 消磁回路QR3
 } DigitalOutputType_t;
 
 // 三相电压采集点类型

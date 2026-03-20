@@ -136,7 +136,7 @@ Cabinet_Process(CabinetContext_t* Context)
 
     // 急停流程
     // 急停到底1是急停还是0是
-    Cabinet_ExecuteEmergencyProcedure(Context);
+//    Cabinet_ExecuteEmergencyProcedure(Context);
     // 故障急停、消磁
 //    Cabinet_ExecuteEmergencyStopDegaussProcedure(Context);
     // 更新同步柜消息
@@ -156,7 +156,7 @@ Cabinet_Process(CabinetContext_t* Context)
     if (Context->panel_remote_degauss_flag == false)
     {
         // 自复位
-        if (Context->switch_list.manual_switch == SWITCH_OFF)
+        if (Context->switch_list.manual_switch == SWITCH_ON)
         {
             Cabinet_ProcessFaultReset(Context);
             Cabinet_ProcessAutoParallel(Context);
@@ -294,7 +294,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
     {
         Context->switch_list.manual_switch = (SwitchState_t)Context->switch_feed(DI_ID_LOCALREMOTE);
         // 手动模式
-        if (Context->switch_list.manual_switch == SWITCH_ON)
+        if (Context->switch_list.manual_switch == SWITCH_OFF)
         {
             // 读取旋钮状态
             Context->switch_list.single_switch = (SwitchState_t)Context->switch_feed(DI_ID_SINGLE);
@@ -922,7 +922,7 @@ Cabinet_RecoverFromEmergency(CabinetContext_t* Context)
     // 检查急停信号是否已经解除
     Context->switch_list.emergency_stop_switch = (SwitchState_t)Context->switch_feed(DI_ID_EMERGENCY_STOP);
     Context->emergency_stop_status = (Context->switch_list.emergency_stop_switch == SWITCH_OFF);
-    if (Context->switch_list.emergency_stop_switch == SWITCH_OFF)
+    if (Context->switch_list.emergency_stop_switch == SWITCH_ON)
     {
         // 急停信号仍然存在，不能恢复
         return RESULT_FAILED;
@@ -1159,7 +1159,7 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
     // 读取急停反馈
     Context->switch_list.emergency_stop_switch = (SwitchState_t)Context->switch_feed(DI_ID_EMERGENCY_STOP);
     // 默认读取的FPGA的IO值为1时，认为急停触发（IO_scan()可以加取反）
-    if (Context->switch_list.emergency_stop_switch == SWITCH_ON)
+    if (Context->switch_list.emergency_stop_switch == SWITCH_OFF)
     {
         // 设置急停状态
         Context->emergency_stop_status = true;
@@ -1372,7 +1372,7 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
     // 手动/自动
     Context->switch_list.manual_switch = (SwitchState_t)Context->switch_feed(DI_ID_LOCALREMOTE);
     // 手动模式
-    if (Context->switch_list.manual_switch == SWITCH_ON)
+    if (Context->switch_list.manual_switch == SWITCH_OFF)
     {
         // 消磁面板闭合
         if (Context->panel_remote_degauss_flag == false)
@@ -1393,7 +1393,7 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
         }
     }
     // 自动模式
-    else if (Context->switch_list.manual_switch == SWITCH_OFF)
+    else if (Context->switch_list.manual_switch == SWITCH_ON)
     {
         // TODO:读取远端消磁，或者远端消磁指令触发消磁函数
         return RESULT_INVALID_STATE;

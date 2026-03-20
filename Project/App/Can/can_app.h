@@ -16,6 +16,7 @@ extern bool CAN_App_SendParam(TeCanPort port, uint16_t DstAddr, ParamDevice_t De
 
 typedef void (*CAN_App_func_status_handler_t)(TeCanPort Port, uint16_t *Data, uint16_t Len);
 extern void CAN_App_Set_func_status_handler(CAN_App_func_status_handler_t Handler);
+extern void CAN_App_RecordPanelSwitchStatus(void);
 extern void CAN_App_Test(void);
 
 #endif /* APP_CAN_CAN_APP_H_ */

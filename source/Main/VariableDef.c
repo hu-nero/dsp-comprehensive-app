@@ -299,16 +299,21 @@ float PLL_ErrTotal=0;
 /////////////////////// Hardware Ctrl  /////////////////////////////
 ////////////////////////////////////////////////////////////////////
 // DI
-union DataBit_Type IOInputFpga1,IOInputFpga2, IOInputFpga3;
+union DataBit_Type IOInput1Fpga, IOInput2Fpga;
 union DataBit_Type IOInput1, IOInput2;
-union DataBit_Type IOInputEn;
-union DataBit_Type IOInputLogic;
-union DataBit_Type IOInputDisValue;
+
+union DataBit_Type IOInput1En;
+union DataBit_Type IOInput1Logic;
+union DataBit_Type IOInput1DisValue;
+
+union DataBit_Type IOInput2En;
+union DataBit_Type IOInput2Logic;
+union DataBit_Type IOInput2DisValue;
 // DO
 union DataBit_Type IOOutFpga1, IOOutFpga1Old;
 union DataBit_Type IOOutFpga2, IOOutFpga2Old;
 union DataBit_Type IOOutput1, IOOutput2;
-union DataBit_Type IOOutCtrl1Word;
+union DataBit_Type IOOut1CtrlWord, IOOut2CtrlWord;
 // InterADC Tempr
 float CtrlThr_TransfOn_TempH = 0,CtrlThr_TransfOff_TempL = 0;
 float CtrlThr_ReactorOn_TempH=0,CtrlThr_TransfOff_TempH = 0;
@@ -534,10 +539,24 @@ int CtrlCnt_IORunRefFeed=0;
 int CtrlCnt_IORstRefFeed=0;
 int CtrlCnt_IOFltDelay=0;
 int CtrlCnt_ReactorFanOn=0;
+
+u16 CtrlCnt_IOSingCtrl=0;
+u16 CtrlCnt_IOParaCtrl=0;
+u16 CtrlCnt_IODgssCtrl=0;
 // Flag
+int Flag_IOSingCtrl=0;
+int Flag_IOParaCtrl=0;
+int Flag_IODgssCtrl=0;
+int Flag_IORstRef=0;
+
+int Flag_RemParaCtrl=0;
+int Flag_RemSingCtrl=0;
+int Flag_RemDgssCtrl=0;
+int Flag_RemRstRef=0;
+
 int Flag_LockPWM=0;
 int Flag_IORunRef=0;
-int Flag_IORstRef=0;
+
 int Flag_IORstRefOld=0;
 int Flag_FanCapOn=0;
 int Flag_EEPROMCheck=0;

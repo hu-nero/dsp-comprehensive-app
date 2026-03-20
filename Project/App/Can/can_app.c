@@ -35,7 +35,7 @@
 #define IO_A3QS1_Feed   				IOInput1.DataBit.Bit6
 #define IO_A3K17_Feed   				IOInput1.DataBit.Bit15
 #define IO_A3QS2_Feed   				IOInput1.DataBit.Bit5
-#define IO_A3QS3_Feed   				IOInput1.DataBit.Bit5
+#define IO_A3QS3_Feed   				IOInput1.DataBit.Bit15
 
 #define IO_LOCALREMOTE_Feed				IOInput1.DataBit.Bit0
 #define IO_EMERGENCY_STOP_Feed			IOInput1.DataBit.Bit1
@@ -50,6 +50,9 @@
 #define ADC0_CH3_Value                  *(unsigned  int *)(0x4040)
 #define ADC0_CH4_Value                  *(unsigned  int *)(0x4050)
 #define ADC0_CH5_Value                  *(unsigned  int *)(0x4060)
+
+static uint16_t s_switchStatus[4] = {0, 0, 0, 0};
+
 static CAN_App_func_status_handler_t g_func_status_handler = NULL;
 // 全局柜体控制上下文
 static CabinetContext_t g_cabinet_context;
@@ -202,7 +205,9 @@ CAN_App_MainLoop(void)
 
     // 处理柜体状态机
     Cabinet_Process(&g_cabinet_context);
-
+    
+    // 读取点动按钮
+    CAN_App_RecordPanelSwitchStatus();
     // switch test
 //    CAN_App_Test();
 }
@@ -217,15 +222,40 @@ CAN_App_Test(void)
     Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_ON);
     Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_ON);
     Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_ON);
-//    IO_Scan();
-//    for (;delay>0;delay--);
-//    Hardware_SwitchControl(DO_ID_A3QF1,SWITCH_OFF);
-//    Hardware_SwitchControl(DO_ID_A3QF2,SWITCH_OFF);
-//    Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_OFF);
-//    Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_OFF);
-//    Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_OFF);
+    IO_Scan();
+    for (;delay>0;delay--);
+    Hardware_SwitchControl(DO_ID_A3QF1,SWITCH_OFF);
+    Hardware_SwitchControl(DO_ID_A3QF2,SWITCH_OFF);
+    Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_OFF);
+    Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_OFF);
+    Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_OFF);
     /*uint16_t res = Hardware_SwitchFeed(SWITCH_ID_A3QF1);*/
     IO_Scan();
+}
+
+void
+CAN_App_RecordPanelSwitchStatus(void)
+{
+    if (Flag_IORstRef == 1)
+    {
+        s_switchStatus[0] = ! s_switchStatus[0];
+        Flag_IORstRef = 0;
+    }
+    if (Flag_IOSingCtrl == 1)
+    {
+        s_switchStatus[1] = ! s_switchStatus[1];
+        Flag_IOSingCtrl = 0;
+    }
+    if (Flag_IOParaCtrl == 1)
+    {
+        s_switchStatus[2] = ! s_switchStatus[2];
+        Flag_IOParaCtrl = 0;
+    }
+    if (Flag_IODgssCtrl == 1)
+    {
+        s_switchStatus[3] = ! s_switchStatus[3];
+        Flag_IODgssCtrl = 0;
+    }
 }
 
 // 发送控制命令
@@ -275,15 +305,147 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
 {
     switch (SwitchId)
     {
+        case DO_ID_RUNACK:
+            {
+            }
+            break;
+        case DO_ID_DEGAUSS:
+            {
+            }
+            break;
         case DO_ID_A3QF1:
             {
                 if (State == SWITCH_ON)
                 {
-                    IO_A3QF1_En;
+                    /*IO_QF1SingOn_En;*/
+                    // 间隔
+                    /*IO_QF1SingOn_Dis;*/
+
+                    IO_QF1SingOn_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IO_A3QF1_Dis;
+                    /*IO_QF1SingOff_En;*/
+                    // 间隔
+                    /*IO_QF1SingOff_Dis;*/
+
+                    IO_QF1SingOn_Dis;
+                }
+            }
+            break;
+        case DO_ID_RESERVE1:
+            {
+            }
+            break;
+        case DO_ID_A3QF2:
+            {
+                if (State == SWITCH_ON)
+                {
+                    /*IO_QF2ParaOn_En;*/
+                    /*// 间隔*/
+                    /*IO_QF2ParaOn_Dis;*/
+
+                    IO_QF2ParaOn_En;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                    /*IO_QF2ParaOff_En;*/
+                    /*// 间隔*/
+                    /*IO_QF2ParaOff_Dis;*/
+
+                    IO_QF2ParaOn_Dis;
+                }
+            }
+            break;
+        case DO_ID_RESERVE2:
+            {
+            }
+            break;
+        case DO_ID_A3QR3:
+            {
+                if (State == SWITCH_ON)
+                {
+                    IO_QR3Dgss_ON;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                    IO_QR3Dgss_OFF;
+                }
+            }
+            break;
+        case DO_ID_A3QR4:
+            {
+                if (State == SWITCH_ON)
+                {
+                    IO_QR4CompCap_ON;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                    IO_QR4CompCap_OFF;
+                }
+            }
+            break;
+        case DO_ID_A3QR5:
+            {
+                if (State == SWITCH_ON)
+                {
+                    IO_QR5CompCap_ON;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                    IO_QR5CompCap_OFF;
+                }
+            }
+            break;
+        case DO_ID_A3QR6:
+            {
+                if (State == SWITCH_ON)
+                {
+                    IO_QR6CompCap_ON;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                    IO_QR6CompCap_OFF;
+                }
+            }
+            break;
+        case DO_ID_A3QR7:
+            {
+                if (State == SWITCH_ON)
+                {
+                    IO_QR7CompCap_ON;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                    IO_QR7CompCap_OFF;
+                }
+            }
+            break;
+        case DO_ID_RESERVE3:
+            {
+            }
+            break;
+        case DO_ID_RUNLED:
+            {
+                if (State == SWITCH_ON)
+                {
+                	IO_RunLed_ON;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                	IO_RunLed_OFF;
+                }
+            }
+            break;
+        case DO_ID_FLTLED:
+            {
+                if (State == SWITCH_ON)
+                {
+                	IO_FltLed_ON;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                	IO_FltLed_OFF;
                 }
             }
             break;
@@ -299,18 +461,6 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                 }
             }
             break;
-        case DO_ID_A3QF2:
-            {
-                if (State == SWITCH_ON)
-                {
-                    IO_A3QF2_En;
-                }
-                else if (State == SWITCH_OFF)
-                {
-                    IO_A3QF2_Dis;
-                }
-            }
-            break;
         case DO_ID_A3QR2:
             {
                 if (State == SWITCH_ON)
@@ -320,58 +470,6 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                 else if (State == SWITCH_OFF)
                 {
                     IO_A3QR2_Dis;
-                }
-            }
-            break;
-        case DO_ID_A3QR3:
-            {
-                if (State == SWITCH_ON)
-                {
-                    IO_A3QR3_En;
-                }
-                else if (State == SWITCH_OFF)
-                {
-                    IO_A3QR3_Dis;
-                }
-            }
-            break;
-        case DO_ID_A3QR4:
-            {
-                if (State == SWITCH_ON)
-                {
-                }
-                else if (State == SWITCH_OFF)
-                {
-                }
-            }
-            break;
-        case DO_ID_A3QR5:
-            {
-                if (State == SWITCH_ON)
-                {
-                }
-                else if (State == SWITCH_OFF)
-                {
-                }
-            }
-            break;
-        case DO_ID_A3QR6:
-            {
-                if (State == SWITCH_ON)
-                {
-                }
-                else if (State == SWITCH_OFF)
-                {
-                }
-            }
-            break;
-        case DO_ID_A3QR7:
-            {
-                if (State == SWITCH_ON)
-                {
-                }
-                else if (State == SWITCH_OFF)
-                {
                 }
             }
             break;
@@ -388,80 +486,73 @@ Hardware_SwitchFeed(uint16_t SwitchId)
     {
         case DI_ID_LOCALREMOTE:
             {
-                return IO_LOCALREMOTE_Feed;
+                return IO_LocRem_Feed;
             }
         case DI_ID_EMERGENCY_STOP:
             {
-                return IO_EMERGENCY_STOP_Feed;
+                return IO_Estop_Feed;
             }
         case DI_ID_RESET:
             {
-            }
-            break;
-        case DI_ID_SINGLE:
-            {
-                return IO_SINGLE_Feed;
-            }
-        case DI_ID_BUS1:
-            {
-                return IO_BUS1_Feed;
-            }
-        case DI_ID_Short:
-            {
-                return IO_SHORT_Feed;
+                return s_switchStatus[0];
             }
         case DI_ID_A3QF1:
             {
-                return IO_A3QF1_Feed;
+                return IO_SingQF1_Feed;
             }
         case DI_ID_A3QF2:
             {
-                return IO_A3QF2_Feed;
+                return IO_ParaQF2_Feed;
             }
         case DI_ID_A3QS1:
             {
-                return IO_A3QS1_Feed;
+                return IO_WorkLpQS1_Feed;
             }
         case DI_ID_A3K17:
             {
-                return IO_A3K17_Feed;
+                return IO_CheckLpQS1_Feed;
             }
         case DI_ID_A3QS2:
             {
-                return IO_A3QS2_Feed;
+                return IO_CompCapQS2_Feed;
             }
         case DI_ID_A3QS3:
             {
                 return IO_A3QS3_Feed;
+                /*return IO_DgssQS3_Feed;*/
             }
         case DI_ID_A3TB3_1:
             {
+                return IO_PwrUps_Feed;
             }
-            break;
         case DI_ID_A3TB3_2:
             {
+                return IO_PwrGrid_Feed;
             }
-            break;
         case DI_ID_A3QF3:
             {
-            	return IO_A3QF3_Feed;
+            	return IO_DgssKM1_Feed;
             }
-        case DI_ID_A3ON_2:
+        case DI_ID_SINGLE:
             {
+                return s_switchStatus[1];
             }
-            break;
-        case DI_ID_A3OFF_2:
+        case DI_ID_BUS1:
             {
+                return s_switchStatus[2];
             }
-            break;
-        case DI_ID_A3XCON_1:
+        case DI_ID_Short:
             {
+                return s_switchStatus[3];
             }
-            break;
-        case DI_ID_A3XCOFF_2:
+        case DI_ID_IMPACT_VEHICLE:
             {
+                return IO_ShockCar_Feed;
             }
-            break;
+        case DI_ID_COMPENSATION_VEHICLE:
+            {
+                return IO_CompCar_Feed;
+            }
         default:break;
     }
     return 0;
@@ -558,3 +649,4 @@ Hardware_AlarmCallback(AlarmType_t AlarmType, const char* Message)
 //           alarm_type == ALARM_NOT_MANUAL_MODE ? "Not Manual Mode" : "Unknown",
 //           message);
 }
+

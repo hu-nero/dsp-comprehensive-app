@@ -5,6 +5,9 @@
 #include "LVRT.H"
 #include "GPIO\Custom_IOMacro.H"
 #include "math.h"
+
+void SecCab_LocalCtrl(void);
+void SecCab_RemoteCtrl(void);
 ///////////////////////////////////////////////////////////////////////////////////
 void Source_Select(void)
 {
@@ -23,71 +26,84 @@ void Source_Select(void)
 	}
 	else if(CtrlModeWord.DataBit.Control_GivenMode == 2)
 	{
-		MainCtrlWord.DataBit.ACPrechar = Flag_IORunRef;
-		MainCtrlWord.DataBit.ACTON = Flag_IORunRef;
-		MainCtrlWord.DataBit.PWMON = Flag_IORunRef;
-
-		if(Flag_IORstRef != Flag_IORstRefOld)
+		if(MainStusWord.DataBit.LocRem == 0) // Local
 		{
-			Flag_IORstRefOld = Flag_IORstRef;
-			if(Flag_IORstRef == 1)
-			{
-				if(((IOInput1.DataInt >> 10)&0x0001) != 0x0001)
-				{
-					MainCtrlWord.DataBit.Reset = 1;
-				}
-				else
-				{
-					MainCtrlWord.DataBit.Reset = 0;
-				}
-			}
+			SecCab_LocalCtrl();
+		}
+		else if(MainStusWord.DataBit.LocRem == 1) // Remote
+		{
+			SecCab_RemoteCtrl();
 		}
 
 		MainCtrlWord_PC.DataInt = MainCtrlWord.DataInt;
 	}
-////KVar Gevin/////////////////////////////////////////////////
-	if(CtrlModeWord.DataBit.Reactive_GivenMode == 0)
-	{
-		KVARRef_Sys = KVARRef_CAN;
-	}
-	else if(CtrlModeWord.DataBit.Reactive_GivenMode == 1)
-	{
-		KVARRef_Sys = KVARRef_PC;
-	}
-	else
-	{
-		KVARRef_Sys = 0;
-	}
-
-	KVARRef_PC = KVARRef_Sys;
-
-	KVARRef_Sys -= KVar_filter_Comp;
-	if(KVARRef_Sys > KVar_Lim)
-		KVARRef_Sys = KVar_Lim;
-	if(KVARRef_Sys < -KVar_Lim)
-		KVARRef_Sys = -KVar_Lim;
-
-////KW Gevin/////////////////////////////////////////////////
-	if(CtrlModeWord.DataBit.Active_GivenMode == 0)
-	{
-		KWRefRef_Sys = KWRefRef_CAN;
-	}
-	else if(CtrlModeWord.DataBit.Active_GivenMode == 1)
-	{
-		KWRefRef_Sys = KWRefRef_PC;
-	}
-	else
-	{
-		KWRefRef_Sys = 0;
-	}
-
-	KWRefRef_PC = KWRefRef_Sys;
-
-	if(KWRefRef_Sys > KW_Lim)
-		KWRefRef_Sys = KW_Lim;
-	if(KWRefRef_Sys < -KW_Lim)
-		KWRefRef_Sys = -KW_Lim;
 }
 ///////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////
+void SecCab_LocalCtrl(void)
+{
+//	if(MainSta2Word.DataBit.SingQF1 == 1)
+//	{
+//		Flag_IORstRef = 0;
+//		Flag_IODgssCtrl = 0;
+//
+//		if(Flag_IOSingCtrl == 1)
+//		{
+//			Flag_IOSingCtrl = 0;
+//			// todo close single loop
+//		}
+//	}
+//	else
+//	{
+//
+//	}
 
+
+
+}
+////////////////////////////////////////////////////
+void SecCab_RemoteCtrl(void)
+{
+//	if(MainStusWord.DataBit.MprRun == 1) // PowerCab running
+//	{
+//		// Runing is stop
+//		if(FlagRemote_Stop == 1)
+//		{
+//			FlagRemote_Stop = 0;
+//
+//		}
+//
+//		if( (FlagRemote_Start == 1) || (FlagRemote_Reset == 1) )
+//		{
+//			FlagRemote_Start = 0;
+//			FlagRemote_Reset = 0;
+//		}
+//	}
+//	else if(MainStusWord.DataBit.MprRun == 0) // PowerCab stop
+//	{
+//		if(FlagRemote_Stop == 1)
+//		{
+//			FlagRemote_Stop = 0;
+//		}
+//
+//		if(FlagRemote_Start == 1)
+//		{
+//			FlagRemote_Start = 0;
+//
+//			if(MainStusWord.DataBit.NPRRun == 0)
+//			{
+//
+//			}
+//		}
+//		// Stoping is Rst
+//		if(FlagRemote_Reset == 1)
+//		{
+//			FlagRemote_Reset = 0;
+//
+//			if(MainStusWord.DataBit.NPRRun == 0)
+//			{
+//			}
+//		}
+//	}
+}
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////

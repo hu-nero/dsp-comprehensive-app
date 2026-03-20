@@ -18,6 +18,12 @@
 #define POWER_DEVICE_ADDR             0x02    // 电源设备地址
 #define SYNC_CABINET_DEVICE_ADDR      0x01    // 电源设备地址
 
+union WordParam_t
+{
+    uint16_t u16param;
+    uint8_t u8param[2];
+};
+
 union WordPowerStatus_t
 {
 	unsigned int all;
@@ -28,66 +34,23 @@ union WordPowerStatus_t
 	}	bit;
 };
 
-// 同步给区段柜状态字
-union WordSyncToSectionStatus_t
+
+// 同步柜->区段柜
+union WordSyncStatus_t
 {
 	unsigned int all;
 	struct
 	{
-		unsigned run_state:			2;		// bit0-1
-		unsigned reserve:	    	14;		// bit2-15
+		unsigned heartbeat:			        1;// bit0
+		unsigned section_grid_feedback:		4;// bit1-4
+		unsigned sync_grid_state:    		1;// bit5
+		unsigned off_grid_all:			    1;// bit6
+		unsigned sync_is_master:			1;// bit7
+		unsigned reserve:  	    	        7;// bit8-15
 	}	bit;
 };
 
-// 并联电源并机状态
-union WordParallelPwrParallelStatus_t
-{
-	unsigned int all;
-	struct
-	{
-		unsigned run_state:			2;		// bit0-1
-		unsigned reserve:	    	14;		// bit2-15
-	}	bit;
-};
-
-// 并联电源在线且无故障状态
-union WordParallelPwrOnlineNoFaultStatus_t
-{
-	unsigned int all;
-	struct
-	{
-		unsigned run_state:			2;		// bit0-1
-		unsigned reserve:	    	14;		// bit2-15
-	}	bit;
-};
-
-// 区段实际并机状态
-union WordSectionParallelStatus_t
-{
-	unsigned int all;
-	struct
-	{
-		unsigned run_state:			2;		// bit0-1
-		unsigned reserve:	    	14;		// bit2-15
-	}	bit;
-};
-union WordSectionOnlineNoFaultStatus_t
-{
-	unsigned int all;
-	struct
-	{
-		unsigned section_1_status:			1;// bit0
-		unsigned section_2_status:			1;// bit1
-		unsigned section_3_status:			1;// bit2
-		unsigned section_4_status:			1;// bit3
-		unsigned section_5_status:			1;// bit4
-		unsigned section_6_status:			1;// bit5
-		unsigned section_7_status:			1;// bit6
-		unsigned section_8_status:			1;// bit7
-		unsigned online_num:	    	    8;// bit8-15
-	}	bit;
-};
-
+// 区段柜->同步柜
 union WordSectionStatus_t
 {
 	unsigned int all;
@@ -106,15 +69,74 @@ union WordSectionStatus_t
 	}	bit;
 };
 
+// 电源柜->区段柜
 typedef struct
 {
-    union WordSyncToSectionStatus_t sync_to_section_status;
-    union WordParallelPwrParallelStatus_t parallel_pwr_parallel_status;
-    union WordParallelPwrOnlineNoFaultStatus_t parallel_pwr_online_nofault_status;
-    union WordSectionParallelStatus_t section_parallel_status;
-    union WordSectionOnlineNoFaultStatus_t section_online_nofault_status;
+    uint16_t input_AB_line_voltage;      // 输入AB线电压
+    uint16_t input_BC_line_voltage;      // 输入BC线电压
+    uint16_t input_CA_line_voltage;      // 输入CA线电压
+    uint16_t input_A_phase_voltage;      // 输入A相电压
+    uint16_t input_B_phase_voltage;      // 输入B相电压
+    uint16_t input_C_phase_voltage;      // 输入C相电压
+    uint16_t input_A_phase_current;      // 输入A相电流
+    uint16_t input_B_phase_current;      // 输入B相电流
+    uint16_t input_C_phase_current;      // 输入C相电流
+    uint16_t input_apparent_power;       // 输入视在功率
+    uint16_t input_active_power;         // 输入有功功率
+    uint16_t input_reactive_power;       // 输入无功功率
+    uint16_t input_power_factor;         // 输入功率因数
+    uint16_t input_energy_high_byte;     // 输入电量高字节
+    uint16_t input_energy_low_byte;      // 输入电量低字节
+    uint16_t input_transformer_temp;     // 输入变压器温度
+    uint16_t input_reactor_temp;         // 输入电抗器温度
+    uint16_t output_reactor_temp;        // 输出电抗器温度
+    uint16_t output_AB_line_voltage;     // 输出AB线电压
+    uint16_t output_BC_line_voltage;     // 输出BC线电压
+    uint16_t output_CA_line_voltage;     // 输出CA线电压
+    uint16_t output_A_phase_voltage;     // 输出A相电压
+    uint16_t output_B_phase_voltage;     // 输出B相电压
+    uint16_t output_C_phase_voltage;     // 输出C相电压
+    uint16_t output_A_phase_current;     // 输出A相负载电流
+    uint16_t output_B_phase_current;     // 输出B相负载电流
+    uint16_t output_C_phase_current;     // 输出C相负载电流
+    uint16_t output_apparent_power;      // 输出视在功率
+    uint16_t output_active_power;        // 输出有功功率
+    uint16_t output_reactive_power;      // 输出无功功率
+    uint16_t output_power_factor;        // 输出功率因数
+    uint16_t dc_bus_voltage;             // 直流母线电压
+    uint16_t input_frequency;            // 输入频率
+    uint16_t input_igbt_temp;            // 输入IGBT温度
+    uint16_t output_igbt_temp;           // 输出IGBT温度
+    uint16_t output_frequency;           // 输出频率
+    uint16_t coolant_flow_rate;          // 冷却水流量
+    uint16_t coolant_inlet_temp;         // 冷却水进水温度
+    uint16_t coolant_outlet_temp;        // 冷却水出水温度
+
+    union WordParam_t power_fault_word_1;         // 电源故障字1
+    union WordParam_t power_fault_word_2;         // 电源故障字2
+    union WordParam_t power_fault_word_3;         // 电源故障字3
+    union WordParam_t power_fault_word_4;         // 电源故障字4
+    union WordParam_t power_fault_word_5;         // 电源故障字5
+    union WordParam_t power_fault_word_6;         // 电源故障字6
+    union WordParam_t power_alarm_word_1;         // 电源告警字1
+    union WordParam_t power_alarm_word_2;         // 电源告警字2
+    union WordParam_t power_alarm_word_3;         // 电源告警字3
+    union WordParam_t power_alarm_word_4;         // 电源告警字4
+    union WordParam_t power_alarm_word_5;         // 电源告警字5
+    union WordParam_t power_alarm_word_6;         // 电源告警字6
+    union WordParam_t power_status_word_1;        // 电源状态字1
+    union WordParam_t power_status_word_2;        // 电源状态字2
+    union WordParam_t power_status_word_3;        // 电源状态字3
+    union WordParam_t power_section_interact_word;// 电源区段交互字
+} CommPowerToSection_t;
+
+// 同步柜->区段柜
+typedef struct
+{
+    union WordSyncStatus_t sync_status;
 } CommSyncToSection_t;
 
+// 区段柜->同步柜
 typedef struct
 {
     union WordSectionStatus_t section_status;
@@ -145,9 +167,10 @@ extern void CAN_Adapter_ClearPowerStatus(void);
 
 extern GridConnectionStatus_t CAN_Adapter_GetGridConnectionStatus(void);
 extern void CAN_Adapter_ClearGridConnectionStatus(void);
-extern CommSyncToSection_t CAN_Adapter_GetSyncToSectionStatus(void);
 
-// 发给同步柜
+// 同步柜交互
+extern CommSyncToSection_t CAN_Adapter_GetCommSyncToSection(void);
+extern void CAN_Adapter_SetCommSyncToSection(CommSyncToSection_t Status);
 extern CommSectionToSync_t CAN_Adapter_GetCommSectionToSync(void);
 extern void CAN_Adapter_SetCommSectionToSync(CommSectionToSync_t Status);
 

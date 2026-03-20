@@ -27,6 +27,12 @@ void Modbus_Send_To_HMI(void)
 	InputRegBuf[16] = Q_Sys *10;
 	InputRegBuf[17] = S_Sys *10;
 	InputRegBuf[18] = PF_Sys *100;
+	memcpy(&InputRegBuf[19], &MainStusWord.DataInt, 2);
+	memcpy(&InputRegBuf[20], &MainSta2Word.DataInt, 2);
+	memcpy(&InputRegBuf[21], &AlarmWord1.DataInt, 2);
+	memcpy(&InputRegBuf[22], &AlarmWord2.DataInt, 2);
+	memcpy(&InputRegBuf[23], &FaultWord1.DataInt, 2);
+	memcpy(&InputRegBuf[24], &FaultWord2.DataInt, 2);
 
 	if(ParaDownloadCtrlWord == 0)
 	{

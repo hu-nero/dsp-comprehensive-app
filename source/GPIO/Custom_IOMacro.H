@@ -28,7 +28,6 @@ extern int CPLDSWVerRead(void);
 //   PWM 74ACT245-OE
 #define IO_PWM_LOCK						GpioDataRegs.GPACLEAR.bit.GPIO13=1
 #define IO_PWM_UNLOCK					GpioDataRegs.GPASET.bit.GPIO13=1
-
 //----------------------------------------------------------
 //   AD7606 PIN
 #define IO_ADCONVSTSTART                GpioDataRegs.GPBCLEAR.bit.GPIO58 = 1
@@ -39,43 +38,77 @@ extern int CPLDSWVerRead(void);
 #define IO_RunAck_ON					IOOutput1.DataBit.Bit0 = 1
 #define IO_RunAck_OFF					IOOutput1.DataBit.Bit0 = 0
 
-#define IO_FltAck_ON					IOOutput1.DataBit.Bit1 = 1
-#define IO_FltAck_OFF					IOOutput1.DataBit.Bit1 = 0
+#define IO_DgssAck_ON					IOOutput1.DataBit.Bit1 = 1
+#define IO_DgssAck_OFF					IOOutput1.DataBit.Bit1 = 0
 
-#define IO_PreChar_ON					IOOutput1.DataBit.Bit2 = 1
-#define IO_PreChar_OFF					IOOutput1.DataBit.Bit2 = 0
+#define IO_QF1SingOn_En					IOOutput1.DataBit.Bit2 = 1
+#define IO_QF1SingOn_Dis				IOOutput1.DataBit.Bit2 = 0
 
-#define IO_ACT_ON						IOOutput1.DataBit.Bit3 = 1
-#define IO_ACT_OFF						IOOutput1.DataBit.Bit3 = 0
+#define IO_QF1SingOff_En				IOOutput1.DataBit.Bit3 = 1
+#define IO_QF1SingOff_Dis				IOOutput1.DataBit.Bit3 = 0
 
-//#define IO_ACBON_En					IOOutput1.DataBit.Bit3 = 1
-//#define IO_ACBON_Dis					IOOutput1.DataBit.Bit3 = 0
+//#define 					IOOutput1.DataBit.Bit4 = 1
+//#define 					IOOutput1.DataBit.Bit4 = 0
 //
-//#define IO_ACBOFF_En					IOOutput1.DataBit.Bit4 = 1
-//#define IO_ACBOFF_Dis					IOOutput1.DataBit.Bit4 = 0
+#define IO_QF2ParaOn_En					IOOutput1.DataBit.Bit5 = 1
+#define IO_QF2ParaOn_Dis				IOOutput1.DataBit.Bit5 = 0
 
-#define IO_FCC_ON			            IOOutput1.DataBit.Bit5 = 1
-#define IO_FCC_OFF			            IOOutput1.DataBit.Bit5 = 0
+#define IO_QF2ParaOff_En			    IOOutput1.DataBit.Bit6 = 1
+#define IO_QF2ParaOff_Dis			    IOOutput1.DataBit.Bit6 = 0
 
-#define IO_FanIgbt_ON					IOOutput1.DataBit.Bit6 = 1
-#define IO_FanIgbt_OFF					IOOutput1.DataBit.Bit6 = 0
+//#define 					IOOutput1.DataBit.Bit7 = 1
+//#define 					IOOutput1.DataBit.Bit7 = 0
 
-#define IO_FanTransf_ON                	IOOutput1.DataBit.Bit7 = 1
-#define IO_FanTransf_OFF               	IOOutput1.DataBit.Bit7 = 0
+#define IO_QR3Dgss_ON                	IOOutput1.DataBit.Bit8 = 1
+#define IO_QR3Dgss_OFF               	IOOutput1.DataBit.Bit8 = 0
 
-//#define IO_FanCap_ON					IOOutput1.DataBit.Bit9 = 1
-//#define IO_FanCap_OFF					IOOutput1.DataBit.Bit9 = 0
+#define IO_QR4CompCap_ON                IOOutput1.DataBit.Bit9 = 1
+#define IO_QR4CompCap_OFF               IOOutput1.DataBit.Bit9 = 0
+
+#define IO_QR5CompCap_ON                IOOutput1.DataBit.Bit10 = 1
+#define IO_QR5CompCap_OFF               IOOutput1.DataBit.Bit10 = 0
+
+#define IO_QR6CompCap_ON                IOOutput1.DataBit.Bit11 = 1
+#define IO_QR6CompCap_OFF               IOOutput1.DataBit.Bit11 = 0
+
+#define IO_QR7CompCap_ON                IOOutput1.DataBit.Bit12 = 1
+#define IO_QR7CompCap_OFF               IOOutput1.DataBit.Bit12 = 0
+
+//#define                 IOOutput1.DataBit.Bit13 = 1
+//#define                IOOutput1.DataBit.Bit13 = 0
+
+#define IO_RunLed_ON                IOOutput1.DataBit.Bit14 = 1
+#define IO_RunLed_OFF               IOOutput1.DataBit.Bit14 = 0
+
+#define IO_FltLed_ON                IOOutput1.DataBit.Bit15 = 1
+#define IO_FltLed_OFF               IOOutput1.DataBit.Bit15 = 0
 /////////////////////////////////////IOInputMap////////////////////////////////////////
-#define IO_ACB_Feed						IOInput1.DataBit.Bit1
-#define IO_FCC_Feed						IOInput1.DataBit.Bit2
-#define IO_FanReact_Feed				IOInput1.DataBit.Bit3
-#define IO_FanIgbt_Feed                 IOInput1.DataBit.Bit4
-#define IO_RunRef_Feed					IOInput1.DataBit.Bit8
-#define IO_RstRef_Feed					IOInput1.DataBit.Bit9
-#define IO_Estop_Feed					IOInput1.DataBit.Bit10
-#define IO_ACT_Feed						IOInput1.DataBit.Bit11
-#define IO_UPS_Feed						IOInput1.DataBit.Bit12
-#define IO_Grid_Feed					IOInput1.DataBit.Bit13
+#define IO_LocRem_Feed					IOInput1.DataBit.Bit0
+#define IO_Estop_Feed					IOInput1.DataBit.Bit1
+#define IO_RstRef_Feed					IOInput1.DataBit.Bit2
+#define IO_SingQF1_Feed					IOInput1.DataBit.Bit3
+#define IO_ParaQF2_Feed                	IOInput1.DataBit.Bit4
+#define IO_WorkLpQS1_Feed				IOInput1.DataBit.Bit5
+#define IO_CheckLpQS1_Feed				IOInput1.DataBit.Bit6
+#define IO_CompCapQS2_Feed				IOInput1.DataBit.Bit7
+#define IO_PwrUps_Feed					IOInput1.DataBit.Bit8
+#define IO_PwrGrid_Feed					IOInput1.DataBit.Bit9
+#define IO_DgssKM1_Feed					IOInput1.DataBit.Bit10
+#define IO_SingCtrl_Feed				IOInput1.DataBit.Bit11
+#define IO_ParaCtrl_Feed				IOInput1.DataBit.Bit12
+#define IO_DgssCtrl_Feed				IOInput1.DataBit.Bit13
+#define IO_ShockCar_Feed				IOInput1.DataBit.Bit14
+#define IO_CompCar_Feed					IOInput1.DataBit.Bit15
+
+#define IORem_SingCtrl_Feed				IOInput2.DataBit.Bit0
+#define IORem_ParaCtrl_Feed				IOInput2.DataBit.Bit1
+#define IORem_ParaBusOn_Feed			IOInput2.DataBit.Bit2
+#define IORem_ParaBusOff_Feed			IOInput2.DataBit.Bit3
+#define IORem_DegaussOn_Feed            IOInput2.DataBit.Bit4
+#define IORem_DegaussOff_Feed			IOInput2.DataBit.Bit5
+#define IO_SingQR1_Feed					IOInput2.DataBit.Bit6
+#define IO_ParaQR2_Feed					IOInput2.DataBit.Bit7
+#define IO_DgssQS3_Feed					IOInput2.DataBit.Bit8
 ///////////////////////////////////////////////////////////////////////////////////////
 extern void Flash_CS_En(void);
 extern void Flash_CS_Dis(void);

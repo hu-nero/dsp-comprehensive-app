@@ -13,13 +13,21 @@ static PowerStatus_t gPowerStatus;
 static GridConnectionStatus_t gGridConnectionStatus;
 static CommSyncToSection_t gCommSyncToSectionStatus;
 static CommSectionToSync_t gCommSectionToSyncStatus;
+static CommPowerToSection_t gCommPowerToSectionParam;
 
 
 void CAN_Adapter_SendStatus_Callback(TeCanPort Port, FuncCode_t Func, uint16_t SrcAddr);
 
-static void CAN_Adapter_ParsePowerStatus(uint16_t *Data, uint16_t Dlc);
-static void CAN_Adapter_ParseGridConnectionStatus(uint16_t *Data, uint16_t Dlc);
+static void CAN_Adapter_ParsePowerParam(uint16_t *Data, uint16_t Dlc);
+static void CAN_Adapter_ParseSyncCabinetStatus(uint16_t *Data, uint16_t Dlc);
 static void CAN_Adapter_RxHandler(TeCanPort Port, uint16_t *Data, uint16_t Dlc);
+
+// u8转u16
+static inline
+uint16_t CombineBytes(uint8_t Lo, uint8_t Hi)
+{
+    return (uint16_t)(Lo | (Hi << 8));
+}
 
 PowerStatus_t
 CAN_Adapter_GetPowerStatus(void)
@@ -78,7 +86,7 @@ CAN_Adapter_Init(void)
     gGridConnectionStatus.status_word = 0;
 
     // 初始化同步柜向区段柜通信状态
-    gCommSyncToSectionStatus.section_online_nofault_status.all = 0;
+//    gCommSyncToSectionStatus.section_online_nofault_status.all = 0;
     gCommSectionToSyncStatus.section_status.all = 0;
 
     // 回调
@@ -123,98 +131,189 @@ CAN_Adapter_SendControlResponse(uint16_t DstAddr, ResponseStatus_t Status)
     return CAN_Agent_SendCtrlResp(eCanPort_0, DstAddr, Status);
 }
 
-// 解析电源状态（CANA）
+
+// 解析电源参数
 static void
-CAN_Adapter_ParsePowerStatus(uint16_t *Data, uint16_t Dlc)
+CAN_Adapter_ParsePowerParam(uint16_t *Data, uint16_t Dlc)
 {
-	union WordPowerStatus_t status_word;
-    static bool bool_single_flag = false;
+    uint16_t block;
+    uint16_t state;
 
     if ((!Data) || (Dlc < 1))
     {
         return;
     }
 
-    status_word.all = (Data[0]&0xFF)|(Data[1]<<8);
+    block = (Data[0] & 0xFF) | (Data[1] << 8);
 
-    // 解析状态字
-    switch (status_word.bit.run_state)
+    switch (block)
     {
         case 0:
             {
-                bool_single_flag = false;
-                gPowerStatus.run_state = POWER_STANDBY;
+                gCommPowerToSectionParam.input_AB_line_voltage = CombineBytes(Data[2], Data[3]) * 10;
+                gCommPowerToSectionParam.input_BC_line_voltage = CombineBytes(Data[4], Data[5]) * 10;
+                gCommPowerToSectionParam.input_CA_line_voltage = CombineBytes(Data[6], Data[7]) * 10;
             }
             break;
         case 1:
             {
-                bool_single_flag = true;
-                gPowerStatus.run_state = POWER_SINGLE_RUNNING;
+                gCommPowerToSectionParam.input_A_phase_voltage = CombineBytes(Data[2], Data[3]) * 10;
+                gCommPowerToSectionParam.input_B_phase_voltage = CombineBytes(Data[4], Data[5]) * 10;
+                gCommPowerToSectionParam.input_C_phase_voltage = CombineBytes(Data[6], Data[7]) * 10;
             }
             break;
         case 2:
             {
-                if (bool_single_flag)
-                {
-                    gPowerStatus.single_to_parallel_flag = true;
-                }
-                bool_single_flag = false;
-                gPowerStatus.run_state = POWER_PARALLEL_RUNNING;
+                gCommPowerToSectionParam.input_A_phase_current = CombineBytes(Data[2], Data[3]) * 10;
+                gCommPowerToSectionParam.input_B_phase_current = CombineBytes(Data[4], Data[5]) * 10;
+                gCommPowerToSectionParam.input_C_phase_current = CombineBytes(Data[6], Data[7]) * 10;
             }
             break;
         case 3:
             {
-                bool_single_flag = false;
-                gPowerStatus.run_state = POWER_FAULT;
+                gCommPowerToSectionParam.input_apparent_power = CombineBytes(Data[2], Data[3]) * 10;
+                gCommPowerToSectionParam.input_active_power = CombineBytes(Data[4], Data[5]) * 10;
+                gCommPowerToSectionParam.input_reactive_power = CombineBytes(Data[6], Data[7]) * 10;
             }
             break;
-        default:break;
-
+        case 4:
+            {
+                gCommPowerToSectionParam.input_power_factor = CombineBytes(Data[2], Data[3]) * 100;
+                gCommPowerToSectionParam.input_energy_high_byte = CombineBytes(Data[2], Data[3]) * 1;
+                gCommPowerToSectionParam.input_energy_low_byte = CombineBytes(Data[4], Data[5]) * 1;
+            }
+            break;
+        case 5:
+            {
+                gCommPowerToSectionParam.input_transformer_temp = CombineBytes(Data[2], Data[3]) * 10;
+                gCommPowerToSectionParam.input_reactor_temp = CombineBytes(Data[4], Data[5]) * 10;
+                gCommPowerToSectionParam.output_reactor_temp = CombineBytes(Data[6], Data[7]) * 10;
+            }
+            break;
+        case 6:
+            {
+                gCommPowerToSectionParam.output_AB_line_voltage = CombineBytes(Data[2], Data[3]) * 10;
+                gCommPowerToSectionParam.output_BC_line_voltage = CombineBytes(Data[4], Data[5]) * 10;
+                gCommPowerToSectionParam.output_CA_line_voltage = CombineBytes(Data[6], Data[7]) * 10;
+            }
+            break;
+        case 7:
+            {
+                gCommPowerToSectionParam.output_A_phase_voltage = CombineBytes(Data[2], Data[3]) * 10;
+                gCommPowerToSectionParam.output_B_phase_voltage = CombineBytes(Data[4], Data[5]) * 10;
+                gCommPowerToSectionParam.output_C_phase_voltage = CombineBytes(Data[6], Data[7]) * 10;
+            }
+            break;
+        case 8:
+            {
+                gCommPowerToSectionParam.output_A_phase_current = CombineBytes(Data[2], Data[3]) * 10;
+                gCommPowerToSectionParam.output_B_phase_current = CombineBytes(Data[4], Data[5]) * 10;
+                gCommPowerToSectionParam.output_C_phase_current = CombineBytes(Data[6], Data[7]) * 10;
+            }
+            break;
+        case 9:
+            {
+                gCommPowerToSectionParam.output_apparent_power = CombineBytes(Data[2], Data[3]) * 10;
+                gCommPowerToSectionParam.output_active_power = CombineBytes(Data[4], Data[5]) * 10;
+                gCommPowerToSectionParam.output_reactive_power = CombineBytes(Data[6], Data[7]) * 10;
+            }
+            break;
+        case 10:
+            {
+                gCommPowerToSectionParam.output_power_factor = CombineBytes(Data[2], Data[3]) * 100;
+                gCommPowerToSectionParam.dc_bus_voltage = CombineBytes(Data[2], Data[3]) * 10;
+                gCommPowerToSectionParam.input_frequency = CombineBytes(Data[4], Data[5]) * 10;
+            }
+            break;
+        case 11:
+            {
+                gCommPowerToSectionParam.input_igbt_temp = CombineBytes(Data[2], Data[3]) * 10;
+                gCommPowerToSectionParam.output_igbt_temp = CombineBytes(Data[4], Data[5]) * 10;
+                gCommPowerToSectionParam.output_frequency = CombineBytes(Data[6], Data[7]) * 10;
+            }
+            break;
+        case 12:
+            {
+                gCommPowerToSectionParam.coolant_flow_rate = CombineBytes(Data[2], Data[3]) * 10;
+                gCommPowerToSectionParam.coolant_inlet_temp = CombineBytes(Data[4], Data[5]) * 10;
+                gCommPowerToSectionParam.coolant_outlet_temp = CombineBytes(Data[6], Data[7]) * 10;
+            }
+            break;
+        // 状态字
+        case 13:
+            {
+                gCommPowerToSectionParam.power_fault_word_1.u8param[0] = Data[2];
+                gCommPowerToSectionParam.power_fault_word_1.u8param[1] = Data[3];
+                gCommPowerToSectionParam.power_fault_word_2.u8param[0] = Data[4];
+                gCommPowerToSectionParam.power_fault_word_2.u8param[1] = Data[5];
+                gCommPowerToSectionParam.power_fault_word_3.u8param[0] = Data[6];
+                gCommPowerToSectionParam.power_fault_word_3.u8param[1] = Data[7];
+            }
+            break;
+        case 14:
+            {
+                gCommPowerToSectionParam.power_fault_word_4.u8param[0] = Data[2];
+                gCommPowerToSectionParam.power_fault_word_4.u8param[1] = Data[3];
+                gCommPowerToSectionParam.power_fault_word_5.u8param[0] = Data[4];
+                gCommPowerToSectionParam.power_fault_word_5.u8param[1] = Data[5];
+                gCommPowerToSectionParam.power_fault_word_6.u8param[0] = Data[6];
+                gCommPowerToSectionParam.power_fault_word_6.u8param[1] = Data[7];
+            }
+            break;
+        case 15:
+            {
+                gCommPowerToSectionParam.power_alarm_word_1.u8param[0] = Data[2];
+                gCommPowerToSectionParam.power_alarm_word_1.u8param[1] = Data[3];
+                gCommPowerToSectionParam.power_alarm_word_2.u8param[0] = Data[4];
+                gCommPowerToSectionParam.power_alarm_word_2.u8param[1] = Data[5];
+                gCommPowerToSectionParam.power_alarm_word_3.u8param[0] = Data[6];
+                gCommPowerToSectionParam.power_alarm_word_3.u8param[1] = Data[7];
+            }
+            break;
+        case 16:
+            {
+                gCommPowerToSectionParam.power_fault_word_4.u8param[0] = Data[2];
+                gCommPowerToSectionParam.power_fault_word_4.u8param[1] = Data[3];
+                gCommPowerToSectionParam.power_fault_word_5.u8param[0] = Data[4];
+                gCommPowerToSectionParam.power_fault_word_5.u8param[1] = Data[5];
+                gCommPowerToSectionParam.power_fault_word_6.u8param[0] = Data[6];
+                gCommPowerToSectionParam.power_fault_word_6.u8param[1] = Data[7];
+            }
+            break;
+        case 17:
+            {
+                gCommPowerToSectionParam.power_status_word_1.u8param[0] = Data[2];
+                gCommPowerToSectionParam.power_status_word_1.u8param[1] = Data[3];
+                gCommPowerToSectionParam.power_status_word_2.u8param[0] = Data[4];
+                gCommPowerToSectionParam.power_status_word_2.u8param[1] = Data[5];
+                gCommPowerToSectionParam.power_status_word_3.u8param[0] = Data[6];
+                gCommPowerToSectionParam.power_status_word_3.u8param[1] = Data[7];
+            }
+            break;
+        case 18:
+            {
+                gCommPowerToSectionParam.power_section_interact_word.u8param[0] = Data[2];
+                gCommPowerToSectionParam.power_section_interact_word.u8param[1] = Data[3];
+            }
+            break;
+        default:
+            break;
     }
 }
 
-// 解析并网/解列状态（CANB）
+// 解析同步柜状态字
 static void
-CAN_Adapter_ParseGridConnectionStatus(uint16_t *Data, uint16_t Dlc)
+CAN_Adapter_ParseSyncCabinetStatus(uint16_t *Data, uint16_t Dlc)
 {
-    uint16_t section,wordTmp[3];
+    uint16_t state;
 
     if ((!Data) || (Dlc < 1))
     {
         return;
     }
 
-    section = (Data[0]&0xFF)|(Data[1]<<8);
-
-    // 解析状态字
-    switch (section)
-    {
-        case 0:
-            {
-            }
-            break;
-        case 1:
-            {
-                wordTmp[0] = (Data[2]&0xFF)|(Data[3]<<8);
-                wordTmp[1] = (Data[4]&0xFF)|(Data[5]<<8);
-gCommSyncToSectionStatus.section_online_nofault_status.all = wordTmp[1];
-            }
-            break;
-        default:break;
-    }
-
-    /*status_word.all = (Data[0]&0xFF)|(Data[1]<<8);*/
-
-    /*if (status_word.bit.run_state & 0x01)*/
-    /*{*/
-        /*gGridConnectionStatus.state = GRID_CONNECTED;*/
-    /*}*/
-    /*else*/
-    /*{*/
-        /*gGridConnectionStatus.state = GRID_DISCONNECTED;*/
-    /*}*/
-
-    /*gGridConnectionStatus.status_word = status_word.all;*/
+    state = (Data[0]&0xFF)|(Data[1]<<8);
+    gCommSyncToSectionStatus.sync_status.all = state;
 }
 
 // 接收回调
@@ -223,11 +322,11 @@ CAN_Adapter_RxHandler(TeCanPort Port, uint16_t *Data, uint16_t Dlc)
 {
     if (Port == eCanPort_0)
     {
-        CAN_Adapter_ParsePowerStatus(Data, Dlc);
+        CAN_Adapter_ParsePowerParam(Data, Dlc);
     }
     else if (Port == eCanPort_1)
     {
-        CAN_Adapter_ParseGridConnectionStatus(Data, Dlc);
+        CAN_Adapter_ParseSyncCabinetStatus(Data, Dlc);
     }
 }
 

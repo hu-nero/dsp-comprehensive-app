@@ -345,16 +345,20 @@ extern float PLL_ErrTotal;
 /////////////////////// Hardware Ctrl  /////////////////////////////
 ////////////////////////////////////////////////////////////////////
 // DI
-extern union DataBit_Type IOInputFpga1,IOInputFpga2, IOInputFpga3;
+extern union DataBit_Type IOInput1Fpga, IOInput2Fpga;
 extern union DataBit_Type IOInput1, IOInput2;
-extern union DataBit_Type IOInputEn;
-extern union DataBit_Type IOInputLogic;
-extern union DataBit_Type IOInputDisValue;
+extern union DataBit_Type IOInput1En;
+extern union DataBit_Type IOInput1Logic;
+extern union DataBit_Type IOInput1DisValue;
+
+extern union DataBit_Type IOInput2En;
+extern union DataBit_Type IOInput2Logic;
+extern union DataBit_Type IOInput2DisValue;
 // DO
 extern union DataBit_Type IOOutFpga1, IOOutFpga1Old;
 extern union DataBit_Type IOOutFpga2, IOOutFpga2Old;
 extern union DataBit_Type IOOutput1, IOOutput2;
-extern union DataBit_Type IOOutCtrl1Word;
+extern union DataBit_Type IOOut1CtrlWord, IOOut2CtrlWord;
 //DSP InterADC Tempr
 extern float CtrlThr_TransfOn_TempH,CtrlThr_TransfOff_TempL;
 extern float CtrlThr_ReactorOn_TempH,CtrlThr_TransfOff_TempH;
@@ -584,10 +588,24 @@ extern int CtrlCnt_IORunRefFeed;
 extern int CtrlCnt_IORstRefFeed;
 extern int CtrlCnt_IOFltDelay;
 extern int CtrlCnt_ReactorFanOn;
+
+extern u16 CtrlCnt_IOSingCtrl;
+extern u16 CtrlCnt_IOParaCtrl;
+extern u16 CtrlCnt_IODgssCtrl;
+
 // Flag
+extern int Flag_IOSingCtrl;
+extern int Flag_IOParaCtrl;
+extern int Flag_IODgssCtrl;
+extern int Flag_IORstRef;
+
+extern int Flag_RemParaCtrl;
+extern int Flag_RemSingCtrl;
+extern int Flag_RemDgssCtrl;
+extern int Flag_RemRstRef;
+
 extern int Flag_LockPWM;
 extern int Flag_IORunRef;
-extern int Flag_IORstRef;
 extern int Flag_IORstRefOld;
 extern int Flag_FanCapOn;
 extern int Flag_EEPROMCheck;

@@ -319,27 +319,29 @@ void GPIO_init(void)
 	GpioDataRegs.GPBDAT.all = 0xFFFFFFFF;
 	GpioDataRegs.GPCDAT.all = 0xFFFFFFFF;
 
-	IOInputFpga1.DataInt = 0;
+	IOInput1Fpga.DataInt = 0;
 	IOInput1.DataInt = 0;
+	IOInput1En.DataInt = 0xFFFF;
+	IOInput1Logic.DataInt = 0;
+	IOInput1DisValue.DataInt = 0;
+
+	IOInput2Fpga.DataInt = 0;
 	IOInput2.DataInt = 0;
-	IOInputEn.DataInt = 0xFFFF;
-	IOInputLogic.DataInt = 0xF000;
-	IOInputDisValue.DataInt = 0;
+	IOInput2En.DataInt = 0;
+	IOInput2Logic.DataInt = 0;
+	IOInput2DisValue.DataInt = 0;
+
 
 	IOOutFpga1.DataInt = 0;
 	IOOutFpga1Old.DataInt = 0;
 	IOOutput1.DataInt = 0;
 
-	IOOutFpga2.DataInt = 0xFFFF;
+	IOOutFpga2.DataInt = 0;
 	IOOutFpga2Old.DataInt = 0;
 	IOOutput2.DataInt = 0;
 
-	IOOutCtrl1Word.DataInt = 0xFFFF;
-
-	IO_PreChar_OFF;
-	IO_FCC_OFF;
-	IO_ACT_OFF;
-	IO_FanIgbt_OFF;
+	IOOut1CtrlWord.DataInt = 0xFFFF;
+	IOOut2CtrlWord.DataInt = 0;
 
 	IO_EN2RS485_RECV;
 	IO_EN1RS485_RECV;
