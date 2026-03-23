@@ -24,16 +24,49 @@ union WordParam_t
     uint8_t u8param[2];
 };
 
-union WordPowerStatus_t
+union WordPowerStatus2_t
 {
 	unsigned int all;
 	struct
 	{
-		unsigned run_state:			2;		// bit0-1
-		unsigned reserve:	    	14;		// bit2-15
+		unsigned MprCanNpr:			1;		// bit0-1
+		unsigned PwrUartMA:			1;		// bit0-1
+		unsigned PwrUartMB:			1;		// bit0-1
+		unsigned LocRom:			1;		// bit0-1
+		unsigned NprComHMI:			1;		// bit0-1
+		unsigned MprComHMI:			1;		// bit0-1
+		unsigned A2QF2:	    		1;		// bit0-1
+		unsigned powerstate:		2;		// bit0-1
+		unsigned reserve:	    	7;		// bit2-15
 	}	bit;
 };
 
+union WordPowerSectionInteractStatus_t
+{
+	unsigned int all;
+	struct
+	{
+		unsigned CombStep:			4;		// bit0-3
+		unsigned SplitStep:			4;		// bit4-7
+		unsigned WorkSta:			2;		// bit8-9
+		unsigned reserve:	    	5;		// bit10-14
+		unsigned Toggle:	    	1;		// bit15
+	}	bit;
+};
+
+// 区段柜->电源柜
+union WordSectionPowerInteractStatus_t
+{
+	unsigned int all;
+	struct
+	{
+		unsigned CombStep:			4;		// bit0-3
+		unsigned SplitStep:			4;		// bit4-7
+		unsigned WorkSta:			2;		// bit8-9
+		unsigned reserve:	    	5;		// bit10-14
+		unsigned Toggle:	    	1;		// bit15
+	}	bit;
+};
 
 // 同步柜->区段柜
 union WordSyncStatus_t
@@ -130,6 +163,12 @@ typedef struct
     union WordParam_t power_section_interact_word;// 电源区段交互字
 } CommPowerToSection_t;
 
+// 区段柜->电源柜
+typedef struct
+{
+    union WordSectionPowerInteractStatus_t section_status;
+} CommSectionToPower_t;
+
 // 同步柜->区段柜
 typedef struct
 {
@@ -162,6 +201,7 @@ extern bool CAN_Adapter_SendPowerStart(void);
 extern bool CAN_Adapter_SendPowerClose(void);
 extern bool CAN_Adapter_SendStatusQuery(void);
 extern bool CAN_Adapter_SendControlResponse(uint16_t DstAddr, ResponseStatus_t Status);
+
 extern PowerStatus_t CAN_Adapter_GetPowerStatus(void);
 extern void CAN_Adapter_ClearPowerStatus(void);
 

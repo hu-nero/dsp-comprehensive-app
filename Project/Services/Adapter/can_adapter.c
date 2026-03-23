@@ -13,6 +13,7 @@ static PowerStatus_t gPowerStatus;
 static GridConnectionStatus_t gGridConnectionStatus;
 static CommSyncToSection_t gCommSyncToSectionStatus;
 static CommSectionToSync_t gCommSectionToSyncStatus;
+static CommSectionToPower_t gCommSectionToPowerStatus;
 static CommPowerToSection_t gCommPowerToSectionParam;
 
 
@@ -32,6 +33,31 @@ uint16_t CombineBytes(uint8_t Lo, uint8_t Hi)
 PowerStatus_t
 CAN_Adapter_GetPowerStatus(void)
 {
+	union WordPowerSectionInteractStatus_t status;
+	status.all = gCommPowerToSectionParam.power_section_interact_word.u16param;
+    switch (status.bit.WorkSta)
+    {
+		case 0:
+		{
+			gPowerStatus.run_state = POWER_STANDBY;
+		}
+		break;
+		case 1:
+		{
+			gPowerStatus.run_state = POWER_SINGLE_RUNNING;
+		}
+		break;
+		case 2:
+		{
+			gPowerStatus.run_state = POWER_PARALLEL_RUNNING;
+		}
+		break;
+		case 3:
+		{
+			gPowerStatus.run_state = POWER_FAULT;
+		}
+		break;
+    }
     return gPowerStatus;
 }
 
@@ -85,12 +111,14 @@ CAN_Adapter_Init(void)
     gGridConnectionStatus.state = GRID_DISCONNECTED;
     gGridConnectionStatus.status_word = 0;
 
-    // 初始化同步柜向区段柜通信状态
-//    gCommSyncToSectionStatus.section_online_nofault_status.all = 0;
+    // 初始化柜体间通信状态
+    gCommSyncToSectionStatus.sync_status.all = 0;
     gCommSectionToSyncStatus.section_status.all = 0;
-
+    gCommSectionToPowerStatus.section_status.all = 0;
+    memset(&gCommPowerToSectionParam, 0, sizeof(CommPowerToSection_t));
     // 回调
     CAN_App_Set_func_status_handler(CAN_Adapter_RxHandler);
+    CAN_Agent_Set_SendStatus_Callback(eCanPort_0, CAN_Adapter_SendStatus_Callback);
     CAN_Agent_Set_SendStatus_Callback(eCanPort_1, CAN_Adapter_SendStatus_Callback);
 
 }
@@ -337,6 +365,10 @@ CAN_Adapter_SendStatus_Callback(TeCanPort Port, FuncCode_t Func, uint16_t SrcAdd
     uint16_t data[8]={0};
     if (Port == eCanPort_0)
     {
+        uint16_t value = gCommSectionToPowerStatus.section_status.all;
+        data[2] = value & 0xFF;
+        data[3] = (value >> 8) & 0xFF;
+        CAN_Agent_SendStatus(Port, DEV_ADDRESS_BROADCAST, data);
     }
     else if (Port == eCanPort_1)
     {

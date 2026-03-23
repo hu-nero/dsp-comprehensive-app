@@ -82,6 +82,12 @@ extern int CPLDSWVerRead(void);
 
 #define IO_FltLed_ON                IOOutput1.DataBit.Bit15 = 1
 #define IO_FltLed_OFF               IOOutput1.DataBit.Bit15 = 0
+
+#define IO_QR1Sing_ON				IOOutput2.DataBit.Bit6 = 1
+#define IO_QR1Sing_OFF				IOOutput2.DataBit.Bit6 = 0
+
+#define IO_QR2Para_ON				IOOutput2.DataBit.Bit7 = 1
+#define IO_QR2Para_OFF				IOOutput2.DataBit.Bit7 = 0
 /////////////////////////////////////IOInputMap////////////////////////////////////////
 #define IO_LocRem_Feed					IOInput1.DataBit.Bit0
 #define IO_Estop_Feed					IOInput1.DataBit.Bit1

@@ -327,7 +327,7 @@ void GPIO_init(void)
 
 	IOInput2Fpga.DataInt = 0;
 	IOInput2.DataInt = 0;
-	IOInput2En.DataInt = 0;
+	IOInput2En.DataInt = 0xFFFF;
 	IOInput2Logic.DataInt = 0;
 	IOInput2DisValue.DataInt = 0;
 

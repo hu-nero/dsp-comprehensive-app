@@ -70,7 +70,7 @@ void main(void)
 	GPIO_init();
 
 	for(i=0;i<1000;i++)
-		for(j=0;j<10000;j++);
+		for(j=0;j<1000;j++);
 
 	InitXintf();
 	Sci_Monitor_init(&ScibRegs);
@@ -99,6 +99,9 @@ void main(void)
 
 	Dis_PWM();
 	ParaDownloadCtrlWord=1;
+
+	for(i=0;i<1000;i++)
+		for(j=0;j<1000;j++);
 	CAN_App_Test();
 	for(; ;)
 	{
@@ -957,8 +960,8 @@ interrupt void EPWM1_INT_Underflow_isr(void)
 	if(IO_ADNotBusy == 1)
 		Palarell_Extern_ADCScan();
 ////////////////////////////////////////////////////////////////////////
-	GetVIRms();
-	GetPQ2r();
+//	GetVIRms();
+//	GetPQ2r();
 ////////////////////////////////////////////////////////////////////////
 }
 /******************************************************************/

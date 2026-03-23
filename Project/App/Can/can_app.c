@@ -14,34 +14,34 @@
 #include "Main/Variable.h"
 #include "GPIO\Custom_IOMacro.H"
 
-#define IO_A3QF1_En					    IOOutput1.DataBit.Bit0 = 1
-#define IO_A3QF1_Dis	  				IOOutput1.DataBit.Bit0 = 0
-#define IO_A3QF1_Feed   				IOInput1.DataBit.Bit9
+/*#define IO_A3QF1_En					    IOOutput1.DataBit.Bit0 = 1*/
+/*#define IO_A3QF1_Dis	  				IOOutput1.DataBit.Bit0 = 0*/
+/*#define IO_A3QF1_Feed   				IOInput1.DataBit.Bit9*/
 
-#define IO_A3QR1_En					    IOOutput1.DataBit.Bit1 = 1
-#define IO_A3QR1_Dis	  				IOOutput1.DataBit.Bit1 = 0
+/*#define IO_A3QR1_En					    IOOutput1.DataBit.Bit4 = 1*/
+/*#define IO_A3QR1_Dis	  				IOOutput1.DataBit.Bit4 = 0*/
 
-#define IO_A3QF2_En					    IOOutput1.DataBit.Bit2 = 1
-#define IO_A3QF2_Dis	  				IOOutput1.DataBit.Bit2 = 0
-#define IO_A3QF2_Feed   				IOInput1.DataBit.Bit11
+/*#define IO_A3QF2_En					    IOOutput1.DataBit.Bit2 = 1*/
+/*#define IO_A3QF2_Dis	  				IOOutput1.DataBit.Bit2 = 0*/
+/*#define IO_A3QF2_Feed   				IOInput1.DataBit.Bit11*/
 
-#define IO_A3QR2_En					    IOOutput1.DataBit.Bit3 = 1
-#define IO_A3QR2_Dis	  				IOOutput1.DataBit.Bit3 = 0
+/*#define IO_A3QR2_En					    IOOutput1.DataBit.Bit7 = 1*/
+/*#define IO_A3QR2_Dis	  				IOOutput1.DataBit.Bit7 = 0*/
 
-#define IO_A3QR3_En					    IOOutput1.DataBit.Bit4 = 1
-#define IO_A3QR3_Dis	  				IOOutput1.DataBit.Bit4 = 0
-#define IO_A3QF3_Feed   				IOInput1.DataBit.Bit13
+/*#define IO_A3QR3_En					    IOOutput1.DataBit.Bit4 = 1*/
+/*#define IO_A3QR3_Dis	  				IOOutput1.DataBit.Bit4 = 0*/
+/*#define IO_A3QF3_Feed   				IOInput1.DataBit.Bit13*/
 
-#define IO_A3QS1_Feed   				IOInput1.DataBit.Bit6
-#define IO_A3K17_Feed   				IOInput1.DataBit.Bit15
-#define IO_A3QS2_Feed   				IOInput1.DataBit.Bit5
+/*#define IO_A3QS1_Feed   				IOInput1.DataBit.Bit6*/
+/*#define IO_A3K17_Feed   				IOInput1.DataBit.Bit15*/
+/*#define IO_A3QS2_Feed   				IOInput1.DataBit.Bit5*/
 #define IO_A3QS3_Feed   				IOInput1.DataBit.Bit15
 
-#define IO_LOCALREMOTE_Feed				IOInput1.DataBit.Bit0
-#define IO_EMERGENCY_STOP_Feed			IOInput1.DataBit.Bit1
-#define IO_SINGLE_Feed					IOInput1.DataBit.Bit2
-#define IO_BUS1_Feed					IOInput1.DataBit.Bit3
-#define IO_SHORT_Feed					IOInput1.DataBit.Bit4
+/*#define IO_LOCALREMOTE_Feed				IOInput1.DataBit.Bit0*/
+/*#define IO_EMERGENCY_STOP_Feed			IOInput1.DataBit.Bit1*/
+/*#define IO_SINGLE_Feed					IOInput1.DataBit.Bit2*/
+/*#define IO_BUS1_Feed					IOInput1.DataBit.Bit3*/
+/*#define IO_SHORT_Feed					IOInput1.DataBit.Bit4*/
 
 #define ADC0_CH0_Value                  *(unsigned  int *)(0x4010)
 #define ADC0_CH1_Value                  *(unsigned  int *)(0x4020)
@@ -453,11 +453,11 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             {
                 if (State == SWITCH_ON)
                 {
-                    IO_A3QR1_En;
+                    IO_QR1Sing_ON;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IO_A3QR1_Dis;
+                    IO_QR1Sing_OFF;
                 }
             }
             break;
@@ -465,11 +465,11 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             {
                 if (State == SWITCH_ON)
                 {
-                    IO_A3QR2_En;
+                    IO_QR2Para_ON;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IO_A3QR2_Dis;
+                    IO_QR2Para_OFF;
                 }
             }
             break;
