@@ -18,15 +18,15 @@
 /*#define IO_A3QF1_Dis	  				IOOutput1.DataBit.Bit0 = 0*/
 /*#define IO_A3QF1_Feed   				IOInput1.DataBit.Bit9*/
 
-/*#define IO_A3QR1_En					    IOOutput1.DataBit.Bit4 = 1*/
-/*#define IO_A3QR1_Dis	  				IOOutput1.DataBit.Bit4 = 0*/
+#define IO_A3QR1_En					    IOOutput2.DataBit.Bit0 = 1
+#define IO_A3QR1_Dis	  				IOOutput2.DataBit.Bit0 = 0
 
 /*#define IO_A3QF2_En					    IOOutput1.DataBit.Bit2 = 1*/
 /*#define IO_A3QF2_Dis	  				IOOutput1.DataBit.Bit2 = 0*/
 /*#define IO_A3QF2_Feed   				IOInput1.DataBit.Bit11*/
 
-/*#define IO_A3QR2_En					    IOOutput1.DataBit.Bit7 = 1*/
-/*#define IO_A3QR2_Dis	  				IOOutput1.DataBit.Bit7 = 0*/
+#define IO_A3QR2_En					    IOOutput2.DataBit.Bit1 = 1
+#define IO_A3QR2_Dis	  				IOOutput2.DataBit.Bit1 = 0
 
 /*#define IO_A3QR3_En					    IOOutput1.DataBit.Bit4 = 1*/
 /*#define IO_A3QR3_Dis	  				IOOutput1.DataBit.Bit4 = 0*/
@@ -35,7 +35,7 @@
 /*#define IO_A3QS1_Feed   				IOInput1.DataBit.Bit6*/
 /*#define IO_A3K17_Feed   				IOInput1.DataBit.Bit15*/
 /*#define IO_A3QS2_Feed   				IOInput1.DataBit.Bit5*/
-#define IO_A3QS3_Feed   				IOInput1.DataBit.Bit15
+/*#define IO_A3QS3_Feed   				IOInput1.DataBit.Bit15*/
 
 /*#define IO_LOCALREMOTE_Feed				IOInput1.DataBit.Bit0*/
 /*#define IO_EMERGENCY_STOP_Feed			IOInput1.DataBit.Bit1*/
@@ -229,7 +229,6 @@ CAN_App_Test(void)
     Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_OFF);
-    /*uint16_t res = Hardware_SwitchFeed(SWITCH_ID_A3QF1);*/
     IO_Scan();
 }
 
@@ -428,11 +427,13 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             {
                 if (State == SWITCH_ON)
                 {
-                    IO_QR1Sing_ON;
+                    /*IO_QR1Sing_ON;*/
+                    IO_A3QR1_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IO_QR1Sing_OFF;
+                    /*IO_QR1Sing_OFF;*/
+                    IO_A3QR1_Dis;
                 }
             }
             break;
@@ -440,11 +441,13 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             {
                 if (State == SWITCH_ON)
                 {
-                    IO_QR2Para_ON;
+                    /*IO_QR2Para_ON;*/
+                    IO_A3QR2_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    IO_QR2Para_OFF;
+                    /*IO_QR2Para_OFF;*/
+                    IO_A3QR2_Dis;
                 }
             }
             break;
