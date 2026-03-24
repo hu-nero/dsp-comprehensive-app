@@ -136,7 +136,7 @@ Cabinet_Process(CabinetContext_t* Context)
 
     // 急停流程
     // 急停到底1是急停还是0是
-//    Cabinet_ExecuteEmergencyProcedure(Context);
+    Cabinet_ExecuteEmergencyProcedure(Context);
     // 故障急停、消磁
 //    Cabinet_ExecuteEmergencyStopDegaussProcedure(Context);
     // 更新同步柜消息

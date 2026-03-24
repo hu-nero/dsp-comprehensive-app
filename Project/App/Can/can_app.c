@@ -51,7 +51,7 @@
 #define ADC0_CH4_Value                  *(unsigned  int *)(0x4050)
 #define ADC0_CH5_Value                  *(unsigned  int *)(0x4060)
 
-static uint16_t s_switchStatus[4] = {0, 0, 0, 0};
+/*static uint16_t s_switchStatus[4] = {0, 0, 0, 0};*/
 
 static CAN_App_func_status_handler_t g_func_status_handler = NULL;
 // 全局柜体控制上下文
@@ -114,10 +114,12 @@ CAN_App_CanRxHandler(TeCanPort Port, FuncCode_t Func, uint16_t SrcAddr, uint16_t
 
         case FUNC_STATUS://0x03
             {
+                uint16_t u16Data[8] = {};
+                memcpy(u16Data, Data, sizeof(uint16_t)*Dlc);
                 // 回调
                 if (g_func_status_handler)
                 {
-                    g_func_status_handler(Port, Data, Dlc);
+                    g_func_status_handler(Port, u16Data, Dlc);
                 }
             }
             break;
@@ -206,8 +208,6 @@ CAN_App_MainLoop(void)
     // 处理柜体状态机
     Cabinet_Process(&g_cabinet_context);
     
-    // 读取点动按钮
-    CAN_App_RecordPanelSwitchStatus();
     // switch test
 //    CAN_App_Test();
 }
@@ -231,31 +231,6 @@ CAN_App_Test(void)
     Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_OFF);
     /*uint16_t res = Hardware_SwitchFeed(SWITCH_ID_A3QF1);*/
     IO_Scan();
-}
-
-void
-CAN_App_RecordPanelSwitchStatus(void)
-{
-    if (Flag_IORstRef == 1)
-    {
-        s_switchStatus[0] = ! s_switchStatus[0];
-        Flag_IORstRef = 0;
-    }
-    if (Flag_IOSingCtrl == 1)
-    {
-        s_switchStatus[1] = ! s_switchStatus[1];
-        Flag_IOSingCtrl = 0;
-    }
-    if (Flag_IOParaCtrl == 1)
-    {
-        s_switchStatus[2] = ! s_switchStatus[2];
-        Flag_IOParaCtrl = 0;
-    }
-    if (Flag_IODgssCtrl == 1)
-    {
-        s_switchStatus[3] = ! s_switchStatus[3];
-        Flag_IODgssCtrl = 0;
-    }
 }
 
 // 发送控制命令
@@ -494,7 +469,7 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             }
         case DI_ID_RESET:
             {
-                return s_switchStatus[0];
+                return IO_RstRef_Feed;
             }
         case DI_ID_A3QF1:
             {
@@ -518,8 +493,7 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             }
         case DI_ID_A3QS3:
             {
-                return IO_A3QS3_Feed;
-                /*return IO_DgssQS3_Feed;*/
+                return IO_DgssQS3_Feed;
             }
         case DI_ID_A3TB3_1:
             {
@@ -535,15 +509,15 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             }
         case DI_ID_SINGLE:
             {
-                return s_switchStatus[1];
+                return IO_SingCtrl_Feed;
             }
         case DI_ID_BUS1:
             {
-                return s_switchStatus[2];
+                return IO_ParaCtrl_Feed;
             }
         case DI_ID_Short:
             {
-                return s_switchStatus[3];
+                return IO_DgssCtrl_Feed;
             }
         case DI_ID_IMPACT_VEHICLE:
             {

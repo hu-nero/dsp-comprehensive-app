@@ -5,7 +5,7 @@
 /***************************************************************************************************/
 void Modbus_Send_To_Rem(void)
 {
-//	memcpy(RemInputRegBuf, &RemInputSum, sizeof(RemInputSum));
+	memcpy(RemInputRegBuf, &RemInputSum, sizeof(RemInputSum));
 }
 
 void Modbus_Recv_For_Rem(void)

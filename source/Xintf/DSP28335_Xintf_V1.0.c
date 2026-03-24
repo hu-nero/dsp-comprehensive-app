@@ -232,6 +232,12 @@ void IOInMapLogic(void)
 	                           |(IOInput2En.DataBit.Bit6 & ((IOInput2Fpga.DataBit.Bit6^IOInput2Logic.DataBit.Bit6)^1)));
 	IOInput2.DataBit.Bit7 = (((!IOInput2En.DataBit.Bit7) & IOInput2DisValue.DataBit.Bit7)
 	                           |(IOInput2En.DataBit.Bit7 & ((IOInput2Fpga.DataBit.Bit7^IOInput2Logic.DataBit.Bit7)^1)));
+	IOInput2.DataBit.Bit8 = (((!IOInput2En.DataBit.Bit8) & IOInput2DisValue.DataBit.Bit8)
+	                           |(IOInput2En.DataBit.Bit8 & ((IOInput2Fpga.DataBit.Bit8^IOInput2Logic.DataBit.Bit8)^1)));
+	IOInput2.DataBit.Bit9 = (((!IOInput2En.DataBit.Bit9) & IOInput2DisValue.DataBit.Bit9)
+	                           |(IOInput2En.DataBit.Bit9 & ((IOInput2Fpga.DataBit.Bit9^IOInput2Logic.DataBit.Bit9)^1)));
+	IOInput2.DataBit.Bit10 = (((!IOInput2En.DataBit.Bit10) & IOInput2DisValue.DataBit.Bit10)
+	                           |(IOInput2En.DataBit.Bit10 & ((IOInput2Fpga.DataBit.Bit10^IOInput2Logic.DataBit.Bit10)^1)));
 }
 void IOInputCtrlFlag(void)
 {
@@ -392,7 +398,7 @@ void IO_Scan(void)
 //	IOInputFpga2.DataInt = FPGARDIOSTS2;
 	IOInput2Fpga.DataInt = FPGARDIOSTS3;
 	IOInMapLogic();
-	IOInputCtrlFlag();
+	/*IOInputCtrlFlag();*/
 	//write IO output
 	IOOutMapLogic();
 

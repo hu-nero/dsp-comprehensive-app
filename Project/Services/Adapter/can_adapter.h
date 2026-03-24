@@ -18,12 +18,6 @@
 #define POWER_DEVICE_ADDR             0x02    // 电源设备地址
 #define SYNC_CABINET_DEVICE_ADDR      0x01    // 电源设备地址
 
-union WordParam_t
-{
-    uint16_t u16param;
-    uint8_t u8param[2];
-};
-
 union WordPowerStatus2_t
 {
 	unsigned int all;
@@ -145,22 +139,22 @@ typedef struct
     uint16_t coolant_inlet_temp;         // 冷却水进水温度
     uint16_t coolant_outlet_temp;        // 冷却水出水温度
 
-    union WordParam_t power_fault_word_1;         // 电源故障字1
-    union WordParam_t power_fault_word_2;         // 电源故障字2
-    union WordParam_t power_fault_word_3;         // 电源故障字3
-    union WordParam_t power_fault_word_4;         // 电源故障字4
-    union WordParam_t power_fault_word_5;         // 电源故障字5
-    union WordParam_t power_fault_word_6;         // 电源故障字6
-    union WordParam_t power_alarm_word_1;         // 电源告警字1
-    union WordParam_t power_alarm_word_2;         // 电源告警字2
-    union WordParam_t power_alarm_word_3;         // 电源告警字3
-    union WordParam_t power_alarm_word_4;         // 电源告警字4
-    union WordParam_t power_alarm_word_5;         // 电源告警字5
-    union WordParam_t power_alarm_word_6;         // 电源告警字6
-    union WordParam_t power_status_word_1;        // 电源状态字1
-    union WordParam_t power_status_word_2;        // 电源状态字2
-    union WordParam_t power_status_word_3;        // 电源状态字3
-    union WordParam_t power_section_interact_word;// 电源区段交互字
+    uint16_t power_fault_word_1;         // 电源故障字1
+    uint16_t power_fault_word_2;         // 电源故障字2
+    uint16_t power_fault_word_3;         // 电源故障字3
+    uint16_t power_fault_word_4;         // 电源故障字4
+    uint16_t power_fault_word_5;         // 电源故障字5
+    uint16_t power_fault_word_6;         // 电源故障字6
+    uint16_t power_alarm_word_1;         // 电源告警字1
+    uint16_t power_alarm_word_2;         // 电源告警字2
+    uint16_t power_alarm_word_3;         // 电源告警字3
+    uint16_t power_alarm_word_4;         // 电源告警字4
+    uint16_t power_alarm_word_5;         // 电源告警字5
+    uint16_t power_alarm_word_6;         // 电源告警字6
+    uint16_t power_status_word_1;        // 电源状态字1
+    uint16_t power_status_word_2;        // 电源状态字2
+    uint16_t power_status_word_3;        // 电源状态字3
+    uint16_t power_section_interact_word;// 电源区段交互字
 } CommPowerToSection_t;
 
 // 区段柜->电源柜

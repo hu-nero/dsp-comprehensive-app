@@ -328,7 +328,7 @@ void GPIO_init(void)
 	IOInput2Fpga.DataInt = 0;
 	IOInput2.DataInt = 0;
 	IOInput2En.DataInt = 0xFFFF;
-	IOInput2Logic.DataInt = 0;
+	IOInput2Logic.DataInt = 0x780;
 	IOInput2DisValue.DataInt = 0;
 
 
@@ -341,7 +341,7 @@ void GPIO_init(void)
 	IOOutput2.DataInt = 0;
 
 	IOOut1CtrlWord.DataInt = 0xFFFF;
-	IOOut2CtrlWord.DataInt = 0;
+	IOOut2CtrlWord.DataInt = 0xFFFF;
 
 	IO_EN2RS485_RECV;
 	IO_EN1RS485_RECV;
@@ -400,7 +400,7 @@ void RS485_Send_En2(void)
 {
 	int i=0;
 	for(i=0; i<5; i++);
-	GpioDataRegs.GPASET.bit.GPIO26 = 1;
+	GpioDataRegs.GPBSET.bit.GPIO48 = 1;
 	for(i=0; i<5; i++);
 }
 /********************************************************************************/
@@ -408,7 +408,7 @@ void RS485_Send_Dis2(void)
 {
 	int i=0;
 	for(i=0; i<5; i++);
-	GpioDataRegs.GPACLEAR.bit.GPIO26 = 1;
+	GpioDataRegs.GPBCLEAR.bit.GPIO48 = 1;
 	for(i=0; i<5; i++);
 }
 /********************************************************************************/

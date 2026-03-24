@@ -241,6 +241,13 @@ extern u16 MbsRem_SendFront;
 extern u16 MbsRem_SendTail;
 extern u16 MbsRem_SendBuffer[Modbus_Send_BUFF_SIZE];
 extern u16 MbsRem_RecvBuffer[Modbus_Recv_BUFF_SIZE];
+
+extern u16 MbsDcs_RecvFront;
+extern u16 MbsDcs_RecvTail;
+extern u16 MbsDcs_SendFront;
+extern u16 MbsDcs_SendTail;
+extern u16 MbsDcs_SendBuffer[Modbus_Send_BUFF_SIZE];
+extern u16 MbsDcs_RecvBuffer[Modbus_Recv_BUFF_SIZE];
 /************************************************************************************************************/
 
 

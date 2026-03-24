@@ -10,7 +10,7 @@ enum DeviceData_t
 	Big_endian    = (u8)0x01,
 };
 
-#define SlaveDeviceAddr   0x02
+#define HMIDeviceAddr   0x01
 #define SlaveDeviceData   Little_endian
 
 enum ModbusFuncCode_t

@@ -15,6 +15,7 @@ static CommSyncToSection_t gCommSyncToSectionStatus;
 static CommSectionToSync_t gCommSectionToSyncStatus;
 static CommSectionToPower_t gCommSectionToPowerStatus;
 static CommPowerToSection_t gCommPowerToSectionParam;
+uint8_t byteData[8] = {0};
 
 
 void CAN_Adapter_SendStatus_Callback(TeCanPort Port, FuncCode_t Func, uint16_t SrcAddr);
@@ -23,18 +24,18 @@ static void CAN_Adapter_ParsePowerParam(uint16_t *Data, uint16_t Dlc);
 static void CAN_Adapter_ParseSyncCabinetStatus(uint16_t *Data, uint16_t Dlc);
 static void CAN_Adapter_RxHandler(TeCanPort Port, uint16_t *Data, uint16_t Dlc);
 
-// u8转u16
+// 转u16
 static inline
-uint16_t CombineBytes(uint8_t Lo, uint8_t Hi)
+uint16_t CombineBytes(uint16_t Lo, uint16_t Hi)
 {
-    return (uint16_t)(Lo | (Hi << 8));
+    return (uint16_t)((Lo&0xFF) | ((Hi&0xFF) << 8));
 }
 
 PowerStatus_t
 CAN_Adapter_GetPowerStatus(void)
 {
 	union WordPowerSectionInteractStatus_t status;
-	status.all = gCommPowerToSectionParam.power_section_interact_word.u16param;
+	status.all = gCommPowerToSectionParam.power_section_interact_word;
     switch (status.bit.WorkSta)
     {
 		case 0:
@@ -165,14 +166,13 @@ static void
 CAN_Adapter_ParsePowerParam(uint16_t *Data, uint16_t Dlc)
 {
     uint16_t block;
-    uint16_t state;
 
     if ((!Data) || (Dlc < 1))
     {
         return;
     }
 
-    block = (Data[0] & 0xFF) | (Data[1] << 8);
+    block = (Data[0] & 0xFF) | ((Data[1] & 0xFF) << 8);
 
     switch (block)
     {
@@ -270,58 +270,43 @@ CAN_Adapter_ParsePowerParam(uint16_t *Data, uint16_t Dlc)
         // 状态字
         case 13:
             {
-                gCommPowerToSectionParam.power_fault_word_1.u8param[0] = Data[2];
-                gCommPowerToSectionParam.power_fault_word_1.u8param[1] = Data[3];
-                gCommPowerToSectionParam.power_fault_word_2.u8param[0] = Data[4];
-                gCommPowerToSectionParam.power_fault_word_2.u8param[1] = Data[5];
-                gCommPowerToSectionParam.power_fault_word_3.u8param[0] = Data[6];
-                gCommPowerToSectionParam.power_fault_word_3.u8param[1] = Data[7];
+                gCommPowerToSectionParam.power_fault_word_1 = CombineBytes(Data[2],Data[3]);
+                gCommPowerToSectionParam.power_fault_word_2 = CombineBytes(Data[4],Data[5]);
+                gCommPowerToSectionParam.power_fault_word_3 = CombineBytes(Data[6],Data[7]);
             }
             break;
         case 14:
             {
-                gCommPowerToSectionParam.power_fault_word_4.u8param[0] = Data[2];
-                gCommPowerToSectionParam.power_fault_word_4.u8param[1] = Data[3];
-                gCommPowerToSectionParam.power_fault_word_5.u8param[0] = Data[4];
-                gCommPowerToSectionParam.power_fault_word_5.u8param[1] = Data[5];
-                gCommPowerToSectionParam.power_fault_word_6.u8param[0] = Data[6];
-                gCommPowerToSectionParam.power_fault_word_6.u8param[1] = Data[7];
+                gCommPowerToSectionParam.power_fault_word_4 = CombineBytes(Data[2],Data[3]);
+                gCommPowerToSectionParam.power_fault_word_5 = CombineBytes(Data[4],Data[5]);
+                gCommPowerToSectionParam.power_fault_word_6 = CombineBytes(Data[6],Data[7]);
             }
             break;
         case 15:
             {
-                gCommPowerToSectionParam.power_alarm_word_1.u8param[0] = Data[2];
-                gCommPowerToSectionParam.power_alarm_word_1.u8param[1] = Data[3];
-                gCommPowerToSectionParam.power_alarm_word_2.u8param[0] = Data[4];
-                gCommPowerToSectionParam.power_alarm_word_2.u8param[1] = Data[5];
-                gCommPowerToSectionParam.power_alarm_word_3.u8param[0] = Data[6];
-                gCommPowerToSectionParam.power_alarm_word_3.u8param[1] = Data[7];
+                gCommPowerToSectionParam.power_alarm_word_1 = CombineBytes(Data[2],Data[3]);
+                gCommPowerToSectionParam.power_alarm_word_2 = CombineBytes(Data[4],Data[5]);
+                gCommPowerToSectionParam.power_alarm_word_3 = CombineBytes(Data[6],Data[7]);
             }
             break;
         case 16:
             {
-                gCommPowerToSectionParam.power_fault_word_4.u8param[0] = Data[2];
-                gCommPowerToSectionParam.power_fault_word_4.u8param[1] = Data[3];
-                gCommPowerToSectionParam.power_fault_word_5.u8param[0] = Data[4];
-                gCommPowerToSectionParam.power_fault_word_5.u8param[1] = Data[5];
-                gCommPowerToSectionParam.power_fault_word_6.u8param[0] = Data[6];
-                gCommPowerToSectionParam.power_fault_word_6.u8param[1] = Data[7];
+                gCommPowerToSectionParam.power_fault_word_4 = CombineBytes(Data[2],Data[3]);
+                gCommPowerToSectionParam.power_fault_word_5 = CombineBytes(Data[4],Data[5]);
+                gCommPowerToSectionParam.power_fault_word_6 = CombineBytes(Data[6],Data[7]);
             }
             break;
         case 17:
             {
-                gCommPowerToSectionParam.power_status_word_1.u8param[0] = Data[2];
-                gCommPowerToSectionParam.power_status_word_1.u8param[1] = Data[3];
-                gCommPowerToSectionParam.power_status_word_2.u8param[0] = Data[4];
-                gCommPowerToSectionParam.power_status_word_2.u8param[1] = Data[5];
-                gCommPowerToSectionParam.power_status_word_3.u8param[0] = Data[6];
-                gCommPowerToSectionParam.power_status_word_3.u8param[1] = Data[7];
+                gCommPowerToSectionParam.power_status_word_1 = CombineBytes(Data[2],Data[3]);
+                gCommPowerToSectionParam.power_status_word_2 = CombineBytes(Data[4],Data[5]);
+                gCommPowerToSectionParam.power_status_word_3 = CombineBytes(Data[6],Data[7]);
             }
             break;
         case 18:
             {
-                gCommPowerToSectionParam.power_section_interact_word.u8param[0] = Data[2];
-                gCommPowerToSectionParam.power_section_interact_word.u8param[1] = Data[3];
+                /*gCommPowerToSectionParam.power_section_interact_word = (Data[2]&0xFF)|((Data[3]&0xFF)<<8);*/
+                gCommPowerToSectionParam.power_section_interact_word = CombineBytes(Data[2],Data[3]);
             }
             break;
         default:

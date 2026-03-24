@@ -30,10 +30,15 @@
 #include "SCI_Modbus\Sci_Modbus_Config.H"
 #include "SCI_Modbus\Custom_ModbusRTU.H"
 #include "SCI_ModbusM\Custom_Remote.H"
+#include "SCI_DCS\Custom_DCS.H"
 
 #include "Hal.h"
 #include "App.h"
 
+#define DEBUG
+//#define Release
+//////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////
 extern unsigned int RamfuncsLoadStart, RamfuncsLoadEnd, RamfuncsRunStart;
 void INT28335_process(void);
 void pwm_init(void);
@@ -43,6 +48,9 @@ interrupt void EPWM1_INT_Underflow_isr(void);
 void FunFaultReact(void);
 void FunResetAct(void);
 void FunStatusUpdate(void);
+
+void RemCommVarRemap(void);
+void DcsCommVarRemap(void);
 
 void npr_1ms_protection(void);
 
@@ -70,13 +78,20 @@ void main(void)
 	GPIO_init();
 
 	for(i=0;i<1000;i++)
-		for(j=0;j<1000;j++);
+		for(j=0;j<10000;j++);
 
 	InitXintf();
+
+#ifdef DEBUG
 	Sci_Monitor_init(&ScibRegs);
 	Software_oscilloscopeInit();
-	Sci_Modbus_init(&ScicRegs, 375e5, 9600);
-	Sci_Remote_init(&SciaRegs, 375e5, 9600);
+#else
+	Sci_Modbus_init(&ScibRegs, 375e5, 9600);
+#endif
+
+	Sci_DCS_init(&SciaRegs, 375e5, 9600);
+	Sci_Remote_init(&ScicRegs, 375e5, 9600);
+
 	InitSpi();
 	DMA_Init();
 	MCBSPB_Init();
@@ -99,29 +114,29 @@ void main(void)
 
 	Dis_PWM();
 	ParaDownloadCtrlWord=1;
-
 	for(i=0;i<1000;i++)
-		for(j=0;j<1000;j++);
+		for(j=0;j<10000;j++);
 	CAN_App_Test();
 	for(; ;)
 	{
         CAN_App_MainLoop();
 		EINT;
 ///////////////////////////////////////////////////////////////////////////////
+#ifdef DEBUG
 		Sci_Monitor_RxData(&ScibRegs, SCIBRecvBuffer, &SCIBRecvTail);
 		Monitor_Rx_Protocol(SCIBRecvBuffer, &SCIBRecvFront, SCIBRecvTail, SCIBSendBuffer, &SCIBSendTail);
 		Software_oscilloscope(SCIBSend_1ms, SCIBSendBuffer, &SCIBSendTail);
 		Sci_Monitor_TxData(&ScibRegs, SCIBSendBuffer, &SCIBSendFront, SCIBSendTail, SCIBSend_1ms);
-///////////////////////////////////////////////////////////////////////////////
-		if(Modbus_SendFlag == 1)
-		{
-			Modbus_Send_To_HMI();
-			Sci_Modbus_RxData(&ScicRegs, Modbus_RecvBuffer, &Modbus_RecvTail, Modbus_Recv_BUFF_SIZE);
-			ModbusRTU_Protocol(Modbus_RecvBuffer, &Modbus_RecvFront, Modbus_RecvTail, Modbus_Recv_BUFF_SIZE, Modbus_SendBuffer);
-		    Modbus_Recv_For_HMI();
-		    Modbus_SendFlag = 0;
-		}
-///////////////////////////////////////////////////////////////////////////////
+#else
+		Modbus_Send_To_HMI();
+		Sci_Modbus_RxData(&ScibRegs, Modbus_RecvBuffer, &Modbus_RecvTail, Modbus_Recv_BUFF_SIZE);
+		ModbusRTU_Protocol(Modbus_RecvBuffer, &Modbus_RecvFront, Modbus_RecvTail, Modbus_Recv_BUFF_SIZE, Modbus_SendBuffer);
+		Modbus_Recv_For_HMI();
+#endif
+		///////////////////////////////////////////////////////////////////////////////
+		Sci_DCS_RxData(&SciaRegs, MbsDcs_RecvBuffer, &MbsDcs_RecvTail, Modbus_Recv_BUFF_SIZE);
+		ModbusDcs_Protocol(MbsDcs_RecvBuffer, &MbsDcs_RecvFront, MbsDcs_RecvTail, Modbus_Recv_BUFF_SIZE, MbsRem_SendBuffer);
+		///////////////////////////////////////////////////////////////////////////////
 		Sci_Remote_RxData(&ScicRegs, MbsRem_RecvBuffer, &MbsRem_RecvTail, Modbus_Recv_BUFF_SIZE);
 		ModbusRem_Protocol(MbsRem_RecvBuffer, &MbsRem_RecvFront, MbsRem_RecvTail, Modbus_Recv_BUFF_SIZE, MbsRem_SendBuffer);
 ///////////////////////////////////////////////////////////////////////////////
@@ -169,6 +184,8 @@ void main(void)
 			CalImbalance();
 			FunStatusUpdate();
 			FunResetAct();
+			RemCommVarRemap();
+			DcsCommVarRemap();
 ///////////////////////////////////////////////////////////////////////////////////////////
 			//Ctrl Logic
 			if(Status_NPRRun == 0)
@@ -274,6 +291,69 @@ void  RealTime20msFun(void)
 	ulRealTimeSecond |= ( (long)SysTime_Hour  <<12)&0x0001F000;
 	ulRealTimeSecond |= (       SysTime_Minute<<6 )&0x00000FC0;
 	ulRealTimeSecond |= SysTimeSecond              &0x003F;
+}
+void RemCommVarRemap(void)
+{
+	RemInputSum.StaWord1.DataInt = MainStusWord.DataInt;
+	RemInputSum.StaWord2.DataInt = MainSta2Word.DataInt;
+	RemInputSum.FltWord1.DataInt = AlarmWord1.DataInt;
+	RemInputSum.FltWord2.DataInt = AlarmWord2.DataInt;
+	RemInputSum.AlmWord1.DataInt = FaultWord1.DataInt;
+	RemInputSum.AlmWord2.DataInt = FaultWord2.DataInt;
+	RemInputSum.UabSl = UabSl_rmsf *10;
+	RemInputSum.UbcSl = UbcSl_rmsf *10;
+	RemInputSum.UcaSl  = UcaSl_rmsf *10;
+	RemInputSum.UabPar = UabPar_rmsf *10;
+	RemInputSum.UbcPar = UbcPar_rmsf *10;
+	RemInputSum.UcaPar = UcaPar_rmsf *10;
+	RemInputSum.UaOut = UaOut_rmsf *10;
+	RemInputSum.UbOut = UbOut_rmsf *10;
+	RemInputSum.UcOut = UcOut_rmsf *10;
+	RemInputSum.UabOut = UabOut_rmsf *10;
+	RemInputSum.UbcOut = UbcOut_rmsf *10;
+	RemInputSum.UcaOut = UcaOut_rmsf *10;
+	RemInputSum.IaOut = IaOut_rmsf *10;
+	RemInputSum.IbOut = IbOut_rmsf *10;
+	RemInputSum.IcOut = IcOut_rmsf *10;
+	RemInputSum.P_Sys = P_Sys *10;
+	RemInputSum.Q_Sys = Q_Sys *10;
+	RemInputSum.S_Sys = S_Sys *10;
+	RemInputSum.PF_Sys = PF_Sys *100;
+	RemInputSum.Ublk = Uout_Imbalance *100;
+	RemInputSum.Iblk = Iout_Imbalance *100;
+	RemInputSum.FLwater = FlowRate*10;
+}
+
+void DcsCommVarRemap(void)
+{
+	DcsInputSum.StaWord1.DataInt = MainStusWord.DataInt;
+	DcsInputSum.StaWord2.DataInt = MainSta2Word.DataInt;
+	DcsInputSum.FltWord1.DataInt = AlarmWord1.DataInt;
+	DcsInputSum.FltWord2.DataInt = AlarmWord2.DataInt;
+	DcsInputSum.AlmWord1.DataInt = FaultWord1.DataInt;
+	DcsInputSum.AlmWord2.DataInt = FaultWord2.DataInt;
+	DcsInputSum.UabSl = UabSl_rmsf *10;
+	DcsInputSum.UbcSl = UbcSl_rmsf *10;
+	DcsInputSum.UcaSl  = UcaSl_rmsf *10;
+	DcsInputSum.UabPar = UabPar_rmsf *10;
+	DcsInputSum.UbcPar = UbcPar_rmsf *10;
+	DcsInputSum.UcaPar = UcaPar_rmsf *10;
+	DcsInputSum.UaOut = UaOut_rmsf *10;
+	DcsInputSum.UbOut = UbOut_rmsf *10;
+	DcsInputSum.UcOut = UcOut_rmsf *10;
+	DcsInputSum.UabOut = UabOut_rmsf *10;
+	DcsInputSum.UbcOut = UbcOut_rmsf *10;
+	DcsInputSum.UcaOut = UcaOut_rmsf *10;
+	DcsInputSum.IaOut = IaOut_rmsf *10;
+	DcsInputSum.IbOut = IbOut_rmsf *10;
+	DcsInputSum.IcOut = IcOut_rmsf *10;
+	DcsInputSum.P_Sys = P_Sys *10;
+	DcsInputSum.Q_Sys = Q_Sys *10;
+	DcsInputSum.S_Sys = S_Sys *10;
+	DcsInputSum.PF_Sys = PF_Sys *100;
+	DcsInputSum.Ublk = Uout_Imbalance *100;
+	DcsInputSum.Iblk = Iout_Imbalance *100;
+	DcsInputSum.FLwater = FlowRate*10;
 }
 /******************************************************************/
 void FunFaultReact(void)

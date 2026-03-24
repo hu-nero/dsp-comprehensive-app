@@ -257,7 +257,12 @@ u16 MbsRem_SendTail=0;
 u16 MbsRem_SendBuffer[Modbus_Send_BUFF_SIZE]={0};
 u16 MbsRem_RecvBuffer[Modbus_Recv_BUFF_SIZE]={0};
 
-
+u16 MbsDcs_RecvFront=0;
+u16 MbsDcs_RecvTail=0;
+u16 MbsDcs_SendFront=0;
+u16 MbsDcs_SendTail=0;
+u16 MbsDcs_SendBuffer[Modbus_Send_BUFF_SIZE]={0};
+u16 MbsDcs_RecvBuffer[Modbus_Recv_BUFF_SIZE]={0};
 
 
 

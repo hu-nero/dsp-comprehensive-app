@@ -121,12 +121,10 @@ void Sci_Modbus_SendData(volatile struct SCI_REGS *p, Uint16 dat)
 void Sci_Modbus_SendArray(volatile struct SCI_REGS *p, Uint16 * p_Arr, Uint16 Len)
 {
 	Uint16 i;
-	IO_EN1RS485_SEND;
 	for(i=0; i<Len; i++)
 	{
 		Sci_Modbus_SendData(p, *(p_Arr + i) );
 	}
-	IO_EN1RS485_RECV;
 }
 
 //===========================================================================

@@ -1,12 +1,30 @@
 #ifndef _VARIBALE_H_
 #define _VARIBALE_H_
 
-
 #include "DSP2833x_Device.h"
 #include "Arithmetic\Arithmetic.h"
 #include "Arithmetic\NprCtrl.h"
 #include "SCI_monitor\softscope.h"
 #include "Custom_GlobalMacro.H"
+
+
+typedef struct
+{
+	union DataBit_Type StaWord1, StaWord2;
+	union DataBit_Type FltWord1, FltWord2;
+	union DataBit_Type AlmWord1, AlmWord2;
+
+	s16 UabSl, UbcSl, UcaSl;
+	s16 UabPar, UbcPar, UcaPar;
+	s16 UaOut, UbOut, UcOut;
+	s16 UabOut, UbcOut, UcaOut;
+	s16 IaOut, IbOut, IcOut;
+	s16 P_Sys, Q_Sys, S_Sys, PF_Sys;
+	s16 Ublk, Iblk;
+	s16 FLwater;
+}	RemoteInput_t;
+
+extern RemoteInput_t RemInputSum, DcsInputSum;
 
 ////////////////////////////////////////////////////////////////////
 extern float Iout_Imbalance, Uout_Imbalance;
@@ -17,7 +35,6 @@ extern float IaPar, IbPar, IcPar;
 extern float IaOvh, IbOvh, IcOvh;
 extern float UaOut, UbOut, UcOut;
 extern float UabOut, UbcOut, UcaOut;
-
 
 extern float UabSl_rmsf, UbcSl_rmsf, UcaSl_rmsf;
 extern float UabPar_rmsf, UbcPar_rmsf, UcaPar_rmsf;

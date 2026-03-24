@@ -11,8 +11,12 @@ extern int CPLDSWVerRead(void);
 #define IO_Unload_Cutout                GpioDataRegs.GPASET.bit.GPIO25 = 1
 
 //   RS485 PIN
-#define IO_EN1RS485_SEND                RS485_Send_En();
-#define IO_EN1RS485_RECV                RS485_Send_Dis();
+#define IO_EN1RS485_SEND                RS485_Send_En2();
+#define IO_EN1RS485_RECV                RS485_Send_Dis2();
+
+//   RS485 PIN
+#define IO_EN2RS485_SEND                RS485_Send_En();  //gpio26
+#define IO_EN2RS485_RECV                RS485_Send_Dis(); //gpio26
 //----------------------------------------------------------
 //   LED PIN
 #define IO_DSPLED_ON                    GpioDataRegs.GPBSET.bit.GPIO52=1
@@ -22,9 +26,7 @@ extern int CPLDSWVerRead(void);
 //   with FPGA PIN
 #define IO_FPGARST_DIS					GpioDataRegs.GPASET.bit.GPIO24=1
 #define IO_FPGARST_EN					GpioDataRegs.GPACLEAR.bit.GPIO24=1
-//   RS485 PIN
-#define IO_EN2RS485_SEND                RS485_Send_En2();  //gpio26
-#define IO_EN2RS485_RECV                RS485_Send_Dis2(); //gpio26
+
 //   PWM 74ACT245-OE
 #define IO_PWM_LOCK						GpioDataRegs.GPACLEAR.bit.GPIO13=1
 #define IO_PWM_UNLOCK					GpioDataRegs.GPASET.bit.GPIO13=1
