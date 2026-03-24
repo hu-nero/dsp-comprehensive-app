@@ -13,6 +13,7 @@
 #include "Services/Logic/section_cabinet.h"
 #include "Main/Variable.h"
 #include "GPIO\Custom_IOMacro.H"
+#include "SDK/Hal/Timer/hal_timer.h"
 
 /*#define IO_A3QF1_En					    IOOutput1.DataBit.Bit0 = 1*/
 /*#define IO_A3QF1_Dis	  				IOOutput1.DataBit.Bit0 = 0*/
@@ -52,6 +53,7 @@
 #define ADC0_CH5_Value                  *(unsigned  int *)(0x4060)
 
 /*static uint16_t s_switchStatus[4] = {0, 0, 0, 0};*/
+static CanAppA3QFxStatus_t gCanAppA3QFxStatus;
 
 static CAN_App_func_status_handler_t g_func_status_handler = NULL;
 // 全局柜体控制上下文
@@ -62,6 +64,12 @@ static uint16_t Hardware_SwitchFeed(uint16_t SwitchId);
 static uint16_t Hardware_VoltageRead(VoltageReadType_t VoltagePhaseType);
 static uint16_t Hardware_CurrentRead(CurrentReadType_t CurrentPhaseType);
 static void Hardware_AlarmCallback(AlarmType_t AlarmType, const char* Message);
+
+void CAN_App_JogSignalHandler(void);
+void CAN_App_TurnOnA3QF1(void);
+void CAN_App_TurnOffA3QF1(void);
+void CAN_App_TurnOnA3QF2(void);
+void CAN_App_TurnOffA3QF2(void);
 
 // 应用层CAN接收处理函数
 static void
@@ -195,6 +203,8 @@ CAN_App_Init(void)
         return;
     }
 
+    // 初始化点动开关状态
+    memset(&gCanAppA3QFxStatus, 0, sizeof(CanAppA3QFxStatus_t));
 }
 
 // 应用层主循环
@@ -208,6 +218,8 @@ CAN_App_MainLoop(void)
     // 处理柜体状态机
     Cabinet_Process(&g_cabinet_context);
     
+    // 点动信号生成
+    CAN_App_JogSignalHandler();
     // switch test
 //    CAN_App_Test();
 }
@@ -232,6 +244,78 @@ CAN_App_Test(void)
     IO_Scan();
 }
 
+void
+CAN_App_JogSignalHandler(void)
+{
+    uint32_t time = hal_timer_get_timestamp();
+    if (gCanAppA3QFxStatus.A3QF1TurnOnStatus)
+    {
+        if (time - gCanAppA3QFxStatus.A3QF1TurnOntimerstamp >= 500)
+        {
+            IO_QF1SingOn_Dis;
+            gCanAppA3QFxStatus.A3QF1TurnOnStatus = false;
+            gCanAppA3QFxStatus.A3QF1TurnOntimerstamp = 0;
+        }
+    }
+    if (gCanAppA3QFxStatus.A3QF1TurnOffStatus)
+    {
+        if (time - gCanAppA3QFxStatus.A3QF1TurnOfftimerstamp >= 500)
+        {
+            IO_QF1SingOff_Dis;
+            gCanAppA3QFxStatus.A3QF1TurnOffStatus = false;
+            gCanAppA3QFxStatus.A3QF1TurnOfftimerstamp = 0;
+        }
+    }
+
+    if (gCanAppA3QFxStatus.A3QF2TurnOnStatus)
+    {
+        if (time - gCanAppA3QFxStatus.A3QF2TurnOntimerstamp >= 500)
+        {
+        	IO_QF2ParaOn_Dis;
+            gCanAppA3QFxStatus.A3QF2TurnOnStatus = false;
+            gCanAppA3QFxStatus.A3QF2TurnOntimerstamp = 0;
+        }
+    }
+    if (gCanAppA3QFxStatus.A3QF2TurnOffStatus)
+    {
+        if (time - gCanAppA3QFxStatus.A3QF2TurnOfftimerstamp >= 500)
+        {
+        	IO_QF2ParaOff_Dis;
+            gCanAppA3QFxStatus.A3QF2TurnOffStatus = false;
+            gCanAppA3QFxStatus.A3QF2TurnOfftimerstamp = 0;
+        }
+    }
+}
+
+void
+CAN_App_TurnOnA3QF1(void)
+{
+    IO_QF1SingOn_En;
+    gCanAppA3QFxStatus.A3QF1TurnOnStatus = true;
+    gCanAppA3QFxStatus.A3QF1TurnOntimerstamp = hal_timer_get_timestamp();
+}
+
+void CAN_App_TurnOffA3QF1(void)
+{
+	IO_QF1SingOff_En;
+    gCanAppA3QFxStatus.A3QF1TurnOffStatus = true;
+    gCanAppA3QFxStatus.A3QF1TurnOfftimerstamp = hal_timer_get_timestamp();
+}
+
+void
+CAN_App_TurnOnA3QF2(void)
+{
+	IO_QF2ParaOn_En;
+    gCanAppA3QFxStatus.A3QF2TurnOnStatus = true;
+    gCanAppA3QFxStatus.A3QF2TurnOntimerstamp = hal_timer_get_timestamp();
+}
+
+void CAN_App_TurnOffA3QF2(void)
+{
+	IO_QF2ParaOff_En;
+    gCanAppA3QFxStatus.A3QF2TurnOffStatus = true;
+    gCanAppA3QFxStatus.A3QF2TurnOfftimerstamp = hal_timer_get_timestamp();
+}
 // 发送控制命令
 void
 CAN_App_SendControlToDevice(TeCanPort Port, uint16_t DstAddr)
@@ -291,19 +375,13 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             {
                 if (State == SWITCH_ON)
                 {
+                    CAN_App_TurnOnA3QF1();
                     /*IO_QF1SingOn_En;*/
-                    // 间隔
-                    /*IO_QF1SingOn_Dis;*/
-
-                    IO_QF1SingOn_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    /*IO_QF1SingOff_En;*/
-                    // 间隔
-                    /*IO_QF1SingOff_Dis;*/
-
-                    IO_QF1SingOn_Dis;
+                    CAN_App_TurnOffA3QF1();
+                    /*IO_QF1SingOn_Dis;*/
                 }
             }
             break;
@@ -315,19 +393,13 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             {
                 if (State == SWITCH_ON)
                 {
+                    CAN_App_TurnOnA3QF2();
                     /*IO_QF2ParaOn_En;*/
-                    /*// 间隔*/
-                    /*IO_QF2ParaOn_Dis;*/
-
-                    IO_QF2ParaOn_En;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    /*IO_QF2ParaOff_En;*/
-                    /*// 间隔*/
-                    /*IO_QF2ParaOff_Dis;*/
-
-                    IO_QF2ParaOn_Dis;
+                    CAN_App_TurnOffA3QF2();
+                    /*IO_QF2ParaOn_Dis;*/
                 }
             }
             break;

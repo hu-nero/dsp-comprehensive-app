@@ -10,6 +10,18 @@
 
 #include "SDK/Agent/Can/can_agent.h"
 
+typedef struct
+{
+    uint16_t A3QF1TurnOnStatus;
+    uint16_t A3QF1TurnOffStatus;
+    uint16_t A3QF2TurnOnStatus;
+    uint16_t A3QF2TurnOffStatus;
+    uint32_t A3QF1TurnOntimerstamp;
+    uint32_t A3QF1TurnOfftimerstamp;
+    uint32_t A3QF2TurnOntimerstamp;
+    uint32_t A3QF2TurnOfftimerstamp;
+} CanAppA3QFxStatus_t;
+
 extern void CAN_App_Init(void);
 extern void CAN_App_MainLoop(void);
 extern bool CAN_App_SendParam(TeCanPort port, uint16_t DstAddr, ParamDevice_t Device, uint16_t *Data, uint16_t TotalLength);
