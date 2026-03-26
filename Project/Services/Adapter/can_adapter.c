@@ -81,6 +81,18 @@ CAN_Adapter_ClearGridConnectionStatus(void)
     gGridConnectionStatus.status_word = 0;
 }
 
+CommSectionToPower_t
+CAN_Adapter_GetCommSectionToPower(void)
+{
+    return gCommSectionToPowerStatus;
+}
+
+void
+CAN_Adapter_SetCommSectionToPower(CommSectionToPower_t Status)
+{
+    gCommSectionToPowerStatus = Status;
+}
+
 CommSectionToSync_t
 CAN_Adapter_GetCommSectionToSync(void)
 {

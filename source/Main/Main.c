@@ -100,7 +100,7 @@ void main(void)
 
 	pwm_init();
 	INT28335_process();
-	CAN_App_Init();
+    CAN_App_Init();
 
 	variable_init();
 
@@ -114,9 +114,9 @@ void main(void)
 
 	Dis_PWM();
 	ParaDownloadCtrlWord=1;
-	for(i=0;i<1000;i++)
-		for(j=0;j<10000;j++);
-	CAN_App_Test();
+	for(i=0;i<2000;i++)
+		for(j=0;j<2000;j++);
+    CAN_App_Test();
 	for(; ;)
 	{
         CAN_App_MainLoop();

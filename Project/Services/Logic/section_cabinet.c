@@ -31,6 +31,7 @@ static ExecuteResult_t Cabinet_ExecuteBackupProcedure(CabinetContext_t* Context)
 
 static void Cabinet_SetAlarm(CabinetContext_t* Context, AlarmType_t Type, const char* Message);
 static void Cabinet_UpdateCabinetState(CabinetContext_t* Context);
+static void Cabinet_UpdateCommSectionToPowerStatus(CabinetContext_t* Context);
 static void Cabinet_UpdateCommSectionToSyncStatus(CabinetContext_t* Context);
 
 // 状态切换(待机、单机、并机、备机)
@@ -139,8 +140,9 @@ Cabinet_Process(CabinetContext_t* Context)
     Cabinet_ExecuteEmergencyProcedure(Context);
     // 故障急停、消磁
 //    Cabinet_ExecuteEmergencyStopDegaussProcedure(Context);
-    // 更新同步柜消息
+    // 更新柜子发布的消息
     Cabinet_UpdateCommSectionToSyncStatus(Context);
+    Cabinet_UpdateCommSectionToPowerStatus(Context);
     // 急停下只允许面板消磁
     if (Context->emergency_stop_status == true)
     {
@@ -716,7 +718,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                     // 等待开关反馈稳定3秒
-                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 50);
+                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
                     if (demag_result == RESULT_SUCCESS)
                     {
                         ;
@@ -786,7 +788,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                     // 等待开关反馈稳定3秒
-                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 50);
+                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
                     if (demag_result == RESULT_SUCCESS)
                     {
                         ;
@@ -832,7 +834,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                     // 等待开关反馈稳定3秒
-                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 50);
+                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
                     if (demag_result == RESULT_SUCCESS)
                     {
                         Context->demagnetize_state = DEMAGNETIZE_IDLE;
@@ -860,7 +862,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                     // 等待开关反馈稳定3秒
-                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 50);
+                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
                     if (demag_result == RESULT_SUCCESS)
                     {
                         Context->demagnetize_state = DEMAGNETIZE_IDLE;
@@ -921,8 +923,8 @@ Cabinet_RecoverFromEmergency(CabinetContext_t* Context)
     
     // 检查急停信号是否已经解除
     Context->switch_list.emergency_stop_switch = (SwitchState_t)Context->switch_feed(DI_ID_EMERGENCY_STOP);
-    Context->emergency_stop_status = (Context->switch_list.emergency_stop_switch == SWITCH_OFF);
-    if (Context->switch_list.emergency_stop_switch == SWITCH_ON)
+//    Context->emergency_stop_status = (Context->switch_list.emergency_stop_switch == SWITCH_OFF);
+    if (Context->switch_list.emergency_stop_switch == SWITCH_OFF)
     {
         // 急停信号仍然存在，不能恢复
         return RESULT_FAILED;
@@ -1061,6 +1063,38 @@ Cabinet_ProcessDemagnetizeWait(CabinetContext_t* Context)
             Context->demagnetize_state = DEMAGNETIZE_DONE;
         }
     }
+}
+
+static void
+Cabinet_UpdateCommSectionToPowerStatus(CabinetContext_t* Context)
+{
+    CommSectionToPower_t status;
+    status = CAN_Adapter_GetCommSectionToPower();
+    if ((Context->switch_list.A3QF1_switch == SWITCH_ON) &&
+        (Context->switch_list.A3QR1_switch == SWITCH_ON))
+    {
+        status.section_status.bit.WorkSta = 1;
+    }
+    else if ((Context->switch_list.A3QF2_switch == SWITCH_ON) &&
+        (Context->switch_list.A3QR2_switch == SWITCH_ON))
+    {
+        status.section_status.bit.WorkSta = 2;
+    }
+    else if ((Context->switch_list.A3QF1_switch == SWITCH_OFF) &&
+        (Context->switch_list.A3QR1_switch == SWITCH_OFF) &&
+        (Context->switch_list.A3QF2_switch == SWITCH_OFF) &&
+        (Context->switch_list.A3QR2_switch == SWITCH_OFF))
+    {
+        status.section_status.bit.WorkSta = 0;
+    }
+    else
+    {
+        status.section_status.bit.WorkSta = 3;
+    }
+
+
+    CAN_Adapter_SetCommSectionToPower(status);
+
 }
 
 static void
@@ -1326,7 +1360,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                     // 等待开关反馈稳定3秒
-                    res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 50);
+                    res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
                     if (res == RESULT_SUCCESS)
                     {
                         Context->fault_recovery_state = AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS;
@@ -1533,7 +1567,7 @@ Cabinet_ExecuteAutoDegaussProcedure(CabinetContext_t* Context, uint16_t DelayMs)
     {
         Context->switch_control(DO_ID_A3QR3, SWITCH_ON);
         // 等待开关反馈稳定3秒
-        demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_ON, 5000, 3000, 50);
+        demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_ON, 5000, 3000, 1500);
         if (demag_result == RESULT_SUCCESS)
         {
             // 消磁命令执行成功，开始等待
@@ -2422,7 +2456,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                             // 断开消磁
                             Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                             // 等待开关反馈稳定3秒
-                            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 50);
+                            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
                             if (res == RESULT_SUCCESS)
                             {
                                 Context->fault_recovery_state = AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS;
@@ -2537,7 +2571,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                             // 断开消磁
                             Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                             // 等待开关反馈稳定3秒
-                            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 50);
+                            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
                             if (res == RESULT_SUCCESS)
                             {
                                 ;

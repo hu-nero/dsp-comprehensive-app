@@ -52,7 +52,6 @@
 #define ADC0_CH4_Value                  *(unsigned  int *)(0x4050)
 #define ADC0_CH5_Value                  *(unsigned  int *)(0x4060)
 
-/*static uint16_t s_switchStatus[4] = {0, 0, 0, 0};*/
 static CanAppA3QFxStatus_t gCanAppA3QFxStatus;
 
 static CAN_App_func_status_handler_t g_func_status_handler = NULL;
@@ -234,6 +233,10 @@ CAN_App_Test(void)
     Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_ON);
     Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_ON);
     Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_ON);
+//    Hardware_SwitchControl(DO_ID_RUNACK,SWITCH_ON);
+//    Hardware_SwitchControl(DO_ID_DEGAUSS,SWITCH_ON);
+//    Hardware_SwitchControl(DO_ID_RUNLED,SWITCH_ON);
+//    Hardware_SwitchControl(DO_ID_FLTLED,SWITCH_ON);
     IO_Scan();
     for (;delay>0;delay--);
     Hardware_SwitchControl(DO_ID_A3QF1,SWITCH_OFF);
@@ -241,6 +244,8 @@ CAN_App_Test(void)
     Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_OFF);
+//    Hardware_SwitchControl(DO_ID_RUNACK,SWITCH_OFF);
+//    Hardware_SwitchControl(DO_ID_DEGAUSS,SWITCH_OFF);
     IO_Scan();
 }
 
@@ -365,10 +370,26 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
     {
         case DO_ID_RUNACK:
             {
+                if (State == SWITCH_ON)
+                {
+                	IO_RunAck_ON;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                	IO_RunAck_OFF;
+                }
             }
             break;
         case DO_ID_DEGAUSS:
             {
+                if (State == SWITCH_ON)
+                {
+                	IO_DgssAck_ON;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                	IO_DgssAck_OFF;
+                }
             }
             break;
         case DO_ID_A3QF1:
@@ -499,13 +520,13 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             {
                 if (State == SWITCH_ON)
                 {
-                    /*IO_QR1Sing_ON;*/
-                    IO_A3QR1_En;
+                    IO_QR1Sing_ON;
+                    /*IO_A3QR1_En;*/
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    /*IO_QR1Sing_OFF;*/
-                    IO_A3QR1_Dis;
+                    IO_QR1Sing_OFF;
+                    /*IO_A3QR1_Dis;*/
                 }
             }
             break;
@@ -513,13 +534,13 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             {
                 if (State == SWITCH_ON)
                 {
-                    /*IO_QR2Para_ON;*/
-                    IO_A3QR2_En;
+                    IO_QR2Para_ON;
+                    /*IO_A3QR2_En;*/
                 }
                 else if (State == SWITCH_OFF)
                 {
-                    /*IO_QR2Para_OFF;*/
-                    IO_A3QR2_Dis;
+                    IO_QR2Para_OFF;
+                    /*IO_A3QR2_Dis;*/
                 }
             }
             break;
