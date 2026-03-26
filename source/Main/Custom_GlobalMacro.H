@@ -5,6 +5,19 @@ extern volatile struct GPIO_CTRL_REGS GpioCtrlRegs;
 extern volatile struct GPIO_DATA_REGS GpioDataRegs;
 extern volatile struct GPIO_INT_REGS GpioIntRegs;
 /***********************************************************/
+union Remote_Ctrl_Word_Type
+{
+	unsigned int all;
+	struct
+	{
+		unsigned SlCtrl:		2;		// 0:NoAct 1:start 2:stop 3:reset
+		unsigned ParCtrl:		2;		// 0:NoAct 1:Begin 2:Exit 3:Invalid
+		unsigned SingPara:		2;		// 0:NoAct 1:SingToPara 2:ParaToSing 3:Invalid
+		unsigned ComCut:		2;		// 0:NoAct 1:Comm 2:Cut 3:Invalid
+		unsigned Reset:			1;		// 0:NoAct 1:Comm 2:Cut 3:Invalid
+		unsigned Rsvd:			7;		//
+	}	bit;
+};
 /***********************************************************/
 union Main_Control_Word_Type
 {

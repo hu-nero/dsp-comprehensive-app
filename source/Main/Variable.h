@@ -26,6 +26,12 @@ typedef struct
 
 extern RemoteInput_t RemInputSum, DcsInputSum;
 
+typedef struct
+{
+	union Remote_Ctrl_Word_Type CtrlWord;
+}	RemoteHold_t;
+
+extern RemoteHold_t RemHoldSum, DcsHoldSum;
 ////////////////////////////////////////////////////////////////////
 extern float Iout_Imbalance, Uout_Imbalance;
 
@@ -46,6 +52,12 @@ extern float P_Workf, Q_Workf, S_Workf;
 extern float P_Ovhf, Q_Ovhf, S_Ovhf;
 extern float IaOut_rmsf, IbOut_rmsf, IcOut_rmsf;
 
+extern float UabSl_sum, UbcSl_sum, UcaSl_sum;
+extern float UabPar_sum, UbcPar_sum, UcaPar_sum;
+extern float IaPar_sum, IbPar_sum, IcPar_sum;
+extern float IaOvh_sum, IbOvh_sum, IcOvh_sum;
+extern float UaOut_sum, UbOut_sum, UcOut_sum;
+extern float UabOut_sum, UbcOut_sum, UcaOut_sum;
 extern float UabSl_rms, UbcSl_rms, UcaSl_rms;
 extern float UabPar_rms, UbcPar_rms, UcaPar_rms;
 extern float IaPar_rms, IbPar_rms, IcPar_rms;
@@ -56,6 +68,7 @@ extern float P_Work, Q_Work, S_Work, PF_Work;
 extern float P_Ovh, Q_Ovh, S_Ovh, PF_Ovh;
 extern float P_Sys, Q_Sys, S_Sys, PF_Sys;
 
+extern int Flag_RmsBufFull;
 
 extern unsigned int AlmCnt_UnderVolt_Phase;
 extern unsigned int AlmCntThr_UnderVolt_Phase;
@@ -616,10 +629,13 @@ extern int Flag_IOParaCtrl;
 extern int Flag_IODgssCtrl;
 extern int Flag_IORstRef;
 
-extern int Flag_RemParaCtrl;
-extern int Flag_RemSingCtrl;
-extern int Flag_RemDgssCtrl;
-extern int Flag_RemRstRef;
+extern int FlagRem_Combine;
+extern int FlagRem_Split;
+extern int FlagRem_Reset;
+extern int FlagRem_ParaOn;
+extern int FlagRem_ParaOff;
+extern int FlagRem_SingOn;
+extern int FlagRem_SingOff;
 
 extern int Flag_LockPWM;
 extern int Flag_IORunRef;

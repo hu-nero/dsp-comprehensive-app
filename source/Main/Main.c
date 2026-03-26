@@ -54,6 +54,7 @@ void DcsCommVarRemap(void);
 
 void npr_1ms_protection(void);
 
+void RmsFillter(void);
 void GetVIRms(void);
 void CalImbalance(void);
 void GetPQ2r(void);
@@ -77,7 +78,7 @@ void main(void)
 	InitFlash();
 	GPIO_init();
 
-	for(i=0;i<1000;i++)
+	for(i=0;i<10000;i++)
 		for(j=0;j<10000;j++);
 
 	InitXintf();
@@ -100,7 +101,7 @@ void main(void)
 
 	pwm_init();
 	INT28335_process();
-    CAN_App_Init();
+	CAN_App_Init();
 
 	variable_init();
 
@@ -114,9 +115,11 @@ void main(void)
 
 	Dis_PWM();
 	ParaDownloadCtrlWord=1;
+
+    IO_Scan();
 	for(i=0;i<2000;i++)
 		for(j=0;j<2000;j++);
-    CAN_App_Test();
+	CAN_App_Test();
 	for(; ;)
 	{
         CAN_App_MainLoop();
@@ -167,6 +170,8 @@ void main(void)
 			RealTime20msFun();
 			RealTime1ms = 0;
 		}
+
+		GetVIRms();
 //////////////////////////////////////////////////////////////////////////////
 		if(SysCnt_1s != SysCnt_1sOld)
 		{
@@ -186,6 +191,7 @@ void main(void)
 			FunResetAct();
 			RemCommVarRemap();
 			DcsCommVarRemap();
+			RmsFillter();
 ///////////////////////////////////////////////////////////////////////////////////////////
 			//Ctrl Logic
 			if(Status_NPRRun == 0)
@@ -296,10 +302,10 @@ void RemCommVarRemap(void)
 {
 	RemInputSum.StaWord1.DataInt = MainStusWord.DataInt;
 	RemInputSum.StaWord2.DataInt = MainSta2Word.DataInt;
-	RemInputSum.FltWord1.DataInt = AlarmWord1.DataInt;
-	RemInputSum.FltWord2.DataInt = AlarmWord2.DataInt;
-	RemInputSum.AlmWord1.DataInt = FaultWord1.DataInt;
-	RemInputSum.AlmWord2.DataInt = FaultWord2.DataInt;
+	RemInputSum.FltWord1.DataInt = FaultWord1.DataInt;
+	RemInputSum.FltWord2.DataInt = FaultWord2.DataInt;
+	RemInputSum.AlmWord1.DataInt = AlarmWord1.DataInt;
+	RemInputSum.AlmWord2.DataInt = AlarmWord2.DataInt;
 	RemInputSum.UabSl = UabSl_rmsf *10;
 	RemInputSum.UbcSl = UbcSl_rmsf *10;
 	RemInputSum.UcaSl  = UcaSl_rmsf *10;
@@ -328,10 +334,10 @@ void DcsCommVarRemap(void)
 {
 	DcsInputSum.StaWord1.DataInt = MainStusWord.DataInt;
 	DcsInputSum.StaWord2.DataInt = MainSta2Word.DataInt;
-	DcsInputSum.FltWord1.DataInt = AlarmWord1.DataInt;
-	DcsInputSum.FltWord2.DataInt = AlarmWord2.DataInt;
-	DcsInputSum.AlmWord1.DataInt = FaultWord1.DataInt;
-	DcsInputSum.AlmWord2.DataInt = FaultWord2.DataInt;
+	DcsInputSum.FltWord1.DataInt = FaultWord1.DataInt;
+	DcsInputSum.FltWord2.DataInt = FaultWord2.DataInt;
+	DcsInputSum.AlmWord1.DataInt = AlarmWord1.DataInt;
+	DcsInputSum.AlmWord2.DataInt = AlarmWord2.DataInt;
 	DcsInputSum.UabSl = UabSl_rmsf *10;
 	DcsInputSum.UbcSl = UbcSl_rmsf *10;
 	DcsInputSum.UcaSl  = UcaSl_rmsf *10;
@@ -442,7 +448,7 @@ void FunStatusUpdate(void)
 	{
 		MainStusWord.DataBit.Fault = 0;
 
-		if(MainSta2Word.DataBit.WorkLpQS1 & MainSta2Word.DataBit.CheckLpQS1)
+		if(MainSta2Word.DataBit.SingQF1 | MainSta2Word.DataBit.ParaQF2)
 		{
 			MainStusWord.DataBit.Running = 1;
 		}
@@ -451,6 +457,28 @@ void FunStatusUpdate(void)
 			MainStusWord.DataBit.Running = 0;
 		}
 	}
+
+	if(MainStusWord.DataBit.Running)
+	{
+		IO_RunLed_ON;
+		IO_RunAck_ON;
+	}
+	else
+	{
+		IO_RunLed_OFF;
+		IO_RunAck_OFF;
+	}
+
+	if(MainStusWord.DataBit.Fault)
+	{
+		IO_FltLed_ON;
+	}
+	else
+	{
+		IO_FltLed_OFF;
+	}
+
+
 
 }
 /******************************************************************/
@@ -752,109 +780,153 @@ void GetFlowRate_Calc(void)
 	FlowRate = FlowRate*0.9 + ftemp*0.1;
 }
 /******************************************************************/
+void GetVoltCurr(void)
+{
+	////////////////////////////////////////////////////////////////
+	if(Flag_RmsBufFull == 0)
+	{
+		UabSl_HalfMemory[SysCnt_10msRmsCalc] = fabs(UabSl);
+		UbcSl_HalfMemory[SysCnt_10msRmsCalc] = fabs(UbcSl);
+		UcaSl_HalfMemory[SysCnt_10msRmsCalc] = fabs(UcaSl);
+
+		UabPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(UabPar);
+		UbcPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(UbcPar);
+		UcaPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(UcaPar);
+
+		IaPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(IaPar);
+		IbPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(IbPar);
+		IcPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(IcPar);
+
+		IaOvh_HalfMemory[SysCnt_10msRmsCalc] = fabs(IaOvh);
+		IbOvh_HalfMemory[SysCnt_10msRmsCalc] = fabs(IbOvh);
+		IcOvh_HalfMemory[SysCnt_10msRmsCalc] = fabs(IcOvh);
+
+		UaOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UaOut);
+		UbOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UbOut);
+		UcOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UcOut);
+
+		UabOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UabOut);
+		UbcOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UbcOut);
+		UcaOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UcaOut);
+
+		SysCnt_10msRmsCalc ++;
+		if(SysCnt_10msRmsCalc >= 20)
+		{
+			SysCnt_10msRmsCalc = 0;
+			Flag_RmsBufFull = 1;
+		}
+	}
+}
 void GetVIRms(void)
 {
-	// ===================== 1. UabSl/UbcSl/UcaSl �?=====================
-	UabSl_rms -= UabSl_HalfMemory[SysCnt_10msRmsCalc];
-	UbcSl_rms -= UbcSl_HalfMemory[SysCnt_10msRmsCalc];
-	UcaSl_rms -= UcaSl_HalfMemory[SysCnt_10msRmsCalc];
+	u16 i=0;
 
-	UabSl_HalfMemory[SysCnt_10msRmsCalc] = fabs(UabSl * 0.0555);
-	UbcSl_HalfMemory[SysCnt_10msRmsCalc] = fabs(UbcSl * 0.0555);
-	UcaSl_HalfMemory[SysCnt_10msRmsCalc] = fabs(UcaSl * 0.0555);
+	if(Flag_RmsBufFull)
+	{
+		for(i=0; i<20; i++)
+		{
+			UabSl_sum += UabSl_HalfMemory[i];
+			UbcSl_sum += UbcSl_HalfMemory[i];
+			UcaSl_sum += UcaSl_HalfMemory[i];
 
-	UabSl_rms += UabSl_HalfMemory[SysCnt_10msRmsCalc];
-	UbcSl_rms += UbcSl_HalfMemory[SysCnt_10msRmsCalc];
-	UcaSl_rms += UcaSl_HalfMemory[SysCnt_10msRmsCalc];
+			UabPar_sum += UabPar_HalfMemory[i];
+			UbcPar_sum += UbcPar_HalfMemory[i];
+			UcaPar_sum += UcaPar_HalfMemory[i];
+
+			IaPar_sum += IaPar_HalfMemory[i];
+			IbPar_sum += IbPar_HalfMemory[i];
+			IcPar_sum += IcPar_HalfMemory[i];
+
+			IaOvh_sum += IaOvh_HalfMemory[i];
+			IbOvh_sum += IbOvh_HalfMemory[i];
+			IcOvh_sum += IcOvh_HalfMemory[i];
+
+			UaOut_sum += UaOut_HalfMemory[i];
+			UbOut_sum += UbOut_HalfMemory[i];
+			UcOut_sum += UcOut_HalfMemory[i];
+
+			UabOut_sum += UabOut_HalfMemory[i];
+			UbcOut_sum += UbcOut_HalfMemory[i];
+			UcaOut_sum += UcaOut_HalfMemory[i];
+		}
+
+		UabSl_rms = UabSl_sum*0.05;
+		UbcSl_rms = UbcSl_sum*0.05;
+		UcaSl_rms = UcaSl_sum*0.05;
+
+		UabPar_rms = UabPar_sum*0.05;
+		UbcPar_rms = UbcPar_sum*0.05;
+		UcaPar_rms = UcaPar_sum*0.05;
+
+		IaPar_rms = IaPar_sum*0.05;
+		IbPar_rms = IbPar_sum*0.05;
+		IcPar_rms = IcPar_sum*0.05;
+
+		IaOvh_rms = IaOvh_sum*0.05;
+		IbOvh_rms = IbOvh_sum*0.05;
+		IcOvh_rms = IcOvh_sum*0.05;
+
+		UaOut_rms = UaOut_sum*0.05;
+		UbOut_rms = UbOut_sum*0.05;
+		UcOut_rms = UcOut_sum*0.05;
+
+		UabOut_rms = UabOut_sum*0.05;
+		UbcOut_rms = UbcOut_sum*0.05;
+		UcaOut_rms = UcaOut_sum*0.05;
+
+		UabSl_sum=0;
+		UbcSl_sum=0;
+		UcaSl_sum=0;
+
+		UabPar_sum=0;
+		UbcPar_sum=0;
+		UcaPar_sum=0;
+
+		IaPar_sum=0;
+		IbPar_sum=0;
+		IcPar_sum=0;
+
+		IaOvh_sum=0;
+		IbOvh_sum=0;
+		IcOvh_sum=0;
+
+		UaOut_sum=0;
+		UbOut_sum=0;
+		UcOut_sum=0;
+
+		UabOut_sum=0;
+		UbcOut_sum=0;
+		UcaOut_sum=0;
+
+		Flag_RmsBufFull = 0;
+	}
+}
+
+void RmsFillter(void)
+{
+	UabPar_rmsf = UabPar_rmsf * 0.875 + UabPar_rms * 0.125;
+	UbcPar_rmsf = UbcPar_rmsf * 0.875 + UbcPar_rms * 0.125;
+	UcaPar_rmsf = UcaPar_rmsf * 0.875 + UcaPar_rms * 0.125;
 
 	UabSl_rmsf = UabSl_rmsf * 0.875 + UabSl_rms * 0.125;
 	UbcSl_rmsf = UbcSl_rmsf * 0.875 + UbcSl_rms * 0.125;
 	UcaSl_rmsf = UcaSl_rmsf * 0.875 + UcaSl_rms * 0.125;
-	// ===================== 2. UabPar/UbcPar/UcaPar �?=====================
-	UabPar_rms -= UabPar_HalfMemory[SysCnt_10msRmsCalc];
-	UbcPar_rms -= UbcPar_HalfMemory[SysCnt_10msRmsCalc];
-	UcaPar_rms -= UcaPar_HalfMemory[SysCnt_10msRmsCalc];
-
-	UabPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(UabPar * 0.0555);
-	UbcPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(UbcPar * 0.0555);
-	UcaPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(UcaPar * 0.0555);
-
-	UabPar_rms += UabPar_HalfMemory[SysCnt_10msRmsCalc];
-	UbcPar_rms += UbcPar_HalfMemory[SysCnt_10msRmsCalc];
-	UcaPar_rms += UcaPar_HalfMemory[SysCnt_10msRmsCalc];
-
-	UabPar_rmsf = UabPar_rmsf * 0.875 + UabPar_rms * 0.125;
-	UbcPar_rmsf = UbcPar_rmsf * 0.875 + UbcPar_rms * 0.125;
-	UcaPar_rmsf = UcaPar_rmsf * 0.875 + UcaPar_rms * 0.125;
-	// ===================== 3. IaPar/IbPar/IcPar �?=====================
-	IaPar_rms -= IaPar_HalfMemory[SysCnt_10msRmsCalc];
-	IbPar_rms -= IbPar_HalfMemory[SysCnt_10msRmsCalc];
-	IcPar_rms -= IcPar_HalfMemory[SysCnt_10msRmsCalc];
-
-	IaPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(IaPar * 0.0555);
-	IbPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(IbPar * 0.0555);
-	IcPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(IcPar * 0.0555);
-
-	IaPar_rms += IaPar_HalfMemory[SysCnt_10msRmsCalc];
-	IbPar_rms += IbPar_HalfMemory[SysCnt_10msRmsCalc];
-	IcPar_rms += IcPar_HalfMemory[SysCnt_10msRmsCalc];
-
-	IaPar_rmsf = IaPar_rmsf * 0.875 + IaPar_rms * 0.125;
-	IbPar_rmsf = IbPar_rmsf * 0.875 + IbPar_rms * 0.125;
-	IcPar_rmsf = IcPar_rmsf * 0.875 + IcPar_rms * 0.125;
-	// ===================== 4. IaOvh/IbOvh/IcOvh �?=====================
-	IaOvh_rms -= IaOvh_HalfMemory[SysCnt_10msRmsCalc];
-	IbOvh_rms -= IbOvh_HalfMemory[SysCnt_10msRmsCalc];
-	IcOvh_rms -= IcOvh_HalfMemory[SysCnt_10msRmsCalc];
-
-	IaOvh_HalfMemory[SysCnt_10msRmsCalc] = fabs(IaOvh * 0.0555);
-	IbOvh_HalfMemory[SysCnt_10msRmsCalc] = fabs(IbOvh * 0.0555);
-	IcOvh_HalfMemory[SysCnt_10msRmsCalc] = fabs(IcOvh * 0.0555);
-
-	IaOvh_rms += IaOvh_HalfMemory[SysCnt_10msRmsCalc];
-	IbOvh_rms += IbOvh_HalfMemory[SysCnt_10msRmsCalc];
-	IcOvh_rms += IcOvh_HalfMemory[SysCnt_10msRmsCalc];
 
 	IaOvh_rmsf = IaOvh_rmsf * 0.875 + IaOvh_rms * 0.125;
 	IbOvh_rmsf = IbOvh_rmsf * 0.875 + IbOvh_rms * 0.125;
 	IcOvh_rmsf = IcOvh_rmsf * 0.875 + IcOvh_rms * 0.125;
-	// ===================== 5. UaOut/UbOut/UcOut �?=====================
-	UaOut_rms -= UaOut_HalfMemory[SysCnt_10msRmsCalc];
-	UbOut_rms -= UbOut_HalfMemory[SysCnt_10msRmsCalc];
-	UcOut_rms -= UcOut_HalfMemory[SysCnt_10msRmsCalc];
 
-	UaOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UaOut * 0.0555);
-	UbOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UbOut * 0.0555);
-	UcOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UcOut * 0.0555);
-
-	UaOut_rms += UaOut_HalfMemory[SysCnt_10msRmsCalc];
-	UbOut_rms += UbOut_HalfMemory[SysCnt_10msRmsCalc];
-	UcOut_rms += UcOut_HalfMemory[SysCnt_10msRmsCalc];
+	IaPar_rmsf = IaPar_rmsf * 0.875 + IaPar_rms * 0.125;
+	IbPar_rmsf = IbPar_rmsf * 0.875 + IbPar_rms * 0.125;
+	IcPar_rmsf = IcPar_rmsf * 0.875 + IcPar_rms * 0.125;
 
 	UaOut_rmsf = UaOut_rmsf * 0.875 + UaOut_rms * 0.125;
 	UbOut_rmsf = UbOut_rmsf * 0.875 + UbOut_rms * 0.125;
 	UcOut_rmsf = UcOut_rmsf * 0.875 + UcOut_rms * 0.125;
-	// ===================== 6. UabOut/UbcOut/UcaOut �?=====================
-	UabOut_rms -= UabOut_HalfMemory[SysCnt_10msRmsCalc];
-	UbcOut_rms -= UbcOut_HalfMemory[SysCnt_10msRmsCalc];
-	UcaOut_rms -= UcaOut_HalfMemory[SysCnt_10msRmsCalc];
-
-	UabOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UabOut * 0.0555);
-	UbcOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UbcOut * 0.0555);
-	UcaOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UcaOut * 0.0555);
-
-	UabOut_rms += UabOut_HalfMemory[SysCnt_10msRmsCalc];
-	UbcOut_rms += UbcOut_HalfMemory[SysCnt_10msRmsCalc];
-	UcaOut_rms += UcaOut_HalfMemory[SysCnt_10msRmsCalc];
 
 	UabOut_rmsf = UabOut_rmsf * 0.875 + UabOut_rms * 0.125;
 	UbcOut_rmsf = UbcOut_rmsf * 0.875 + UbcOut_rms * 0.125;
 	UcaOut_rmsf = UcaOut_rmsf * 0.875 + UcaOut_rms * 0.125;
-	////////////////////////////////////////////////////////////////
-	////////////////////////////////////////////////////////////////
-	SysCnt_10msRmsCalc ++;
-	if(SysCnt_10msRmsCalc >= 20)
-		SysCnt_10msRmsCalc = 0;
 }
 
 void CalImbalance(void)
@@ -1040,8 +1112,8 @@ interrupt void EPWM1_INT_Underflow_isr(void)
 	if(IO_ADNotBusy == 1)
 		Palarell_Extern_ADCScan();
 ////////////////////////////////////////////////////////////////////////
-//	GetVIRms();
-//	GetPQ2r();
+	GetVoltCurr();
+	GetPQ2r();
 ////////////////////////////////////////////////////////////////////////
 }
 /******************************************************************/

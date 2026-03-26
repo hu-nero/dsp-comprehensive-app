@@ -9,6 +9,7 @@
 
 ////////////////////////////////////////////////////////////////////
 RemoteInput_t RemInputSum, DcsInputSum;
+RemoteHold_t RemHoldSum, DcsHoldSum;
 ////////////////////////////////////////////////////////////////////
 float Iout_Imbalance=0, Uout_Imbalance=0;
 
@@ -29,6 +30,12 @@ float P_Workf, Q_Workf, S_Workf;
 float P_Ovhf, Q_Ovhf, S_Ovhf;
 float IaOut_rmsf, IbOut_rmsf, IcOut_rmsf;
 
+float UabSl_sum=0, UbcSl_sum=0, UcaSl_sum=0;
+float UabPar_sum=0, UbcPar_sum=0, UcaPar_sum=0;
+float IaPar_sum=0, IbPar_sum=0, IcPar_sum=0;
+float IaOvh_sum=0, IbOvh_sum=0, IcOvh_sum=0;
+float UaOut_sum=0, UbOut_sum=0, UcOut_sum=0;
+float UabOut_sum=0, UbcOut_sum=0, UcaOut_sum=0;
 float UabSl_rms, UbcSl_rms, UcaSl_rms;
 float UabPar_rms, UbcPar_rms, UcaPar_rms;
 float IaPar_rms, IbPar_rms, IcPar_rms;
@@ -39,6 +46,7 @@ float P_Work, Q_Work, S_Work, PF_Work;
 float P_Ovh, Q_Ovh, S_Ovh, PF_Ovh;
 float P_Sys, Q_Sys, S_Sys, PF_Sys;
 
+int Flag_RmsBufFull=0;
 float UabSl_HalfMemory[20], UbcSl_HalfMemory[20], UcaSl_HalfMemory[20];
 float UabPar_HalfMemory[20], UbcPar_HalfMemory[20], UcaPar_HalfMemory[20];
 float IaPar_HalfMemory[20], IbPar_HalfMemory[20], IcPar_HalfMemory[20];
@@ -550,10 +558,13 @@ int Flag_IOParaCtrl=0;
 int Flag_IODgssCtrl=0;
 int Flag_IORstRef=0;
 
-int Flag_RemParaCtrl=0;
-int Flag_RemSingCtrl=0;
-int Flag_RemDgssCtrl=0;
-int Flag_RemRstRef=0;
+int FlagRem_Combine=0;
+int FlagRem_Split=0;
+int FlagRem_Reset=0;
+int FlagRem_ParaOn=0;
+int FlagRem_ParaOff=0;
+int FlagRem_SingOn=0;
+int FlagRem_SingOff=0;
 
 int Flag_LockPWM=0;
 int Flag_IORunRef=0;

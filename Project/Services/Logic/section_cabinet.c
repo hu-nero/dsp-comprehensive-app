@@ -924,7 +924,7 @@ Cabinet_RecoverFromEmergency(CabinetContext_t* Context)
     // 检查急停信号是否已经解除
     Context->switch_list.emergency_stop_switch = (SwitchState_t)Context->switch_feed(DI_ID_EMERGENCY_STOP);
 //    Context->emergency_stop_status = (Context->switch_list.emergency_stop_switch == SWITCH_OFF);
-    if (Context->switch_list.emergency_stop_switch == SWITCH_OFF)
+    if (Context->switch_list.emergency_stop_switch == SWITCH_ON)
     {
         // 急停信号仍然存在，不能恢复
         return RESULT_FAILED;
@@ -1193,7 +1193,7 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
     // 读取急停反馈
     Context->switch_list.emergency_stop_switch = (SwitchState_t)Context->switch_feed(DI_ID_EMERGENCY_STOP);
     // 默认读取的FPGA的IO值为1时，认为急停触发（IO_scan()可以加取反）
-    if (Context->switch_list.emergency_stop_switch == SWITCH_OFF)
+    if (Context->switch_list.emergency_stop_switch == SWITCH_ON)
     {
         // 设置急停状态
         Context->emergency_stop_status = true;

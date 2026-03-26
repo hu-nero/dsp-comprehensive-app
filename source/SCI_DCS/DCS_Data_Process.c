@@ -10,8 +10,8 @@ void Modbus_Send_To_Dcs(void)
 
 void Modbus_Recv_For_Dcs(void)
 {
-//	memcpy(&RemHoldSum, RemHoldRegBuf, sizeof(RemHoldSum));
-//
+	memcpy(&DcsHoldSum, DcsHoldRegBuf, sizeof(DcsHoldSum));
+
 //	if(RemHoldSum.CtrlWord.bit.Cmd)
 //	{
 //		switch(RemHoldSum.CtrlWord.bit.Cmd)

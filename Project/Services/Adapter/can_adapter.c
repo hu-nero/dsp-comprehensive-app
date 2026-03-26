@@ -345,11 +345,11 @@ CAN_Adapter_ParseSyncCabinetStatus(uint16_t *Data, uint16_t Dlc)
 static void
 CAN_Adapter_RxHandler(TeCanPort Port, uint16_t *Data, uint16_t Dlc)
 {
-    if (Port == eCanPort_0)
+    if (Port == eCanPort_1)
     {
         CAN_Adapter_ParsePowerParam(Data, Dlc);
     }
-    else if (Port == eCanPort_1)
+    else if (Port == eCanPort_0)
     {
         CAN_Adapter_ParseSyncCabinetStatus(Data, Dlc);
     }
@@ -360,14 +360,14 @@ void
 CAN_Adapter_SendStatus_Callback(TeCanPort Port, FuncCode_t Func, uint16_t SrcAddr)
 {
     uint16_t data[8]={0};
-    if (Port == eCanPort_0)
+    if (Port == eCanPort_1)
     {
         uint16_t value = gCommSectionToPowerStatus.section_status.all;
         data[2] = value & 0xFF;
         data[3] = (value >> 8) & 0xFF;
         CAN_Agent_SendStatus(Port, DEV_ADDRESS_BROADCAST, data);
     }
-    else if (Port == eCanPort_1)
+    else if (Port == eCanPort_0)
     {
         uint16_t value = gCommSectionToSyncStatus.section_status.all;
         data[0] = value & 0xFF;
