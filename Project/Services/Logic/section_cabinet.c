@@ -319,24 +319,24 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 target_state = CABINET_STATE_BACKUP;
             }
 
-            if ((Context->state == CABINET_STATE_BACKUP) ||
-                    (Context->state == CABINET_STATE_SINGLE))
-            {
-                // 读取电源状态,电源状态影响目标状态
-                Context->power_status = CAN_Adapter_GetPowerStatus();
-                if (!((Context->power_status.run_state == POWER_SINGLE_RUNNING) ||
-                            (Context->power_status.run_state == POWER_PARALLEL_RUNNING)))
-                {
-                    if (Context->switch_list.bus1_switch == SWITCH_OFF)
-                    {
-                        target_state = CABINET_STATE_STANDBY;
-                    }
-                    else if (Context->switch_list.bus1_switch == SWITCH_ON)
-                    {
-                        target_state = CABINET_STATE_PARALLEL;
-                    }
-                }
-            }
+            /*if ((Context->state == CABINET_STATE_BACKUP) ||*/
+                    /*(Context->state == CABINET_STATE_SINGLE))*/
+            /*{*/
+                /*// 读取电源状态,电源状态影响目标状态*/
+                /*Context->power_status = CAN_Adapter_GetPowerStatus();*/
+                /*if (!((Context->power_status.run_state == POWER_SINGLE_RUNNING) ||*/
+                            /*(Context->power_status.run_state == POWER_PARALLEL_RUNNING)))*/
+                /*{*/
+                    /*if (Context->switch_list.bus1_switch == SWITCH_OFF)*/
+                    /*{*/
+                        /*target_state = CABINET_STATE_STANDBY;*/
+                    /*}*/
+                    /*else if (Context->switch_list.bus1_switch == SWITCH_ON)*/
+                    /*{*/
+                        /*target_state = CABINET_STATE_PARALLEL;*/
+                    /*}*/
+                /*}*/
+            /*}*/
 
             // 状态没有变化
             if (target_state == Context->state)
@@ -352,9 +352,37 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
         else
         {
             // TODO:接收DCS/监控的单机启动标志
-            // 预计是置远程启动标志位
-            // 目前先return
-            return;
+            // 根据远端状态确定目标状态
+            if (((RemHoldSum.CtrlWord.bit.SlCtrl == 0) | (RemHoldSum.CtrlWord.bit.SlCtrl == 2)) && ((RemHoldSum.CtrlWord.bit.ParCtrl == 0) | (RemHoldSum.CtrlWord.bit.ParCtrl == 2)))
+            {
+                target_state = CABINET_STATE_STANDBY;
+            }
+            else if ((RemHoldSum.CtrlWord.bit.SlCtrl == 1) && ((RemHoldSum.CtrlWord.bit.ParCtrl == 0) | (RemHoldSum.CtrlWord.bit.ParCtrl == 2)))
+            {
+                target_state = CABINET_STATE_SINGLE;
+            }
+            else if (((RemHoldSum.CtrlWord.bit.SlCtrl == 0) | (RemHoldSum.CtrlWord.bit.SlCtrl == 2)) && ((RemHoldSum.CtrlWord.bit.ParCtrl == 1)))
+            {
+                target_state = CABINET_STATE_PARALLEL;
+            }
+            else if ((RemHoldSum.CtrlWord.bit.SlCtrl == 1) | (RemHoldSum.CtrlWord.bit.ParCtrl == 1))
+            {
+                target_state = CABINET_STATE_PARALLEL;
+            }
+            else
+            {
+                target_state = CABINET_STATE_INVALID;
+            }
+
+            // 状态没有变化
+            if (target_state == Context->state)
+            {
+                Context->target_state = CABINET_STATE_INVALID;
+                return;
+            }
+
+            // 保存目标状态
+            Context->target_state = target_state;
         }
     }
 

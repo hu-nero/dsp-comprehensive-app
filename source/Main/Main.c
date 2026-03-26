@@ -35,8 +35,8 @@
 #include "Hal.h"
 #include "App.h"
 
-#define DEBUG
-//#define Release
+//#define DEBUG
+#define Release
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 extern unsigned int RamfuncsLoadStart, RamfuncsLoadEnd, RamfuncsRunStart;
@@ -119,7 +119,7 @@ void main(void)
     IO_Scan();
 	for(i=0;i<2000;i++)
 		for(j=0;j<2000;j++);
-	CAN_App_Test();
+//	CAN_App_Test();
 	for(; ;)
 	{
         CAN_App_MainLoop();
@@ -1112,8 +1112,8 @@ interrupt void EPWM1_INT_Underflow_isr(void)
 	if(IO_ADNotBusy == 1)
 		Palarell_Extern_ADCScan();
 ////////////////////////////////////////////////////////////////////////
-	GetVoltCurr();
-	GetPQ2r();
+//	GetVoltCurr();
+//	GetPQ2r();
 ////////////////////////////////////////////////////////////////////////
 }
 /******************************************************************/
