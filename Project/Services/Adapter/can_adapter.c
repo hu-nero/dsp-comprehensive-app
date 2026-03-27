@@ -359,17 +359,30 @@ CAN_Adapter_RxHandler(TeCanPort Port, uint16_t *Data, uint16_t Dlc)
 void
 CAN_Adapter_SendStatus_Callback(TeCanPort Port, FuncCode_t Func, uint16_t SrcAddr)
 {
+    static uint16_t heartbeat0 = 0;
+    static uint16_t heartbeat1 = 0;
     uint16_t data[8]={0};
+    // 电源
     if (Port == eCanPort_1)
     {
-        uint16_t value = gCommSectionToPowerStatus.section_status.all;
+        uint16_t value;
+        gCommSectionToPowerStatus.section_status.bit.Toggle = heartbeat0;
+		value = gCommSectionToPowerStatus.section_status.all;
+		heartbeat0 = !heartbeat0;
+
         data[2] = value & 0xFF;
         data[3] = (value >> 8) & 0xFF;
         CAN_Agent_SendStatus(Port, DEV_ADDRESS_BROADCAST, data);
     }
+    // 同步柜
     else if (Port == eCanPort_0)
     {
-        uint16_t value = gCommSectionToSyncStatus.section_status.all;
+        uint16_t value;
+        gCommSectionToSyncStatus.section_status.bit.heartbeat = heartbeat1;
+        gCommSectionToSyncStatus.section_status.bit.sync_cabinet_online = heartbeat1;
+        heartbeat1 = !heartbeat1;
+        value = gCommSectionToSyncStatus.section_status.all;
+
         data[0] = value & 0xFF;
         data[1] = (value >> 8) & 0xFF;
         CAN_Agent_SendStatus(Port, DEV_ADDRESS_BROADCAST, data);

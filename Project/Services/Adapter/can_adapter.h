@@ -72,8 +72,9 @@ union WordSyncStatus_t
 		unsigned section_grid_feedback:		4;// bit1-4
 		unsigned sync_grid_state:    		1;// bit5
 		unsigned off_grid_all:			    1;// bit6
-		unsigned sync_is_master:			1;// bit7
-		unsigned reserve:  	    	        7;// bit8-15
+		unsigned is_parallel_factor_satisfy:1;// bit7
+		unsigned sync_is_master:			1;// bit8
+		unsigned reserve:  	    	        7;// bit9-15
 	}	bit;
 };
 
@@ -203,8 +204,8 @@ extern GridConnectionStatus_t CAN_Adapter_GetGridConnectionStatus(void);
 extern void CAN_Adapter_ClearGridConnectionStatus(void);
 
 // 柜体交互
-extern CommSyncToSection_t CAN_Adapter_GetCommSyncToSection(void);
-extern void CAN_Adapter_SetCommSyncToSection(CommSyncToSection_t Status);
+extern CommSyncToSection_t CAN_Adapter_GetSyncToSectionStatus(void);
+
 extern CommSectionToPower_t CAN_Adapter_GetCommSectionToPower(void);
 extern void CAN_Adapter_SetCommSectionToPower(CommSectionToPower_t Status);
 extern CommSectionToSync_t CAN_Adapter_GetCommSectionToSync(void);

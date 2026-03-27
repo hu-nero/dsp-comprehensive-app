@@ -623,6 +623,14 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             {
                 return IO_CompCar_Feed;
             }
+        case DI_ID_A3QR1:
+            {
+                return IO_SingQR1_Feed;
+            }
+        case DI_ID_A3QR2:
+            {
+                return IO_ParaQR2_Feed;
+            }
         default:break;
     }
     return 0;

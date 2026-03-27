@@ -95,7 +95,9 @@ typedef enum
     DI_ID_BUS1,                // 并机按钮(点动)
     DI_ID_Short,               // 短接按钮(点动)
     DI_ID_IMPACT_VEHICLE,      // 冲击车
-    DI_ID_COMPENSATION_VEHICLE // 补偿车
+    DI_ID_COMPENSATION_VEHICLE,// 补偿车
+    DI_ID_A3QR1,               // 单机QR1
+    DI_ID_A3QR2                // 并机QR2
 } DigitalInputType_t;
 
 // 按钮输出

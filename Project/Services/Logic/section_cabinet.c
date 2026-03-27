@@ -225,6 +225,8 @@ Cabinet_ReadAllSwitchStatus(CabinetContext_t* Context)
     Context->switch_list.A3QF1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF1);
     Context->switch_list.A3QF2_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF2);
     Context->switch_list.A3QF3_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF3);
+    Context->switch_list.A3QR1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QR1);
+    Context->switch_list.A3QR2_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QR2);
 }
 
 static inline bool
@@ -1130,6 +1132,8 @@ Cabinet_UpdateCommSectionToSyncStatus(CabinetContext_t* Context)
 {
     CommSectionToSync_t status;
     status = CAN_Adapter_GetCommSectionToSync();
+
+    Cabinet_ReadAllSwitchStatus(Context);
     if ((Context->switch_list.A3QF1_switch == SWITCH_ON) &&
         (Context->switch_list.A3QR1_switch == SWITCH_ON))
     {
@@ -1156,7 +1160,7 @@ Cabinet_UpdateCommSectionToSyncStatus(CabinetContext_t* Context)
     }
     else
     {
-        status.section_status.bit.A3QS1_2 = 1;
+        status.section_status.bit.A3QS1_2 = 0;
     }
 
     CAN_Adapter_SetCommSectionToSync(status);
@@ -2006,8 +2010,11 @@ Cabinet_SetAlarm(CabinetContext_t* Context, AlarmType_t Type, const char* Messag
 static bool
 Cabinet_IsSatisfyPowerParallel(CabinetContext_t* Context)
 {
-    // TODO:判断并机系数是否满足
-    return true;
+//    CommSyncToSection_t status;
+//    status = CAN_Adapter_GetSyncToSectionStatus();
+//
+//    return status.sync_status.bit.is_parallel_factor_satisfy;
+	return true;
 }
 
 // 等待开关反馈稳定
