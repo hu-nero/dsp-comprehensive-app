@@ -35,8 +35,8 @@
 #include "Hal.h"
 #include "App.h"
 
-//#define DEBUG
-#define Release
+#define DEBUG
+//#define Release
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 extern unsigned int RamfuncsLoadStart, RamfuncsLoadEnd, RamfuncsRunStart;
@@ -119,7 +119,7 @@ void main(void)
     IO_Scan();
 	for(i=0;i<2000;i++)
 		for(j=0;j<2000;j++);
-//	CAN_App_Test();
+	CAN_App_Test();
 	for(; ;)
 	{
         CAN_App_MainLoop();
@@ -904,29 +904,29 @@ void GetVIRms(void)
 
 void RmsFillter(void)
 {
-	UabPar_rmsf = UabPar_rmsf * 0.875 + UabPar_rms * 0.125;
-	UbcPar_rmsf = UbcPar_rmsf * 0.875 + UbcPar_rms * 0.125;
-	UcaPar_rmsf = UcaPar_rmsf * 0.875 + UcaPar_rms * 0.125;
+	UabPar_rmsf = UabPar_rmsf * 0.95 + UabPar_rms * 0.05;
+	UbcPar_rmsf = UbcPar_rmsf * 0.95 + UbcPar_rms * 0.05;
+	UcaPar_rmsf = UcaPar_rmsf * 0.95 + UcaPar_rms * 0.05;
 
-	UabSl_rmsf = UabSl_rmsf * 0.875 + UabSl_rms * 0.125;
-	UbcSl_rmsf = UbcSl_rmsf * 0.875 + UbcSl_rms * 0.125;
-	UcaSl_rmsf = UcaSl_rmsf * 0.875 + UcaSl_rms * 0.125;
+	UabSl_rmsf = UabSl_rmsf * 0.95 + UabSl_rms * 0.05;
+	UbcSl_rmsf = UbcSl_rmsf * 0.95 + UbcSl_rms * 0.05;
+	UcaSl_rmsf = UcaSl_rmsf * 0.95 + UcaSl_rms * 0.05;
 
-	IaOvh_rmsf = IaOvh_rmsf * 0.875 + IaOvh_rms * 0.125;
-	IbOvh_rmsf = IbOvh_rmsf * 0.875 + IbOvh_rms * 0.125;
-	IcOvh_rmsf = IcOvh_rmsf * 0.875 + IcOvh_rms * 0.125;
+	IaOvh_rmsf = IaOvh_rmsf * 0.95 + IaOvh_rms * 0.05;
+	IbOvh_rmsf = IbOvh_rmsf * 0.95 + IbOvh_rms * 0.05;
+	IcOvh_rmsf = IcOvh_rmsf * 0.95 + IcOvh_rms * 0.05;
 
-	IaPar_rmsf = IaPar_rmsf * 0.875 + IaPar_rms * 0.125;
-	IbPar_rmsf = IbPar_rmsf * 0.875 + IbPar_rms * 0.125;
-	IcPar_rmsf = IcPar_rmsf * 0.875 + IcPar_rms * 0.125;
+	IaPar_rmsf = IaPar_rmsf * 0.95 + IaPar_rms * 0.05;
+	IbPar_rmsf = IbPar_rmsf * 0.95 + IbPar_rms * 0.05;
+	IcPar_rmsf = IcPar_rmsf * 0.95 + IcPar_rms * 0.05;
 
-	UaOut_rmsf = UaOut_rmsf * 0.875 + UaOut_rms * 0.125;
-	UbOut_rmsf = UbOut_rmsf * 0.875 + UbOut_rms * 0.125;
-	UcOut_rmsf = UcOut_rmsf * 0.875 + UcOut_rms * 0.125;
+	UaOut_rmsf = UaOut_rmsf * 0.95 + UaOut_rms * 0.05;
+	UbOut_rmsf = UbOut_rmsf * 0.95 + UbOut_rms * 0.05;
+	UcOut_rmsf = UcOut_rmsf * 0.95 + UcOut_rms * 0.05;
 
-	UabOut_rmsf = UabOut_rmsf * 0.875 + UabOut_rms * 0.125;
-	UbcOut_rmsf = UbcOut_rmsf * 0.875 + UbcOut_rms * 0.125;
-	UcaOut_rmsf = UcaOut_rmsf * 0.875 + UcaOut_rms * 0.125;
+	UabOut_rmsf = UabOut_rmsf * 0.95 + UabOut_rms * 0.05;
+	UbcOut_rmsf = UbcOut_rmsf * 0.95 + UbcOut_rms * 0.05;
+	UcaOut_rmsf = UcaOut_rmsf * 0.95 + UcaOut_rms * 0.05;
 }
 
 void CalImbalance(void)
@@ -1112,8 +1112,8 @@ interrupt void EPWM1_INT_Underflow_isr(void)
 	if(IO_ADNotBusy == 1)
 		Palarell_Extern_ADCScan();
 ////////////////////////////////////////////////////////////////////////
-//	GetVoltCurr();
-//	GetPQ2r();
+   GetVoltCurr();
+   GetPQ2r();
 ////////////////////////////////////////////////////////////////////////
 }
 /******************************************************************/

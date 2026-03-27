@@ -20,12 +20,12 @@ float IaOvh, IbOvh, IcOvh;
 float UaOut, UbOut, UcOut;
 float UabOut, UbcOut, UcaOut;
 
-float UabSl_rmsf, UbcSl_rmsf, UcaSl_rmsf;
-float UabPar_rmsf, UbcPar_rmsf, UcaPar_rmsf;
-float IaPar_rmsf, IbPar_rmsf, IcPar_rmsf;
-float IaOvh_rmsf, IbOvh_rmsf, IcOvh_rmsf;
-float UaOut_rmsf, UbOut_rmsf, UcOut_rmsf;
-float UabOut_rmsf, UbcOut_rmsf, UcaOut_rmsf;
+float UabSl_rmsf=0, UbcSl_rmsf=0, UcaSl_rmsf=0;
+float UabPar_rmsf=0, UbcPar_rmsf=0, UcaPar_rmsf=0;
+float IaPar_rmsf=0, IbPar_rmsf=0, IcPar_rmsf=0;
+float IaOvh_rmsf=0, IbOvh_rmsf=0, IcOvh_rmsf=0;
+float UaOut_rmsf=0, UbOut_rmsf=0, UcOut_rmsf=0;
+float UabOut_rmsf=0, UbcOut_rmsf=0, UcaOut_rmsf=0;
 float P_Workf, Q_Workf, S_Workf;
 float P_Ovhf, Q_Ovhf, S_Ovhf;
 float IaOut_rmsf, IbOut_rmsf, IcOut_rmsf;

@@ -333,11 +333,11 @@ void GPIO_init(void)
 
 
 	IOOutFpga1.DataInt = 0;
-	IOOutFpga1Old.DataInt = 0;
+	IOOutFpga1Old.DataInt = 0xFFFF;
 	IOOutput1.DataInt = 0;
 
 	IOOutFpga2.DataInt = 0;
-	IOOutFpga2Old.DataInt = 0;
+	IOOutFpga2Old.DataInt = 0xFFFF;
 	IOOutput2.DataInt = 0;
 
 	IOOut1CtrlWord.DataInt = 0xFFFF;
