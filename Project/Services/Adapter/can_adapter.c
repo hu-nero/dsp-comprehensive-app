@@ -7,8 +7,10 @@
 
 #include "can_adapter.h"
 #include "App/Can/can_app.h"
+#include "SDK/Hal/Timer/hal_timer.h"
 #include <string.h>
 
+static AdapterStatus_t gAdapterStatus;
 static PowerStatus_t gPowerStatus;
 static GridConnectionStatus_t gGridConnectionStatus;
 static CommSyncToSection_t gCommSyncToSectionStatus;
@@ -17,19 +19,21 @@ static CommSectionToPower_t gCommSectionToPowerStatus;
 static CommPowerToSection_t gCommPowerToSectionParam;
 uint8_t byteData[8] = {0};
 
-
+// 回调
 void CAN_Adapter_SendStatus_Callback(TeCanPort Port, FuncCode_t Func, uint16_t SrcAddr);
+static void CAN_Adapter_RxHandler(TeCanPort Port, uint16_t *Data, uint16_t Dlc);
+static void CAN_Adapter_MainLoop_Callback(TeCanPort Port);
 
 static void CAN_Adapter_ParsePowerParam(uint16_t *Data, uint16_t Dlc);
 static void CAN_Adapter_ParseSyncCabinetStatus(uint16_t *Data, uint16_t Dlc);
-static void CAN_Adapter_RxHandler(TeCanPort Port, uint16_t *Data, uint16_t Dlc);
-
 // 转u16
 static inline
 uint16_t CombineBytes(uint16_t Lo, uint16_t Hi)
 {
     return (uint16_t)((Lo&0xFF) | ((Hi&0xFF) << 8));
 }
+
+
 
 PowerStatus_t
 CAN_Adapter_GetPowerStatus(void)
@@ -111,10 +115,18 @@ CAN_Adapter_GetSyncToSectionStatus(void)
     return gCommSyncToSectionStatus;
 }
 
+AdapterStatus_t
+CAN_Adapter_GetAdapterStatus(void)
+{
+    return gAdapterStatus;
+}
+
 // 适配器初始化
 void
 CAN_Adapter_Init(void)
 {
+    // 初始化适配器结构体
+    memset(&gAdapterStatus, 0, sizeof(AdapterStatus_t));
     // 初始化电源状态
     gPowerStatus.run_state = POWER_UNKNOWN;
     gPowerStatus.single_to_parallel_flag = false;
@@ -133,6 +145,8 @@ CAN_Adapter_Init(void)
     CAN_App_Set_func_status_handler(CAN_Adapter_RxHandler);
     CAN_Agent_Set_SendStatus_Callback(eCanPort_0, CAN_Adapter_SendStatus_Callback);
     CAN_Agent_Set_SendStatus_Callback(eCanPort_1, CAN_Adapter_SendStatus_Callback);
+    CAN_Agent_Set_MainLoop_Callback(eCanPort_0, CAN_Adapter_MainLoop_Callback);
+    CAN_Agent_Set_MainLoop_Callback(eCanPort_1, CAN_Adapter_MainLoop_Callback);
 
 }
 
@@ -190,93 +204,93 @@ CAN_Adapter_ParsePowerParam(uint16_t *Data, uint16_t Dlc)
     {
         case 0:
             {
-                gCommPowerToSectionParam.input_AB_line_voltage = CombineBytes(Data[2], Data[3]) * 10;
-                gCommPowerToSectionParam.input_BC_line_voltage = CombineBytes(Data[4], Data[5]) * 10;
-                gCommPowerToSectionParam.input_CA_line_voltage = CombineBytes(Data[6], Data[7]) * 10;
+                gCommPowerToSectionParam.input_AB_line_voltage = CombineBytes(Data[2], Data[3]) / 10;
+                gCommPowerToSectionParam.input_BC_line_voltage = CombineBytes(Data[4], Data[5]) / 10;
+                gCommPowerToSectionParam.input_CA_line_voltage = CombineBytes(Data[6], Data[7]) / 10;
             }
             break;
         case 1:
             {
-                gCommPowerToSectionParam.input_A_phase_voltage = CombineBytes(Data[2], Data[3]) * 10;
-                gCommPowerToSectionParam.input_B_phase_voltage = CombineBytes(Data[4], Data[5]) * 10;
-                gCommPowerToSectionParam.input_C_phase_voltage = CombineBytes(Data[6], Data[7]) * 10;
+                gCommPowerToSectionParam.input_A_phase_voltage = CombineBytes(Data[2], Data[3]) / 10;
+                gCommPowerToSectionParam.input_B_phase_voltage = CombineBytes(Data[4], Data[5]) / 10;
+                gCommPowerToSectionParam.input_C_phase_voltage = CombineBytes(Data[6], Data[7]) / 10;
             }
             break;
         case 2:
             {
-                gCommPowerToSectionParam.input_A_phase_current = CombineBytes(Data[2], Data[3]) * 10;
-                gCommPowerToSectionParam.input_B_phase_current = CombineBytes(Data[4], Data[5]) * 10;
-                gCommPowerToSectionParam.input_C_phase_current = CombineBytes(Data[6], Data[7]) * 10;
+                gCommPowerToSectionParam.input_A_phase_current = CombineBytes(Data[2], Data[3]) / 10;
+                gCommPowerToSectionParam.input_B_phase_current = CombineBytes(Data[4], Data[5]) / 10;
+                gCommPowerToSectionParam.input_C_phase_current = CombineBytes(Data[6], Data[7]) / 10;
             }
             break;
         case 3:
             {
-                gCommPowerToSectionParam.input_apparent_power = CombineBytes(Data[2], Data[3]) * 10;
-                gCommPowerToSectionParam.input_active_power = CombineBytes(Data[4], Data[5]) * 10;
-                gCommPowerToSectionParam.input_reactive_power = CombineBytes(Data[6], Data[7]) * 10;
+                gCommPowerToSectionParam.input_apparent_power = CombineBytes(Data[2], Data[3]) / 10;
+                gCommPowerToSectionParam.input_active_power = CombineBytes(Data[4], Data[5]) / 10;
+                gCommPowerToSectionParam.input_reactive_power = CombineBytes(Data[6], Data[7]) / 10;
             }
             break;
         case 4:
             {
-                gCommPowerToSectionParam.input_power_factor = CombineBytes(Data[2], Data[3]) * 100;
-                gCommPowerToSectionParam.input_energy_high_byte = CombineBytes(Data[2], Data[3]) * 1;
-                gCommPowerToSectionParam.input_energy_low_byte = CombineBytes(Data[4], Data[5]) * 1;
+                gCommPowerToSectionParam.input_power_factor = CombineBytes(Data[2], Data[3]) / 100;
+                gCommPowerToSectionParam.input_energy_high_byte = CombineBytes(Data[2], Data[3]) / 1;
+                gCommPowerToSectionParam.input_energy_low_byte = CombineBytes(Data[4], Data[5]) / 1;
             }
             break;
         case 5:
             {
-                gCommPowerToSectionParam.input_transformer_temp = CombineBytes(Data[2], Data[3]) * 10;
-                gCommPowerToSectionParam.input_reactor_temp = CombineBytes(Data[4], Data[5]) * 10;
-                gCommPowerToSectionParam.output_reactor_temp = CombineBytes(Data[6], Data[7]) * 10;
+                gCommPowerToSectionParam.input_transformer_temp = CombineBytes(Data[2], Data[3]) / 10;
+                gCommPowerToSectionParam.input_reactor_temp = CombineBytes(Data[4], Data[5]) / 10;
+                gCommPowerToSectionParam.output_reactor_temp = CombineBytes(Data[6], Data[7]) / 10;
             }
             break;
         case 6:
             {
-                gCommPowerToSectionParam.output_AB_line_voltage = CombineBytes(Data[2], Data[3]) * 10;
-                gCommPowerToSectionParam.output_BC_line_voltage = CombineBytes(Data[4], Data[5]) * 10;
-                gCommPowerToSectionParam.output_CA_line_voltage = CombineBytes(Data[6], Data[7]) * 10;
+                gCommPowerToSectionParam.output_AB_line_voltage = CombineBytes(Data[2], Data[3]) / 10;
+                gCommPowerToSectionParam.output_BC_line_voltage = CombineBytes(Data[4], Data[5]) / 10;
+                gCommPowerToSectionParam.output_CA_line_voltage = CombineBytes(Data[6], Data[7]) / 10;
             }
             break;
         case 7:
             {
-                gCommPowerToSectionParam.output_A_phase_voltage = CombineBytes(Data[2], Data[3]) * 10;
-                gCommPowerToSectionParam.output_B_phase_voltage = CombineBytes(Data[4], Data[5]) * 10;
-                gCommPowerToSectionParam.output_C_phase_voltage = CombineBytes(Data[6], Data[7]) * 10;
+                gCommPowerToSectionParam.output_A_phase_voltage = CombineBytes(Data[2], Data[3]) / 10;
+                gCommPowerToSectionParam.output_B_phase_voltage = CombineBytes(Data[4], Data[5]) / 10;
+                gCommPowerToSectionParam.output_C_phase_voltage = CombineBytes(Data[6], Data[7]) / 10;
             }
             break;
         case 8:
             {
-                gCommPowerToSectionParam.output_A_phase_current = CombineBytes(Data[2], Data[3]) * 10;
-                gCommPowerToSectionParam.output_B_phase_current = CombineBytes(Data[4], Data[5]) * 10;
-                gCommPowerToSectionParam.output_C_phase_current = CombineBytes(Data[6], Data[7]) * 10;
+                gCommPowerToSectionParam.output_A_phase_current = CombineBytes(Data[2], Data[3]) / 10;
+                gCommPowerToSectionParam.output_B_phase_current = CombineBytes(Data[4], Data[5]) / 10;
+                gCommPowerToSectionParam.output_C_phase_current = CombineBytes(Data[6], Data[7]) / 10;
             }
             break;
         case 9:
             {
-                gCommPowerToSectionParam.output_apparent_power = CombineBytes(Data[2], Data[3]) * 10;
-                gCommPowerToSectionParam.output_active_power = CombineBytes(Data[4], Data[5]) * 10;
-                gCommPowerToSectionParam.output_reactive_power = CombineBytes(Data[6], Data[7]) * 10;
+                gCommPowerToSectionParam.output_apparent_power = CombineBytes(Data[2], Data[3]) / 10;
+                gCommPowerToSectionParam.output_active_power = CombineBytes(Data[4], Data[5]) / 10;
+                gCommPowerToSectionParam.output_reactive_power = CombineBytes(Data[6], Data[7]) / 10;
             }
             break;
         case 10:
             {
-                gCommPowerToSectionParam.output_power_factor = CombineBytes(Data[2], Data[3]) * 100;
-                gCommPowerToSectionParam.dc_bus_voltage = CombineBytes(Data[2], Data[3]) * 10;
-                gCommPowerToSectionParam.input_frequency = CombineBytes(Data[4], Data[5]) * 10;
+                gCommPowerToSectionParam.output_power_factor = CombineBytes(Data[2], Data[3]) / 100;
+                gCommPowerToSectionParam.dc_bus_voltage = CombineBytes(Data[2], Data[3]) / 10;
+                gCommPowerToSectionParam.input_frequency = CombineBytes(Data[4], Data[5]) / 10;
             }
             break;
         case 11:
             {
-                gCommPowerToSectionParam.input_igbt_temp = CombineBytes(Data[2], Data[3]) * 10;
-                gCommPowerToSectionParam.output_igbt_temp = CombineBytes(Data[4], Data[5]) * 10;
-                gCommPowerToSectionParam.output_frequency = CombineBytes(Data[6], Data[7]) * 10;
+                gCommPowerToSectionParam.input_igbt_temp = CombineBytes(Data[2], Data[3]) / 10;
+                gCommPowerToSectionParam.output_igbt_temp = CombineBytes(Data[4], Data[5]) / 10;
+                gCommPowerToSectionParam.output_frequency = CombineBytes(Data[6], Data[7]) / 10;
             }
             break;
         case 12:
             {
-                gCommPowerToSectionParam.coolant_flow_rate = CombineBytes(Data[2], Data[3]) * 10;
-                gCommPowerToSectionParam.coolant_inlet_temp = CombineBytes(Data[4], Data[5]) * 10;
-                gCommPowerToSectionParam.coolant_outlet_temp = CombineBytes(Data[6], Data[7]) * 10;
+                gCommPowerToSectionParam.coolant_flow_rate = CombineBytes(Data[2], Data[3]) / 10;
+                gCommPowerToSectionParam.coolant_inlet_temp = CombineBytes(Data[4], Data[5]) / 10;
+                gCommPowerToSectionParam.coolant_outlet_temp = CombineBytes(Data[6], Data[7]) / 10;
             }
             break;
         // 状态字
@@ -341,16 +355,41 @@ CAN_Adapter_ParseSyncCabinetStatus(uint16_t *Data, uint16_t Dlc)
     gCommSyncToSectionStatus.sync_status.all = state;
 }
 
+// 主循环回调
+static void
+CAN_Adapter_MainLoop_Callback(TeCanPort Port)
+{
+    uint32_t now = hal_timer_get_timestamp();
+    if (Port == eCanPort_1)
+    {
+        if ( now - gAdapterStatus.power_online_start > 5000)
+        {
+            gAdapterStatus.power_online_status = false;
+        } 
+    }
+    else if (Port == eCanPort_0)
+    {
+        if ( now - gAdapterStatus.sync_online_start > 5000)
+        {
+            gAdapterStatus.sync_online_status = false;
+        } 
+    }
+}
+
 // 接收回调
 static void
 CAN_Adapter_RxHandler(TeCanPort Port, uint16_t *Data, uint16_t Dlc)
 {
     if (Port == eCanPort_1)
     {
+        gAdapterStatus.power_online_status = true;
+        gAdapterStatus.power_online_start = hal_timer_get_timestamp();
         CAN_Adapter_ParsePowerParam(Data, Dlc);
     }
     else if (Port == eCanPort_0)
     {
+        gAdapterStatus.sync_online_status = true;
+        gAdapterStatus.sync_online_start = hal_timer_get_timestamp();
         CAN_Adapter_ParseSyncCabinetStatus(Data, Dlc);
     }
 }

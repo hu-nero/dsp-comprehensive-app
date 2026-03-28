@@ -721,11 +721,11 @@ void FaultWord_Map(u16 Code)
 {
 	if((Code >= 1) && (Code <= 16))
 	{
-		FaultWord1.DataInt |= (1<<(Code-1));
+		FaultWord2.DataInt |= (1<<(Code-1));
 	}
 	else if((Code >= 17) && (Code <= 32))
 	{
-		FaultWord2.DataInt |= (1<<(Code-17));
+		FaultWord1.DataInt |= (1<<(Code-17));
 	}
 	else if((Code >= 33) && (Code <= 48))
 	{

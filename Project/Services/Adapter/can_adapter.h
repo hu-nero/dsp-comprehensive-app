@@ -190,6 +190,14 @@ typedef struct
     uint32_t status_word;            // 状态字原始值
 } GridConnectionStatus_t;
 
+typedef struct
+{
+    bool sync_online_status;        // 同步柜在线状态
+    uint32_t sync_online_start;     // 同步柜在线计时
+    bool power_online_status;       // 电源柜在线状态
+    uint32_t power_online_start;    // 电源柜在线计时
+} AdapterStatus_t;
+
 // 适配器接口
 extern void CAN_Adapter_Init(void);
 extern bool CAN_Adapter_SendPowerStart(void);
@@ -203,6 +211,7 @@ extern void CAN_Adapter_ClearPowerStatus(void);
 extern GridConnectionStatus_t CAN_Adapter_GetGridConnectionStatus(void);
 extern void CAN_Adapter_ClearGridConnectionStatus(void);
 
+extern AdapterStatus_t CAN_Adapter_GetAdapterStatus(void);
 // 柜体交互
 extern CommSyncToSection_t CAN_Adapter_GetSyncToSectionStatus(void);
 

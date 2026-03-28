@@ -69,7 +69,8 @@ union NPR_Status_Word2_Type
 		unsigned CompCapQS2:1;
 		unsigned DgssQS3:	1;
 		unsigned DgssKM1:	1;
-		unsigned Rsvd:		5;
+		unsigned Rsvd:		4;
+		unsigned ComSync:	1;
 		unsigned ComPwr:	1;
 		unsigned ComHMI:	1;
 	}	DataBit;

@@ -1172,6 +1172,7 @@ Cabinet_UpdateCommSectionToSyncStatus(CabinetContext_t* Context)
 static void
 Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context)
 {
+    AdapterStatus_t adapter_status;
     SwitchWord1.DataBit.DO_REMOTE_SINGLE_CTRL_FEED = IOOutput1.DataBit.Bit0;
     SwitchWord1.DataBit.DO_A3QF1 =  IOOutput1.DataBit.Bit2;
     SwitchWord1.DataBit.DO_REMOTE_PARALEL_CTRL_FEED = IOOutput1.DataBit.Bit4;
@@ -1216,6 +1217,10 @@ Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context)
     SwitchWord3.DataBit.DI_ID_A3QR5 = Cap_Ctrl_Word.DataBit.Bit1;
     SwitchWord3.DataBit.DI_ID_A3QR6 = Cap_Ctrl_Word.DataBit.Bit2;
     SwitchWord3.DataBit.DI_ID_A3QR7 = Cap_Ctrl_Word.DataBit.Bit3;
+
+    adapter_status = CAN_Adapter_GetAdapterStatus();
+    MainSta2Word.DataBit.ComPwr  = adapter_status.power_online_status;
+    MainSta2Word.DataBit.ComSync = adapter_status.sync_online_status;
 
 }
 

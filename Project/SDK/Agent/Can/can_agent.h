@@ -118,8 +118,10 @@ extern bool CAN_Agent_SendHeartbeat(TeCanPort Port);
 // 回调函数定义
 typedef void (*CAN_RxHandler_t)(TeCanPort port, FuncCode_t func, uint16_t src_addr, uint16_t *data, uint16_t dlc);
 typedef void (*CAN_TxHandler_t)(TeCanPort port, FuncCode_t func, uint16_t src_addr);
+typedef void (*CAN_MainLoopHandler_t)(TeCanPort port);
 extern void CAN_SetRxHandler(TeCanPort Port, CAN_RxHandler_t Handler);
 extern void CAN_Agent_Set_SendStatus_Callback(TeCanPort Port, CAN_TxHandler_t Handler);
+extern void CAN_Agent_Set_MainLoop_Callback(TeCanPort Port, CAN_MainLoopHandler_t Handler);
 
 
 #endif /* SERVICES_CAN_AGENT_CAN_AGENT_H_ */

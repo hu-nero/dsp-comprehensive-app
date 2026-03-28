@@ -11,6 +11,7 @@
 static uint16_t g_device_addr[eCanPort_Count] = {DEV_ADDRESS_SELF, DEV_ADDRESS_SELF};
 static CAN_RxHandler_t g_rx_handler[eCanPort_Count] = {NULL, NULL};
 static CAN_TxHandler_t g_send_status_callback[eCanPort_Count] = {NULL, NULL};
+static CAN_MainLoopHandler_t g_mainloop_callback[eCanPort_Count] = {NULL, NULL};
 static uint32_t g_heartbeat_tick[eCanPort_Count] = {0, 0};
 static uint32_t g_status_tick[eCanPort_Count] = {0, 0};
 static PendingCmd_t  g_pending_cmds[eCanPort_Count][MAX_PENDING_CMDS] = {{{0}}, {{0}}};
@@ -243,6 +244,12 @@ CAN_Agent_TimeoutCheck(TeCanPort Port)
         }
         g_status_tick[Port] = current_tick;
     }
+
+    // 循环处理回调
+    if (g_mainloop_callback[Port])
+    {
+        g_mainloop_callback[Port](Port);
+    }
     // 检查cmd是否超时
     CAN_Agent_CheckCmdTimeouts(Port);
 }
@@ -258,6 +265,12 @@ void
 CAN_Agent_Set_SendStatus_Callback(TeCanPort Port, CAN_TxHandler_t Handler)
 {
     g_send_status_callback[Port] = Handler;
+}
+
+void
+CAN_Agent_Set_MainLoop_Callback(TeCanPort Port, CAN_MainLoopHandler_t Handler)
+{
+    g_mainloop_callback[Port] = Handler;
 }
 
 // 查找空闲位置
