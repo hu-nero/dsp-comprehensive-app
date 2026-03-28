@@ -1381,6 +1381,7 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
         }
         // 置故障位
         Context->fault_status = true;
+        NPR_FaultCode = 26;
         FaultWord1.DataBit.Bit9 = 1;
         Context->state = CABINET_STATE_STANDBY;
         Context->target_state = CABINET_STATE_INVALID;

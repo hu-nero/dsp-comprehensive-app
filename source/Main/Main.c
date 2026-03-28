@@ -152,7 +152,7 @@ void main(void)
 				{
 					FunFaultReact();
 					ParaDownloadFaultNum = EEPROMAceNum - 1;
-					NPR_FaultCode = 40;
+//					NPR_FaultCode = 40;
 				}
 			}
 			FaultWord_Map(40);
@@ -506,13 +506,13 @@ void npr_1ms_protection(void)
 		AlmCnt_OverVolt_Work1 ++;
 		if(AlmCnt_OverVolt_Work1 > AlmCntThr_OverVolt_Work1)
 		{
-			NPR_FaultCode = 17;
+			/*NPR_FaultCode = 17;*/
 			FaultWord_Map(17);
 		}
 
 		if(vLine_max > FltThr_OverVolt_Work1)
 		{
-			NPR_FaultCode = 17;
+			/*NPR_FaultCode = 17;*/
 			FaultWord_Map(17);
 		}
 	}
@@ -529,13 +529,13 @@ void npr_1ms_protection(void)
 		AlmCnt_OverVolt_Work2 ++;
 		if(AlmCnt_OverVolt_Work2 > AlmCntThr_OverVolt_Work2)
 		{
-			NPR_FaultCode = 18;
+			/*NPR_FaultCode = 18;*/
 			FaultWord_Map(18);
 		}
 
 		if(vLine_max > FltThr_OverVolt_Work2)
 		{
-			NPR_FaultCode = 18;
+			/*NPR_FaultCode = 18;*/
 			FaultWord_Map(18);
 		}
 	}
@@ -555,7 +555,7 @@ void npr_1ms_protection(void)
 
 		if(vLine_min < FltThr_UnderVolt_Work1)
 		{
-			NPR_FaultCode = 19;
+			/*NPR_FaultCode = 19;*/
 			FaultWord_Map(19);
 		}
 	}
@@ -575,7 +575,7 @@ void npr_1ms_protection(void)
 
 		if(vLine_min < FltThr_UnderVolt_Work2)
 		{
-			NPR_FaultCode = 20;
+			/*NPR_FaultCode = 20;*/
 			FaultWord_Map(20);
 		}
 	}
@@ -607,7 +607,7 @@ void npr_1ms_protection(void)
 		}
 		else
 		{
-			NPR_FaultCode = 21;
+			/*NPR_FaultCode = 21;*/
 			FaultWord_Map(21);
 		}
 	}
@@ -641,7 +641,7 @@ void npr_1ms_protection(void)
 		}
 		else
 		{
-			NPR_FaultCode = 22;
+			/*NPR_FaultCode = 22;*/
 			FaultWord_Map(22);
 		}
 	}
@@ -663,7 +663,7 @@ void npr_1ms_protection(void)
 
 		if(Iphase_max > FltThr_OverCurr_Work1)
 		{
-			NPR_FaultCode = 23;
+			/*NPR_FaultCode = 23;*/
 			FaultWord_Map(23);
 		}
 	}
@@ -683,7 +683,7 @@ void npr_1ms_protection(void)
 
 		if(Iphase_max > FltThr_OverCurr_Work2)
 		{
-			NPR_FaultCode = 24;
+			/*NPR_FaultCode = 24;*/
 			FaultWord_Map(24);
 		}
 	}
@@ -703,7 +703,7 @@ void npr_1ms_protection(void)
 		}
 		else
 		{
-			NPR_FaultCode = 25;
+			/*NPR_FaultCode = 25;*/
 			FaultWord_Map(25);
 		}
 	}
@@ -727,7 +727,7 @@ void npr_1ms_protection(void)
 		}
 		else
 		{
-			NPR_FaultCode = 25;
+			/*NPR_FaultCode = 25;*/
 			FaultWord_Map(25);
 		}
 	}
@@ -761,7 +761,7 @@ void npr_1ms_protection(void)
 	////////////////////////////////////////////////////
 	if(MainStusWord.DataBit.Estop)
 	{
-		NPR_FaultCode = 26;
+		/*NPR_FaultCode = 26;*/
 		FaultWord_Map(26);
 	}
 }

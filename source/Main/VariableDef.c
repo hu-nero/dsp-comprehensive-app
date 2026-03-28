@@ -719,6 +719,7 @@ void Flash_Fault_ResetVarieble(void)
 /******************************************************************************************/
 void FaultWord_Map(u16 Code)
 {
+
 	if((Code >= 1) && (Code <= 16))
 	{
 		FaultWord2.DataInt |= (1<<(Code-1));
@@ -751,6 +752,7 @@ void FaultWord_Map(u16 Code)
 	{
 		FaultWord8.DataInt |= (1<<(Code-113));
 	}
+
 }
 /*****************************************************************************************/
 u16 FaultMask_Map(u16 Code)
