@@ -248,8 +248,8 @@ CAN_App_Test(void)
     Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_OFF);
-//    Hardware_SwitchControl(DO_ID_RUNACK,SWITCH_OFF);
-//    Hardware_SwitchControl(DO_ID_DEGAUSS,SWITCH_OFF);
+    Hardware_SwitchControl(DO_ID_REMOTE_SINGLE_CTRL_FEED,SWITCH_OFF);
+    Hardware_SwitchControl(DO_ID_REMOTE_PARALEL_CTRL_FEED,SWITCH_OFF);
     IO_Scan();
 }
 
@@ -571,6 +571,17 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                 {
                     IO_QR2Para_OFF;
                     /*IO_A3QR2_Dis;*/
+                }
+            }
+            break;
+        case DO_ID_RESET:
+            {
+                if (State == SWITCH_ON)
+                {
+                    memset(&s_switchStatus, 0, sizeof(uint16_t)*4);
+                }
+                else if (State == SWITCH_OFF)
+                {
                 }
             }
             break;

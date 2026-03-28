@@ -932,6 +932,7 @@ Cabinet_ResetFromEmergency(CabinetContext_t* Context)
         (void)Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
+        (void)Context->switch_control(DO_ID_RESET, SWITCH_ON);
         // 调用IO_Scan()
         (void)Context->switch_feed(0);
     }
