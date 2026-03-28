@@ -33,7 +33,10 @@ void Modbus_Send_To_HMI(void)
 	memcpy(&InputRegBuf[22], &AlarmWord2.DataInt, 2);
 	memcpy(&InputRegBuf[23], &FaultWord1.DataInt, 2);
 	memcpy(&InputRegBuf[24], &FaultWord2.DataInt, 2);
-
+	memcpy(&InputRegBuf[25], &SwitchWord1.DataInt, 2);
+	memcpy(&InputRegBuf[26], &SwitchWord2.DataInt, 2);
+	memcpy(&InputRegBuf[27], &SwitchWord3.DataInt, 2);
+	InputRegBuf[28]   = FlowRate*10;
 	if(ParaDownloadCtrlWord == 0)
 	{
 		HoldRegBuf[0] = AlmCntThr_UnderVolt_Phase;

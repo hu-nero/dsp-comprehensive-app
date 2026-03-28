@@ -32,6 +32,7 @@ static ExecuteResult_t Cabinet_ExecuteBackupProcedure(CabinetContext_t* Context)
 static void Cabinet_SetAlarm(CabinetContext_t* Context, AlarmType_t Type, const char* Message);
 static void Cabinet_UpdateCabinetState(CabinetContext_t* Context);
 static void Cabinet_UpdateCommSectionToPowerStatus(CabinetContext_t* Context);
+static void Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context);
 static void Cabinet_UpdateCommSectionToSyncStatus(CabinetContext_t* Context);
 
 // 状态切换(待机、单机、并机、备机)
@@ -143,6 +144,7 @@ Cabinet_Process(CabinetContext_t* Context)
     // 更新柜子发布的消息
     Cabinet_UpdateCommSectionToSyncStatus(Context);
     Cabinet_UpdateCommSectionToPowerStatus(Context);
+    Cabinet_UpdateCommSectionToHMIStatus(Context);
     // 急停下只允许面板消磁
     if (Context->emergency_stop_status == true)
     {
@@ -1167,6 +1169,51 @@ Cabinet_UpdateCommSectionToSyncStatus(CabinetContext_t* Context)
 
 }
 
+static void
+Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context)
+{
+    SwitchWord1.DataBit.DO_REMOTE_SINGLE_CTRL_FEED = IOOutput1.DataBit.Bit0;
+    SwitchWord1.DataBit.DO_A3QF1 =  IOOutput1.DataBit.Bit2;
+    SwitchWord1.DataBit.DO_REMOTE_PARALEL_CTRL_FEED = IOOutput1.DataBit.Bit4;
+    SwitchWord1.DataBit.DO_A3QF2 = IOOutput1.DataBit.Bit5;
+    SwitchWord1.DataBit.DO_A3QR1 = IOOutput2.DataBit.Bit6;
+    SwitchWord1.DataBit.DO_A3QR2 = IOOutput2.DataBit.Bit7;
+    SwitchWord1.DataBit.DO_A3QR3 = IOOutput1.DataBit.Bit8;
+    SwitchWord1.DataBit.DO_A3QR4 = IOOutput1.DataBit.Bit9;
+    SwitchWord1.DataBit.DO_A3QR5 = IOOutput1.DataBit.Bit10;
+    SwitchWord1.DataBit.DO_A3QR6 = IOOutput1.DataBit.Bit11;
+    SwitchWord1.DataBit.DO_A3QR7 = IOOutput1.DataBit.Bit12;
+    SwitchWord1.DataBit.DO_RUNLED = IOOutput1.DataBit.Bit14;
+    SwitchWord1.DataBit.DO_FLTLED = IOOutput1.DataBit.Bit15;
+
+    SwitchWord2.DataBit.DI_ID_LOCALREMOTE = IOInput1.DataBit.Bit0;
+    SwitchWord2.DataBit.DI_ID_EMERGENCY_STOP = IOInput1.DataBit.Bit1;
+    SwitchWord2.DataBit.DI_ID_RESET = IOInput1.DataBit.Bit2;
+    SwitchWord2.DataBit.DI_ID_A3QF1 = IOInput1.DataBit.Bit3;
+    SwitchWord2.DataBit.DI_ID_A3QF2 = IOInput1.DataBit.Bit4;
+    SwitchWord2.DataBit.DI_ID_A3QS1 = IOInput1.DataBit.Bit5;
+    SwitchWord2.DataBit.DI_ID_A3K17 = IOInput1.DataBit.Bit6;
+    SwitchWord2.DataBit.DI_ID_A3QS2 = IOInput1.DataBit.Bit7;
+    SwitchWord2.DataBit.DI_ID_UPS = IOInput1.DataBit.Bit8;
+    SwitchWord2.DataBit.DI_ID_MAINS_ELECT = IOInput1.DataBit.Bit9;
+    SwitchWord2.DataBit.DI_ID_KM1 = IOInput1.DataBit.Bit10;
+    SwitchWord2.DataBit.DI_ID_PANEL_SINGLE = IOInput1.DataBit.Bit11;
+    SwitchWord2.DataBit.DI_ID_PANEL_PARALLEL = IOInput1.DataBit.Bit12;
+    SwitchWord2.DataBit.DI_ID_PANEL_SHORT = IOInput1.DataBit.Bit13;
+    SwitchWord2.DataBit.DI_ID_IMPACT_VEHICLE = IOInput1.DataBit.Bit14;
+    SwitchWord2.DataBit.DI_ID_COMPENSATION_VEHICLE = IOInput1.DataBit.Bit15;
+
+    SwitchWord3.DataBit.DI_ID_REMOTE_SINGLE_START = IOInput2.DataBit.Bit0;
+    SwitchWord3.DataBit.DI_ID_REMOTE_SINGLE_END = IOInput2.DataBit.Bit1;
+    SwitchWord3.DataBit.DI_ID_REMOTE_PARALLEL_START = IOInput2.DataBit.Bit2;
+    SwitchWord3.DataBit.DI_ID_REMOTE_PARALLEL_END = IOInput2.DataBit.Bit3;
+    SwitchWord3.DataBit.DI_ID_REMOTE_DEGAUSS_START = IOInput2.DataBit.Bit4;
+    SwitchWord3.DataBit.DI_ID_REMOTE_DEGAUSS_END = IOInput2.DataBit.Bit5;
+    SwitchWord3.DataBit.DI_ID_A3QR1 = IOInput2.DataBit.Bit6;
+    SwitchWord3.DataBit.DI_ID_A3QR2 = IOInput2.DataBit.Bit7;
+    SwitchWord3.DataBit.DI_ID_A3QS3 = IOInput2.DataBit.Bit8;
+}
+
 static ExecuteResult_t
 Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
 {
@@ -1189,6 +1236,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             Context->emergency_stop_status = false;
             Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
             Context->fault_status = false;
+            FaultWord1.DataBit.Bit9 = 0;
         }
     }
     // 连接单机/并机电路
@@ -1277,6 +1325,9 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
                 return RESULT_FAILED;
             }
         }
+        // 置故障位
+        Context->fault_status = true;
+        FaultWord1.DataBit.Bit9 = 1;
         Context->state = CABINET_STATE_STANDBY;
         Context->target_state = CABINET_STATE_INVALID;
         return RESULT_EMERGENCY_STOP;

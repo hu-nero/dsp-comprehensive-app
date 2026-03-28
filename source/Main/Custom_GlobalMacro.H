@@ -179,6 +179,70 @@ struct Bilinear_Tran_Type
 	s32 Para_Den[3];
 };
 
+union Com_Modbus_To_HMI_Word1_Type
+{
+    unsigned int DataInt;
+    struct
+    {
+        unsigned DO_REMOTE_SINGLE_CTRL_FEED:1;
+        unsigned DO_REMOTE_PARALEL_CTRL_FEED:1;
+        unsigned DO_A3QF1:1;
+        unsigned DO_A3QF2:1;
+        unsigned DO_A3QR1:1;
+        unsigned DO_A3QR2:1;
+        unsigned DO_A3QR3:1;
+        unsigned DO_A3QR4:1;
+        unsigned DO_A3QR5:1;
+        unsigned DO_A3QR6:1;
+        unsigned DO_A3QR7:1;
+        unsigned DO_RUNLED:1;
+        unsigned DO_FLTLED:1;
+        unsigned RESERVE:3;
+    }DataBit;
+};
+
+union Com_Modbus_To_HMI_Word2_Type
+{
+    unsigned int DataInt;
+    struct
+    {
+        unsigned DI_ID_LOCALREMOTE:1;
+        unsigned DI_ID_EMERGENCY_STOP:1;
+        unsigned DI_ID_RESET:1;
+        unsigned DI_ID_A3QF1:1;
+        unsigned DI_ID_A3QF2:1;
+        unsigned DI_ID_A3QS1:1;  //S1接通回路
+        unsigned DI_ID_A3K17:1;  //S1接通检修
+        unsigned DI_ID_A3QS2:1;
+        unsigned DI_ID_UPS:1;
+        unsigned DI_ID_MAINS_ELECT:1; //市电
+        unsigned DI_ID_KM1:1;
+        unsigned DI_ID_PANEL_SINGLE:1;
+        unsigned DI_ID_PANEL_PARALLEL:1;
+        unsigned DI_ID_PANEL_SHORT:1;
+        unsigned DI_ID_IMPACT_VEHICLE:1;
+        unsigned DI_ID_COMPENSATION_VEHICLE:1;
+    }DataBit;
+};
+
+union Com_Modbus_To_HMI_Word3_Type
+{
+    unsigned int DataInt;
+    struct
+    {
+        unsigned DI_ID_REMOTE_SINGLE_START:1;
+        unsigned DI_ID_REMOTE_SINGLE_END:1;
+        unsigned DI_ID_REMOTE_PARALLEL_START:1;
+        unsigned DI_ID_REMOTE_PARALLEL_END:1;
+        unsigned DI_ID_REMOTE_DEGAUSS_START:1;
+        unsigned DI_ID_REMOTE_DEGAUSS_END:1;
+        unsigned DI_ID_A3QR1:1;
+        unsigned DI_ID_A3QR2:1;
+        unsigned DI_ID_A3QS3:1;
+        unsigned RESERVE:9;
+    }DataBit;
+};
+
 #endif
 
 

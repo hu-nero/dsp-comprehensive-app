@@ -103,10 +103,10 @@ typedef enum
 // 按钮输出
 typedef enum
 {
-    DO_ID_RUNACK = 0,   // 本地远端
-    DO_ID_DEGAUSS,       // 消磁按键K2
-    DO_ID_A3QF1,       // 单机QF1
+    DO_ID_REMOTE_SINGLE_CTRL_FEED = 0,   // 本地远端
     DO_ID_RESERVE1,
+    DO_ID_A3QF1,       // 单机QF1
+    DO_ID_REMOTE_PARALEL_CTRL_FEED,       // 消磁按键K2
     DO_ID_A3QF2,       // 并机QF2
     DO_ID_RESERVE2,
     DO_ID_A3QR3,       // 消磁回路QR3

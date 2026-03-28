@@ -47,6 +47,9 @@ typedef struct
     SwitchState_t bus1_switch;             // 母线1开关状态
     SwitchState_t short_switch;            // 面板短接开关状态（消磁）
 
+    SwitchState_t remote_ctrl_single_feed_switch;            // 远端单机反馈的控制
+    SwitchState_t remote_ctrl_parallel_feed_switch;            // 面板短接开关状态（消磁）
+
     SwitchState_t A3QS1_switch;              // 单机/并机母线刀闸
     SwitchState_t A3K17_switch;              // 检修母线刀闸
     SwitchState_t A3QS2_switch;              // 补偿电容刀闸
@@ -61,6 +64,9 @@ typedef struct
     SwitchState_t A3QR5_switch;       // 补偿电容
     SwitchState_t A3QR6_switch;       // 补偿电容
     SwitchState_t A3QR7_switch;       // 补偿电容
+
+    SwitchState_t RUNLED_switch;       // 补偿电容
+    SwitchState_t FLTLED_switch;       // 补偿电容
 } SwitchStateList_t;
 
 // 故障恢复状态枚举

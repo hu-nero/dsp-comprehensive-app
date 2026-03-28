@@ -419,6 +419,10 @@ union DataBit_Type FaultWord8;
 union DataBit_Type FltMapWord1;
 union DataBit_Type FltMapWord2;
 union DataBit_Type FltMapWord3;
+
+union Com_Modbus_To_HMI_Word1_Type SwitchWord1;
+union Com_Modbus_To_HMI_Word2_Type SwitchWord2;
+union Com_Modbus_To_HMI_Word3_Type SwitchWord3;
 ////////////////////////////////////////////////////////////////////
 ////////////////////// Alarm check        ///////////////////////////
 ////////////////////////////////////////////////////////////////////
@@ -608,6 +612,10 @@ void variable_init(void)
 	FaultWord6.DataInt=0;
 	FaultWord7.DataInt=0;
 	FaultWord8.DataInt=0;
+
+	SwitchWord1.DataInt=0;
+	SwitchWord2.DataInt=0;
+	SwitchWord3.DataInt=0;
 
 	NPR_HWFMWord0.DataInt=0;
 	NPR_HWFMWord1.DataInt=0;

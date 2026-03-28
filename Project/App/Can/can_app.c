@@ -368,27 +368,27 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
 {
     switch (SwitchId)
     {
-        case DO_ID_RUNACK:
+        case DO_ID_REMOTE_SINGLE_CTRL_FEED:
             {
                 if (State == SWITCH_ON)
                 {
-                	IO_RunAck_ON;
+                	IO_REMOTE_SINGLE_CTRL_FEED_ON;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                	IO_RunAck_OFF;
+                	IO_REMOTE_SINGLE_CTRL_FEED_OFF;
                 }
             }
             break;
-        case DO_ID_DEGAUSS:
+        case DO_ID_REMOTE_PARALEL_CTRL_FEED:
             {
                 if (State == SWITCH_ON)
                 {
-                	IO_DgssAck_ON;
+                	IO_REMOTE_PARALEL_CTRL_FEED_ON;
                 }
                 else if (State == SWITCH_OFF)
                 {
-                	IO_DgssAck_OFF;
+                	IO_REMOTE_PARALEL_CTRL_FEED_OFF;
                 }
             }
             break;

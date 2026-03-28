@@ -35,8 +35,8 @@
 #include "Hal.h"
 #include "App.h"
 
-#define DEBUG
-//#define Release
+/*#define DEBUG*/
+#define Release
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 extern unsigned int RamfuncsLoadStart, RamfuncsLoadEnd, RamfuncsRunStart;
@@ -461,12 +461,12 @@ void FunStatusUpdate(void)
 	if(MainStusWord.DataBit.Running)
 	{
 		IO_RunLed_ON;
-		IO_RunAck_ON;
+//		IO_RunAck_ON;
 	}
 	else
 	{
 		IO_RunLed_OFF;
-		IO_RunAck_OFF;
+//		IO_RunAck_OFF;
 	}
 
 	if(MainStusWord.DataBit.Fault)

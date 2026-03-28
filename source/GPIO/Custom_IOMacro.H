@@ -37,8 +37,8 @@ extern int CPLDSWVerRead(void);
 
 #define IO_ADNotBusy                    (GpioDataRegs.GPBDAT.bit.GPIO59^1)
 //////////////////////////////////////IOOutputMap//////////////////////////////////////////
-#define IO_RunAck_ON					IOOutput1.DataBit.Bit0 = 1
-#define IO_RunAck_OFF					IOOutput1.DataBit.Bit0 = 0
+#define IO_REMOTE_SINGLE_CTRL_FEED_ON	IOOutput1.DataBit.Bit0 = 1
+#define IO_REMOTE_SINGLE_CTRL_FEED_OFF	IOOutput1.DataBit.Bit0 = 0
 
 #define IO_DgssAck_ON					IOOutput1.DataBit.Bit1 = 1
 #define IO_DgssAck_OFF					IOOutput1.DataBit.Bit1 = 0
@@ -49,8 +49,8 @@ extern int CPLDSWVerRead(void);
 #define IO_QF1SingOff_En				IOOutput1.DataBit.Bit3 = 1
 #define IO_QF1SingOff_Dis				IOOutput1.DataBit.Bit3 = 0
 
-//#define 					IOOutput1.DataBit.Bit4 = 1
-//#define 					IOOutput1.DataBit.Bit4 = 0
+#define IO_REMOTE_PARALEL_CTRL_FEED_ON	IOOutput1.DataBit.Bit4 = 1
+#define IO_REMOTE_PARALEL_CTRL_FEED_OFF	IOOutput1.DataBit.Bit4 = 0
 //
 #define IO_QF2ParaOn_En					IOOutput1.DataBit.Bit5 = 1
 #define IO_QF2ParaOn_Dis				IOOutput1.DataBit.Bit5 = 0
