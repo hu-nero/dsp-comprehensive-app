@@ -71,6 +71,8 @@ void Modbus_Send_To_HMI(void)
 		HoldRegBuf[29] = FltThr_OverLow_Flow1;
 		HoldRegBuf[30] = AlmCntThr_OverLow_Flow2;
 		HoldRegBuf[31] = FltThr_OverLow_Flow2;
+//		HoldRegBuf[32] = Cap_Ctrl_Word.DataInt;
+
 	}
 }
 
@@ -110,6 +112,7 @@ void Modbus_Recv_For_HMI(void)
 		FltThr_OverLow_Flow1 = HoldRegBuf[29];
 		AlmCntThr_OverLow_Flow2 = HoldRegBuf[30];
 		FltThr_OverLow_Flow2 = HoldRegBuf[31];
+		Cap_Ctrl_Word.DataInt = HoldRegBuf[32];
 
 		if(ParaSaveFlag != ParaSaveFlagOld)
 		{

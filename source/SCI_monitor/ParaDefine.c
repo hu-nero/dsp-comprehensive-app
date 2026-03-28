@@ -95,6 +95,7 @@ const struct RTMType sParaData_Group6[]=
 /* Line -  30 */ 30,0x40A3,(void*)&FltThr_OverLow_Flow1,
 /* Line - 31 */ 31,0x4043,(void*)&AlmCntThr_OverLow_Flow2,
 /* Line - 32 */ 32,0x40A3,(void*)&FltThr_OverLow_Flow2,
+/* Line - 33 */ 33,0x40A3,(void*)&Cap_Ctrl_Word,
 };
 const struct RTMType sParaData_Group7[]=
 {

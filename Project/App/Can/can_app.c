@@ -53,6 +53,7 @@
 #define ADC0_CH5_Value                  *(unsigned  int *)(0x4060)
 
 static CanAppA3QFxStatus_t gCanAppA3QFxStatus;
+static uint16_t s_switchStatus[4] = {0, 0, 0, 0};
 
 static CAN_App_func_status_handler_t g_func_status_handler = NULL;
 // 全局柜体控制上下文
@@ -69,6 +70,7 @@ void CAN_App_TurnOnA3QF1(void);
 void CAN_App_TurnOffA3QF1(void);
 void CAN_App_TurnOnA3QF2(void);
 void CAN_App_TurnOffA3QF2(void);
+void CAN_App_RecordPanelSwitchStatus(void);
 
 // 应用层CAN接收处理函数
 static void
@@ -219,6 +221,8 @@ CAN_App_MainLoop(void)
     
     // 点动信号生成
     CAN_App_JogSignalHandler();
+    // 点动信号识别
+    CAN_App_RecordPanelSwitchStatus();
     // switch test
 //    CAN_App_Test();
 }
@@ -321,6 +325,32 @@ void CAN_App_TurnOffA3QF2(void)
     gCanAppA3QFxStatus.A3QF2TurnOffStatus = true;
     gCanAppA3QFxStatus.A3QF2TurnOfftimerstamp = hal_timer_get_timestamp();
 }
+
+void
+CAN_App_RecordPanelSwitchStatus(void)
+{
+    if (Flag_IORstRef == 1)
+    {
+        s_switchStatus[0] = ! s_switchStatus[0];
+        Flag_IORstRef = 0;
+    }
+    if (Flag_IOSingCtrl == 1)
+    {
+        s_switchStatus[1] = ! s_switchStatus[1];
+        Flag_IOSingCtrl = 0;
+    }
+    if (Flag_IOParaCtrl == 1)
+    {
+        s_switchStatus[2] = ! s_switchStatus[2];
+        Flag_IOParaCtrl = 0;
+    }
+    if (Flag_IODgssCtrl == 1)
+    {
+        s_switchStatus[3] = ! s_switchStatus[3];
+        Flag_IODgssCtrl = 0;
+    }
+}
+
 // 发送控制命令
 void
 CAN_App_SendControlToDevice(TeCanPort Port, uint16_t DstAddr)
@@ -565,7 +595,8 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             }
         case DI_ID_RESET:
             {
-                return IO_RstRef_Feed;
+                /*return IO_RstRef_Feed;*/
+                return s_switchStatus[0];
             }
         case DI_ID_A3QF1:
             {
@@ -605,15 +636,18 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             }
         case DI_ID_SINGLE:
             {
-                return IO_SingCtrl_Feed;
+                /*return IO_SingCtrl_Feed;*/
+                return s_switchStatus[1];
             }
         case DI_ID_BUS1:
             {
-                return IO_ParaCtrl_Feed;
+                /*return IO_ParaCtrl_Feed;*/
+                return s_switchStatus[2];
             }
         case DI_ID_Short:
             {
-                return IO_DgssCtrl_Feed;
+                /*return IO_DgssCtrl_Feed;*/
+                return s_switchStatus[3];
             }
         case DI_ID_IMPACT_VEHICLE:
             {

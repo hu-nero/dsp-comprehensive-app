@@ -106,6 +106,7 @@ float AlmThr_OverCurr_Work2;
 float FltThr_OverCurr_Work2;
 float FltThr_OverLow_Flow1;
 float FltThr_OverLow_Flow2;
+union DataBit_Type Cap_Ctrl_Word;
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
@@ -625,6 +626,8 @@ void variable_init(void)
 	NPR_HWFMWord5.DataInt=0;
 	NPR_HWFMWord6.DataInt=0;
 	NPR_HWFMWord7.DataInt=0;
+
+	Cap_Ctrl_Word.DataInt=0;
 }
 /*******************************************************************************************/
 void variable_algorithm_init(void)

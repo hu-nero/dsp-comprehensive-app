@@ -239,7 +239,11 @@ union Com_Modbus_To_HMI_Word3_Type
         unsigned DI_ID_A3QR1:1;
         unsigned DI_ID_A3QR2:1;
         unsigned DI_ID_A3QS3:1;
-        unsigned RESERVE:9;
+        unsigned DI_ID_A3QR4:1;
+        unsigned DI_ID_A3QR5:1;
+        unsigned DI_ID_A3QR6:1;
+        unsigned DI_ID_A3QR7:1;
+        unsigned RESERVE:5;
     }DataBit;
 };
 

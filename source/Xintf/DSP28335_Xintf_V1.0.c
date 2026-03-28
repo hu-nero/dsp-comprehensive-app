@@ -399,7 +399,7 @@ void IO_Scan(void)
 //	IOInputFpga2.DataInt = FPGARDIOSTS2;
 	IOInput2Fpga.DataInt = FPGARDIOSTS3;
 	IOInMapLogic();
-	/*IOInputCtrlFlag();*/
+    IOInputCtrlFlag();
 	//write IO output
 	IOOutMapLogic();
 

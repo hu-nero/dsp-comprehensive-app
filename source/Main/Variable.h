@@ -125,6 +125,7 @@ extern float AlmThr_OverCurr_Work2;
 extern float FltThr_OverCurr_Work2;
 extern float FltThr_OverLow_Flow1;
 extern float FltThr_OverLow_Flow2;
+extern union DataBit_Type Cap_Ctrl_Word;
 
 extern float UabSl_HalfMemory[20], UbcSl_HalfMemory[20], UcaSl_HalfMemory[20];
 extern float UabPar_HalfMemory[20], UbcPar_HalfMemory[20], UcaPar_HalfMemory[20];

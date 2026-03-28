@@ -1212,6 +1212,11 @@ Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context)
     SwitchWord3.DataBit.DI_ID_A3QR1 = IOInput2.DataBit.Bit6;
     SwitchWord3.DataBit.DI_ID_A3QR2 = IOInput2.DataBit.Bit7;
     SwitchWord3.DataBit.DI_ID_A3QS3 = IOInput2.DataBit.Bit8;
+    SwitchWord3.DataBit.DI_ID_A3QR4 = Cap_Ctrl_Word.DataBit.Bit0;
+    SwitchWord3.DataBit.DI_ID_A3QR5 = Cap_Ctrl_Word.DataBit.Bit1;
+    SwitchWord3.DataBit.DI_ID_A3QR6 = Cap_Ctrl_Word.DataBit.Bit2;
+    SwitchWord3.DataBit.DI_ID_A3QR7 = Cap_Ctrl_Word.DataBit.Bit3;
+
 }
 
 static ExecuteResult_t
@@ -1237,6 +1242,47 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
             Context->fault_status = false;
             FaultWord1.DataBit.Bit9 = 0;
+        }
+    }
+
+    // HMI控制投切电容
+    Context->switch_list.manual_switch = (SwitchState_t)Context->switch_feed(DI_ID_LOCALREMOTE);
+    if (Context->switch_list.manual_switch == SWITCH_OFF)
+    {
+        if (Cap_Ctrl_Word.DataBit.Bit0 == 1)
+        {
+            Context->switch_control(DO_ID_A3QR4, SWITCH_ON);
+        }
+        else
+        {
+            Context->switch_control(DO_ID_A3QR4, SWITCH_OFF);
+        }
+
+        if (Cap_Ctrl_Word.DataBit.Bit1 == 1)
+        {
+            Context->switch_control(DO_ID_A3QR5, SWITCH_ON);
+        }
+        else
+        {
+            Context->switch_control(DO_ID_A3QR5, SWITCH_OFF);
+        }
+
+        if (Cap_Ctrl_Word.DataBit.Bit2 == 1)
+        {
+            Context->switch_control(DO_ID_A3QR6, SWITCH_ON);
+        }
+        else
+        {
+            Context->switch_control(DO_ID_A3QR6, SWITCH_OFF);
+        }
+
+        if (Cap_Ctrl_Word.DataBit.Bit3 == 1)
+        {
+            Context->switch_control(DO_ID_A3QR7, SWITCH_ON);
+        }
+        else
+        {
+            Context->switch_control(DO_ID_A3QR7, SWITCH_OFF);
         }
     }
     // 连接单机/并机电路
