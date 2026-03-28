@@ -323,30 +323,45 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 target_state = CABINET_STATE_BACKUP;
             }
 
-            /*if ((Context->state == CABINET_STATE_BACKUP) ||*/
-                    /*(Context->state == CABINET_STATE_SINGLE))*/
-            /*{*/
-                /*// 读取电源状态,电源状态影响目标状态*/
-                /*Context->power_status = CAN_Adapter_GetPowerStatus();*/
-                /*if (!((Context->power_status.run_state == POWER_SINGLE_RUNNING) ||*/
-                            /*(Context->power_status.run_state == POWER_PARALLEL_RUNNING)))*/
-                /*{*/
-                    /*if (Context->switch_list.bus1_switch == SWITCH_OFF)*/
-                    /*{*/
-                        /*target_state = CABINET_STATE_STANDBY;*/
-                    /*}*/
-                    /*else if (Context->switch_list.bus1_switch == SWITCH_ON)*/
-                    /*{*/
-                        /*target_state = CABINET_STATE_PARALLEL;*/
-                    /*}*/
-                /*}*/
-            /*}*/
-
             // 状态没有变化
             if (target_state == Context->state)
             {
                 Context->target_state = CABINET_STATE_INVALID;
                 return;
+            }
+            else
+            {
+                switch(Context->state)
+                {
+                    case CABINET_STATE_STANDBY:
+                        {
+                            // 设置旋钮状态
+                            Context->switch_control(DO_ID_SINGLE_SET, SWITCH_OFF);
+                            Context->switch_control(DO_ID_PARALLEL_SET, SWITCH_OFF);
+                        }
+                        break;
+                    case CABINET_STATE_SINGLE:
+                        {
+                            // 设置旋钮状态
+                            Context->switch_control(DO_ID_SINGLE_SET, SWITCH_ON);
+                            Context->switch_control(DO_ID_PARALLEL_SET, SWITCH_OFF);
+                        }
+                        break;
+                    case CABINET_STATE_PARALLEL:
+                        {
+                            // 设置旋钮状态
+                            Context->switch_control(DO_ID_SINGLE_SET, SWITCH_OFF);
+                            Context->switch_control(DO_ID_PARALLEL_SET, SWITCH_ON);
+                        }
+                        break;
+                    case CABINET_STATE_BACKUP:
+                        {
+                            // 设置旋钮状态
+                            Context->switch_control(DO_ID_SINGLE_SET, SWITCH_ON);
+                            Context->switch_control(DO_ID_PARALLEL_SET, SWITCH_ON);
+                        }
+                        break;
+                }
             }
 
             // 保存目标状态
@@ -541,6 +556,10 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     result = Cabinet_ExecuteBackupProcedure(Context);
                     if (result == RESULT_SUCCESS)
                     {
+                        // 设置旋钮状态
+                        Context->switch_control(DO_ID_SINGLE_SET, SWITCH_ON);
+                        Context->switch_control(DO_ID_PARALLEL_SET, SWITCH_ON);
+                        // 设置区段柜状态
                         Context->state = CABINET_STATE_BACKUP;
                         Context->target_state = CABINET_STATE_INVALID;
                     }
@@ -625,6 +644,10 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     result = Cabinet_ExecuteBackupProcedure(Context);
                     if (result == RESULT_SUCCESS)
                     {
+                        // 设置旋钮状态
+                        Context->switch_control(DO_ID_SINGLE_SET, SWITCH_ON);
+                        Context->switch_control(DO_ID_PARALLEL_SET, SWITCH_ON);
+                        // 设置区段柜状态
                         Context->state = CABINET_STATE_BACKUP;
                         Context->target_state = CABINET_STATE_INVALID;
                     }
@@ -666,6 +689,10 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     result = Cabinet_ExecuteSingleProcedure(Context);
                     if (result == RESULT_SUCCESS)
                     {
+                        // 设置旋钮状态
+                        Context->switch_control(DO_ID_SINGLE_SET, SWITCH_ON);
+                        Context->switch_control(DO_ID_PARALLEL_SET, SWITCH_OFF);
+                        // 设置区段柜状态
                         Context->state = CABINET_STATE_SINGLE;
                         Context->target_state = CABINET_STATE_INVALID;
                     }
@@ -703,6 +730,10 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     result = Cabinet_ExecuteParallelProcedure(Context);
                     if (result == RESULT_SUCCESS)
                     {
+                        // 设置旋钮状态
+                        Context->switch_control(DO_ID_SINGLE_SET, SWITCH_OFF);
+                        Context->switch_control(DO_ID_PARALLEL_SET, SWITCH_ON);
+                        // 设置区段柜状态
                         Context->state = CABINET_STATE_PARALLEL;
                         Context->target_state = CABINET_STATE_INVALID;
                     }
@@ -797,8 +828,11 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     result = Cabinet_ExecuteSingleProcedure(Context);
                     if (result == RESULT_SUCCESS)
                     {
+                        // 设置旋钮状态
+                        Context->switch_control(DO_ID_SINGLE_SET, SWITCH_ON);
+                        Context->switch_control(DO_ID_PARALLEL_SET, SWITCH_OFF);
+                        // 设置区段柜状态
                         Context->state = CABINET_STATE_SINGLE;
-                        // 重置状态
                         Context->target_state = CABINET_STATE_INVALID;
                         Context->demagnetize_state = DEMAGNETIZE_IDLE;
                     }
@@ -839,6 +873,10 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     result = Cabinet_ExecuteParallelProcedure(Context);
                     if (result == RESULT_SUCCESS)
                     {
+                        // 设置旋钮状态
+                        Context->switch_control(DO_ID_SINGLE_SET, SWITCH_OFF);
+                        Context->switch_control(DO_ID_PARALLEL_SET, SWITCH_ON);
+                        // 设置区段柜状态
                         Context->state = CABINET_STATE_PARALLEL;
                         Context->target_state = CABINET_STATE_INVALID;
 
@@ -869,6 +907,10 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
                     if (demag_result == RESULT_SUCCESS)
                     {
+                        // 设置旋钮状态
+                        Context->switch_control(DO_ID_SINGLE_SET, SWITCH_OFF);
+                        Context->switch_control(DO_ID_PARALLEL_SET, SWITCH_OFF);
+                        // 设置区段柜状态
                         Context->demagnetize_state = DEMAGNETIZE_IDLE;
                         Context->state = CABINET_STATE_STANDBY;
                         Context->target_state = CABINET_STATE_INVALID;
@@ -897,6 +939,10 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
                     if (demag_result == RESULT_SUCCESS)
                     {
+                        // 设置旋钮状态
+                        Context->switch_control(DO_ID_SINGLE_SET, SWITCH_OFF);
+                        Context->switch_control(DO_ID_PARALLEL_SET, SWITCH_OFF);
+                        // 设置区段柜状态
                         Context->demagnetize_state = DEMAGNETIZE_IDLE;
                         Context->state = CABINET_STATE_STANDBY;
                         Context->target_state = CABINET_STATE_INVALID;

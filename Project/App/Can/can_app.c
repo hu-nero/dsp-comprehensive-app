@@ -585,6 +585,30 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                 }
             }
             break;
+        case DO_ID_SINGLE_SET:
+            {
+                if (State == SWITCH_ON)
+                {
+                    s_switchStatus[1] = 1;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                    s_switchStatus[1] = 0;
+                }
+            }
+            break;
+        case DO_ID_PARALLEL_SET:
+            {
+                if (State == SWITCH_ON)
+                {
+                    s_switchStatus[2] = 1;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                    s_switchStatus[2] = 0;
+                }
+            }
+            break;
         default:break;
     }
     return RESULT_SUCCESS;
