@@ -73,6 +73,7 @@ typedef enum
     ALARM_POWER_START_FAILED,  // 电源启动失败
     ALARM_CAN_COMM_ERROR,      // CAN通信错误
     ALARM_NOT_MANUAL_MODE,     // 非手动模式
+    ALARM_FAULT,               // 故障
     ALARM_MAX
 } AlarmType_t;
 

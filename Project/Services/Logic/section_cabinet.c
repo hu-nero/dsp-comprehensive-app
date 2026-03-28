@@ -162,8 +162,8 @@ Cabinet_Process(CabinetContext_t* Context)
         // 自复位
         if (Context->switch_list.manual_switch == SWITCH_ON)
         {
-            Cabinet_ProcessFaultReset(Context);
-            Cabinet_ProcessAutoParallel(Context);
+            /*Cabinet_ProcessFaultReset(Context);*/
+            /*Cabinet_ProcessAutoParallel(Context);*/
         }
         // (手动/远控模式) 状态转换流程
         if (Context->panel_remote_degauss_flag == false)
@@ -1248,6 +1248,8 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
             Context->fault_status = false;
             FaultWord1.DataBit.Bit9 = 0;
+            // 复位故障
+            NPR_FaultCode = 0;
         }
     }
 
