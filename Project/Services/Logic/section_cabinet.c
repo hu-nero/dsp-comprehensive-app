@@ -1241,7 +1241,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     if (Context->switch_list.reset_switch == SWITCH_ON)
     {
         // TODO:急停
-        if (Context->emergency_stop_status == true)
+        if ((Context->emergency_stop_status == true) | (NPR_FaultCode != 0))
         {
             Cabinet_ResetFromEmergency(Context);
             Context->emergency_stop_status = false;
