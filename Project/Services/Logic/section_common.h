@@ -121,8 +121,9 @@ typedef enum
     DO_ID_A3QR1,       // 消磁回路QR3
     DO_ID_A3QR2,       // 消磁回路QR3
     DO_ID_RESET,       // 复位后取消点动记录状态
-    DO_ID_SINGLE_SET,       // 消磁回路QR3
-    DO_ID_PARALLEL_SET       // 消磁回路QR3
+    DO_ID_SINGLE_SET,        // 设置面板单机反馈的点动记录
+    DO_ID_PARALLEL_SET,      // 设置面板并机反馈的点动记录
+    DO_ID_SHORT_SET          // 设置面板消磁反馈的点动记录
 } DigitalOutputType_t;
 
 // 三相电压采集点类型

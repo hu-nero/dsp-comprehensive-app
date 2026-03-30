@@ -9,6 +9,7 @@
 #define APP_CAN_CAN_APP_H_
 
 #include "SDK/Agent/Can/can_agent.h"
+#include "Services/Logic/section_cabinet.h"
 
 typedef struct
 {

@@ -40,6 +40,7 @@
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 extern unsigned int RamfuncsLoadStart, RamfuncsLoadEnd, RamfuncsRunStart;
+
 void INT28335_process(void);
 void pwm_init(void);
 /******************************************************************/
@@ -477,19 +478,20 @@ void FunStatusUpdate(void)
 	{
 		IO_FltLed_OFF;
 	}
-
-
-
 }
 /******************************************************************/
 void npr_1ms_protection(void)
 {
+    uint16_t status1 = Cabinet_GetComPowerToSectionParamStatus1();
 	//
 	if(vphase_min < AlmThr_UnderVolt_Phase)
 	{
 		if(AlmCnt_UnderVolt_Phase < AlmCntThr_UnderVolt_Phase)
 		{
 			AlmCnt_UnderVolt_Phase ++;
+		}
+		else
+		{
 			AlarmWord_Map(1);
 		}
 	}
@@ -499,91 +501,137 @@ void npr_1ms_protection(void)
 		AlarmWord_Clear(1);
 	}
 	/////////////////////////////////////////////
-	if(vLine_max > AlmThr_OverVolt_Work1)
-	{
-		AlarmWord_Map(2);
 
-		AlmCnt_OverVolt_Work1 ++;
-		if(AlmCnt_OverVolt_Work1 > AlmCntThr_OverVolt_Work1)
-		{
-			/*NPR_FaultCode = 17;*/
-			FaultWord_Map(17);
-		}
+    if ((status1>>4) == 0)
+    {
+        if(vLine_max > AlmThr_OverVolt_Work1)
+        {
+            AlarmWord_Map(2);
 
-		if(vLine_max > FltThr_OverVolt_Work1)
-		{
-			/*NPR_FaultCode = 17;*/
-			FaultWord_Map(17);
-		}
-	}
-	else
-	{
-		AlarmWord_Clear(2);
-		AlmCnt_OverVolt_Work1 = 0;
-	}
-	/////////////////////////////////////////////
-	if(vLine_max > AlmThr_OverVolt_Work2)
-	{
-		AlarmWord_Map(3);
+            AlmCnt_OverVolt_Work1 ++;
+            if(AlmCnt_OverVolt_Work1 > AlmCntThr_OverVolt_Work1)
+            {
+                /*NPR_FaultCode = 17;*/
+                FaultWord_Map(17);
+            }
 
-		AlmCnt_OverVolt_Work2 ++;
-		if(AlmCnt_OverVolt_Work2 > AlmCntThr_OverVolt_Work2)
-		{
-			/*NPR_FaultCode = 18;*/
-			FaultWord_Map(18);
-		}
+            if(vLine_max > FltThr_OverVolt_Work1)
+            {
+                /*NPR_FaultCode = 17;*/
+                FaultWord_Map(17);
+            }
+        }
+        else
+        {
+            AlarmWord_Clear(2);
+            AlmCnt_OverVolt_Work1 = 0;
+        }
+        /////////////////////////////////////////////
+        if(vLine_min < AlmThr_UnderVolt_Work1)
+        {
+            AlmCnt_UnderVolt_Work1 ++;
+            if(AlmCnt_UnderVolt_Work1 > AlmCntThr_UnderVolt_Work1)
+            {
+                AlarmWord_Map(4);
+            }
 
-		if(vLine_max > FltThr_OverVolt_Work2)
-		{
-			/*NPR_FaultCode = 18;*/
-			FaultWord_Map(18);
-		}
-	}
-	else
-	{
-		AlarmWord_Clear(3);
-		AlmCnt_OverVolt_Work2 = 0;
-	}
-	/////////////////////////////////////////////
-	if(vLine_min < AlmThr_UnderVolt_Work1)
-	{
-		AlmCnt_UnderVolt_Work1 ++;
-		if(AlmCnt_UnderVolt_Work1 > AlmCntThr_UnderVolt_Work1)
-		{
-			AlarmWord_Map(4);
-		}
+            if(vLine_min < FltThr_UnderVolt_Work1)
+            {
+                /*NPR_FaultCode = 19;*/
+                FaultWord_Map(19);
+            }
+        }
+        else
+        {
+            AlarmWord_Clear(4);
+            AlmCnt_UnderVolt_Work1 = 0;
+        }
+        //////////////////////////////////////////////////
+        if(Iphase_max > AlmThr_OverCurr_Work1)
+        {
+            AlmCnt_OverCurr_Work1 ++;
+            if(AlmCnt_OverCurr_Work1 > AlmCntThr_OverCurr_Work1)
+            {
+                AlarmWord_Map(8);
+            }
 
-		if(vLine_min < FltThr_UnderVolt_Work1)
-		{
-			/*NPR_FaultCode = 19;*/
-			FaultWord_Map(19);
-		}
-	}
-	else
-	{
-		AlarmWord_Clear(4);
-		AlmCnt_UnderVolt_Work1 = 0;
-	}
-	/////////////////////////////////////////////
-	if(vLine_min < AlmThr_UnderVolt_Work2)
-	{
-		AlmCnt_UnderVolt_Work2 ++;
-		if(AlmCnt_UnderVolt_Work1 > AlmCntThr_UnderVolt_Work2)
-		{
-			AlarmWord_Map(5);
-		}
+            if(Iphase_max > FltThr_OverCurr_Work1)
+            {
+                /*NPR_FaultCode = 23;*/
+                FaultWord_Map(23);
+            }
+        }
+        else
+        {
+            AlarmWord_Clear(8);
+            AlmCnt_OverCurr_Work1 = 0;
+        }
+    }
+    else
+    {
+        /////////////////////////////////////////////
+        if(vLine_max > AlmThr_OverVolt_Work2)
+        {
+            AlarmWord_Map(3);
 
-		if(vLine_min < FltThr_UnderVolt_Work2)
-		{
-			/*NPR_FaultCode = 20;*/
-			FaultWord_Map(20);
-		}
-	}
-	else
-	{
-		AlarmWord_Clear(5);
-		AlmCnt_UnderVolt_Work2 = 0;
-	}
+            AlmCnt_OverVolt_Work2 ++;
+            if(AlmCnt_OverVolt_Work2 > AlmCntThr_OverVolt_Work2)
+            {
+                /*NPR_FaultCode = 18;*/
+                FaultWord_Map(18);
+            }
+
+            if(vLine_max > FltThr_OverVolt_Work2)
+            {
+                /*NPR_FaultCode = 18;*/
+                FaultWord_Map(18);
+            }
+        }
+        else
+        {
+            AlarmWord_Clear(3);
+            AlmCnt_OverVolt_Work2 = 0;
+        }
+        /////////////////////////////////////////////
+        if(vLine_min < AlmThr_UnderVolt_Work2)
+        {
+            AlmCnt_UnderVolt_Work2 ++;
+            if(AlmCnt_UnderVolt_Work1 > AlmCntThr_UnderVolt_Work2)
+            {
+                AlarmWord_Map(5);
+            }
+
+            if(vLine_min < FltThr_UnderVolt_Work2)
+            {
+                /*NPR_FaultCode = 20;*/
+                FaultWord_Map(20);
+            }
+        }
+        else
+        {
+            AlarmWord_Clear(5);
+            AlmCnt_UnderVolt_Work2 = 0;
+        }
+        if(Iphase_max > AlmThr_OverCurr_Work2)
+        {
+            AlmCnt_OverCurr_Work2 ++;
+            if(AlmCnt_OverCurr_Work2 > AlmCntThr_OverCurr_Work2)
+            {
+                AlarmWord_Map(9);
+            }
+
+            if(Iphase_max > FltThr_OverCurr_Work2)
+            {
+                /*NPR_FaultCode = 24;*/
+                FaultWord_Map(24);
+            }
+        }
+        else
+        {
+            AlarmWord_Clear(9);
+            AlmCnt_OverCurr_Work2 = 0;
+        }
+    }
 //////////////////////////////////////////////////
 	if(Uout_Imbalance > AlmThr_OverImba_Volt)
 	{
@@ -651,46 +699,6 @@ void npr_1ms_protection(void)
 		{
 			FltCnt_OverImba_Curr --;
 		}
-	}
-//////////////////////////////////////////////////
-	if(Iphase_max > AlmThr_OverCurr_Work1)
-	{
-		AlmCnt_OverCurr_Work1 ++;
-		if(AlmCnt_OverCurr_Work1 > AlmCntThr_OverCurr_Work1)
-		{
-			AlarmWord_Map(8);
-		}
-
-		if(Iphase_max > FltThr_OverCurr_Work1)
-		{
-			/*NPR_FaultCode = 23;*/
-			FaultWord_Map(23);
-		}
-	}
-	else
-	{
-		AlarmWord_Clear(8);
-		AlmCnt_OverCurr_Work1 = 0;
-	}
-
-	if(Iphase_max > AlmThr_OverCurr_Work2)
-	{
-		AlmCnt_OverCurr_Work2 ++;
-		if(AlmCnt_OverCurr_Work2 > AlmCntThr_OverCurr_Work2)
-		{
-			AlarmWord_Map(9);
-		}
-
-		if(Iphase_max > FltThr_OverCurr_Work2)
-		{
-			/*NPR_FaultCode = 24;*/
-			FaultWord_Map(24);
-		}
-	}
-	else
-	{
-		AlarmWord_Clear(9);
-		AlmCnt_OverCurr_Work2 = 0;
 	}
 	//////////////////////////////////////////////////////////
 	if(FlowRate > FltThr_OverLow_Flow1)

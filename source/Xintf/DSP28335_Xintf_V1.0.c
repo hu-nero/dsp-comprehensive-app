@@ -247,109 +247,119 @@ void IOInputCtrlFlag(void)
 	static bool bool_io_parallel = false;
 	static bool bool_io_degauss = false;
 
-	if((bool_io_rst == false)&&(IO_RstRef_Feed == 1))
-	{
-		if(CtrlCnt_IORstRefFeed < 20)
-		{
-			CtrlCnt_IORstRefFeed ++;
-		}
-		else
-		{
-			bool_io_rst = true;
-			CtrlCnt_IORstRefFeed = 0;
-		}
-	}
-	else if((bool_io_rst == true)&&(IO_RstRef_Feed == 0))
-	{
-		if(CtrlCnt_IORstRefFeed < 20)
-		{
-			CtrlCnt_IORstRefFeed ++;
-		}
-		else
-		{
-			bool_io_rst = false;
-			CtrlCnt_IORstRefFeed = 0;
-			Flag_IORstRef = 1;
-		}
-	}
+    if (!IO_LocRem_Feed)
+    {
+        if((bool_io_rst == false)&&(IO_RstRef_Feed == 1))
+        {
+            if(CtrlCnt_IORstRefFeed < 20)
+            {
+                CtrlCnt_IORstRefFeed ++;
+            }
+            else
+            {
+                bool_io_rst = true;
+                CtrlCnt_IORstRefFeed = 0;
+            }
+        }
+        else if((bool_io_rst == true)&&(IO_RstRef_Feed == 0))
+        {
+            if(CtrlCnt_IORstRefFeed < 20)
+            {
+                CtrlCnt_IORstRefFeed ++;
+            }
+            else
+            {
+                bool_io_rst = false;
+                CtrlCnt_IORstRefFeed = 0;
+                Flag_IORstRef = 1;
+            }
+        }
 
-	if((bool_io_single == false)&&(IO_SingCtrl_Feed == 1))
-	{
-		if(CtrlCnt_IOSingCtrl < 20)
-		{
-			CtrlCnt_IOSingCtrl ++;
-		}
-		else
-		{
-            bool_io_single = true;
-			CtrlCnt_IOSingCtrl = 0;
-		}
-	}
-    else if((bool_io_single == true)&&(IO_SingCtrl_Feed == 0))
-	{
-		if(CtrlCnt_IOSingCtrl < 20)
-		{
-			CtrlCnt_IOSingCtrl ++;
-		}
-		else
-		{
-            bool_io_single = false;
-			CtrlCnt_IOSingCtrl = 0;
-			Flag_IOSingCtrl = 1;
-		}
-	}
+        if((bool_io_single == false)&&(IO_SingCtrl_Feed == 1))
+        {
+            if(CtrlCnt_IOSingCtrl < 20)
+            {
+                CtrlCnt_IOSingCtrl ++;
+            }
+            else
+            {
+                bool_io_single = true;
+                CtrlCnt_IOSingCtrl = 0;
+            }
+        }
+        else if((bool_io_single == true)&&(IO_SingCtrl_Feed == 0))
+        {
+            if(CtrlCnt_IOSingCtrl < 20)
+            {
+                CtrlCnt_IOSingCtrl ++;
+            }
+            else
+            {
+                bool_io_single = false;
+                CtrlCnt_IOSingCtrl = 0;
+                Flag_IOSingCtrl = 1;
+            }
+        }
 
-	if((bool_io_parallel == false)&&(IO_ParaCtrl_Feed == 1))
-	{
-	    if(CtrlCnt_IOParaCtrl < 20)
-	    {
-	        CtrlCnt_IOParaCtrl ++;
-	    }
-	    else
-	    {
-            bool_io_parallel = true;
-	        CtrlCnt_IOParaCtrl = 0;
-	    }
-	}
-	else if((bool_io_parallel == true)&&(IO_ParaCtrl_Feed == 0))
-	{
-	    if(CtrlCnt_IOParaCtrl < 20)
-	    {
-	        CtrlCnt_IOParaCtrl ++;
-	    }
-	    else
-	    {
-            bool_io_parallel = false;
-	        CtrlCnt_IOParaCtrl = 0;
-	        Flag_IOParaCtrl = 1;
-	    }
-	}
+        if((bool_io_parallel == false)&&(IO_ParaCtrl_Feed == 1))
+        {
+            if(CtrlCnt_IOParaCtrl < 20)
+            {
+                CtrlCnt_IOParaCtrl ++;
+            }
+            else
+            {
+                bool_io_parallel = true;
+                CtrlCnt_IOParaCtrl = 0;
+            }
+        }
+        else if((bool_io_parallel == true)&&(IO_ParaCtrl_Feed == 0))
+        {
+            if(CtrlCnt_IOParaCtrl < 20)
+            {
+                CtrlCnt_IOParaCtrl ++;
+            }
+            else
+            {
+                bool_io_parallel = false;
+                CtrlCnt_IOParaCtrl = 0;
+                Flag_IOParaCtrl = 1;
+            }
+        }
 
-	if((bool_io_degauss == false)&&(IO_DgssCtrl_Feed == 1))
-	{
-	    if(CtrlCnt_IODgssCtrl < 20)
-	    {
-	        CtrlCnt_IODgssCtrl ++;
-	    }
-	    else
-	    {
-            bool_io_degauss = true;
-            CtrlCnt_IODgssCtrl = 0;
-	    }
-	}
-	else if((bool_io_degauss == true)&&(IO_DgssCtrl_Feed == 0))
-	{
-	    if(CtrlCnt_IODgssCtrl < 20)
-	    {
-	        CtrlCnt_IODgssCtrl ++;
-	    }
-	    else
-	    {
-            bool_io_degauss = false;
-            CtrlCnt_IODgssCtrl = 0;
-	        Flag_IODgssCtrl = 1;
-	    }
-	}
+        if((bool_io_degauss == false)&&(IO_DgssCtrl_Feed == 1))
+        {
+            if(CtrlCnt_IODgssCtrl < 20)
+            {
+                CtrlCnt_IODgssCtrl ++;
+            }
+            else
+            {
+                bool_io_degauss = true;
+                CtrlCnt_IODgssCtrl = 0;
+            }
+        }
+        else if((bool_io_degauss == true)&&(IO_DgssCtrl_Feed == 0))
+        {
+            if(CtrlCnt_IODgssCtrl < 20)
+            {
+                CtrlCnt_IODgssCtrl ++;
+            }
+            else
+            {
+                bool_io_degauss = false;
+                CtrlCnt_IODgssCtrl = 0;
+                Flag_IODgssCtrl = 1;
+            }
+        }
+    }
+    else
+    {
+    	bool_io_rst = false;
+    	bool_io_single = false;
+    	bool_io_parallel = false;
+    	bool_io_degauss = false;
+    }
 }
 /**********************************************************************************/
 void IOOutMapLogic(void)

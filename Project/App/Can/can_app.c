@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <string.h>
 #include "Services/Adapter/can_adapter.h"
-#include "Services/Logic/section_cabinet.h"
 #include "Main/Variable.h"
 #include "GPIO\Custom_IOMacro.H"
 #include "SDK/Hal/Timer/hal_timer.h"
@@ -221,6 +220,7 @@ CAN_App_MainLoop(void)
     
     // 点动信号生成
     CAN_App_JogSignalHandler();
+    
     // 点动信号识别
     CAN_App_RecordPanelSwitchStatus();
     // switch test
@@ -326,31 +326,6 @@ void CAN_App_TurnOffA3QF2(void)
     gCanAppA3QFxStatus.A3QF2TurnOfftimerstamp = hal_timer_get_timestamp();
 }
 
-void
-CAN_App_RecordPanelSwitchStatus(void)
-{
-    if (Flag_IORstRef == 1)
-    {
-        s_switchStatus[0] = ! s_switchStatus[0];
-        Flag_IORstRef = 0;
-    }
-    if (Flag_IOSingCtrl == 1)
-    {
-        s_switchStatus[1] = ! s_switchStatus[1];
-        Flag_IOSingCtrl = 0;
-    }
-    if (Flag_IOParaCtrl == 1)
-    {
-        s_switchStatus[2] = ! s_switchStatus[2];
-        Flag_IOParaCtrl = 0;
-    }
-    if (Flag_IODgssCtrl == 1)
-    {
-        s_switchStatus[3] = ! s_switchStatus[3];
-        Flag_IODgssCtrl = 0;
-    }
-}
-
 // 发送控制命令
 void
 CAN_App_SendControlToDevice(TeCanPort Port, uint16_t DstAddr)
@@ -383,6 +358,16 @@ bool
 CAN_App_SendParam(TeCanPort Port, uint16_t DstAddr, ParamDevice_t Device, uint16_t *Data, uint16_t TotalLength)
 {
 	return true;
+}
+
+void
+CAN_App_RecordPanelSwitchStatus(void)
+{
+    if (Flag_IODgssCtrl == 1)
+    {
+        s_switchStatus[3] = ! s_switchStatus[3];
+        Flag_IODgssCtrl = 0;
+    }
 }
 
 /**
@@ -609,6 +594,18 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                 }
             }
             break;
+        case DO_ID_SHORT_SET:
+            {
+                if (State == SWITCH_ON)
+                {
+                    s_switchStatus[3] = 1;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                    s_switchStatus[3] = 0;
+                }
+            }
+            break;
         default:break;
     }
     return RESULT_SUCCESS;
@@ -630,8 +627,11 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             }
         case DI_ID_RESET:
             {
+                uint16_t state = Flag_IORstRef; 
+                Flag_IORstRef = 0;
                 /*return IO_RstRef_Feed;*/
-                return s_switchStatus[0];
+                /*return s_switchStatus[0];*/
+                return state;
             }
         case DI_ID_A3QF1:
             {
@@ -671,13 +671,19 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             }
         case DI_ID_SINGLE:
             {
+                uint16_t state = Flag_IOSingCtrl; 
+                Flag_IOSingCtrl = 0;
                 /*return IO_SingCtrl_Feed;*/
-                return s_switchStatus[1];
+                /*return s_switchStatus[1];*/
+                return state;
             }
         case DI_ID_BUS1:
             {
+                uint16_t state = Flag_IOParaCtrl; 
+                Flag_IOParaCtrl = 0;
                 /*return IO_ParaCtrl_Feed;*/
-                return s_switchStatus[2];
+                /*return s_switchStatus[2];*/
+                return state;
             }
         case DI_ID_Short:
             {

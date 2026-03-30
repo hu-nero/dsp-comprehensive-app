@@ -106,6 +106,7 @@ typedef struct
     bool fault_status;                     // 故障状态
     bool panel_remote_degauss_flag;        // 面板或者远端消磁标志
     SwitchStateList_t switch_list;         // 所有开关
+    SwitchStateList_t switch_last;         // 所有开关
     PowerStatus_t power_status;			   // 电源柜状态
     DemagnetizeState_t demagnetize_state;  // 消磁状态
     uint16_t demagnetize_counter;          // 消磁计数器（ms）
@@ -153,5 +154,6 @@ extern ExecuteResult_t Cabinet_SetSwitches(CabinetContext_t* Context,
                                     bool emergency);
 extern CabinetState_t Cabinet_GetState(const CabinetContext_t* Context);
 extern ExecuteResult_t Cabinet_RecoverFromEmergency(CabinetContext_t* Context);
+extern uint16_t Cabinet_GetComPowerToSectionParamStatus1(void);
 
 #endif /* SERVICES_LOGIC_SECTION_CABINET_H_ */
