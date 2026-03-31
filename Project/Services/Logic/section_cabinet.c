@@ -428,7 +428,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             }
             else if ((RemHoldSum.CtrlWord.bit.SlCtrl == 1) | (RemHoldSum.CtrlWord.bit.ParCtrl == 1))
             {
-                target_state = CABINET_STATE_PARALLEL;
+                target_state = CABINET_STATE_BACKUP;
             }
             else
             {
@@ -1416,6 +1416,8 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         if ((Context->emergency_stop_status == true) | (NPR_FaultCode != 0))
         {
             Cabinet_ResetFromEmergency(Context);
+            Cabinet_SetCabinetState(Context);
+            Context->switch_control(DO_ID_RESET,SWITCH_ON);
             Context->emergency_stop_status = false;
             Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
             Context->fault_status = false;

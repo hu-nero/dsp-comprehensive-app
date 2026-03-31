@@ -6,6 +6,7 @@
 #include "Arithmetic\Arithmetic.H"
 #include "Arithmetic\NprCtrl.h"
 #include "IQmathLib.h"
+#include "string.h"
 
 ////////////////////////////////////////////////////////////////////
 RemoteInput_t RemInputSum, DcsInputSum;
@@ -628,6 +629,10 @@ void variable_init(void)
 	NPR_HWFMWord7.DataInt=0;
 
 	Cap_Ctrl_Word.DataInt=0;
+	memset(&RemInputSum, 0, sizeof(RemoteInput_t));
+	memset(&DcsInputSum, 0, sizeof(RemoteInput_t));
+	RemHoldSum.CtrlWord.all = 0;
+	DcsHoldSum.CtrlWord.all = 0;
 }
 /*******************************************************************************************/
 void variable_algorithm_init(void)

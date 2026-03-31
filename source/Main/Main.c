@@ -117,9 +117,6 @@ void main(void)
 	Dis_PWM();
 	ParaDownloadCtrlWord=1;
 
-    IO_Scan();
-	for(i=0;i<2000;i++)
-		for(j=0;j<2000;j++);
 	CAN_App_Test();
 	for(; ;)
 	{
