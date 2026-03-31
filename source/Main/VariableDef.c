@@ -107,6 +107,7 @@ float AlmThr_OverCurr_Work2;
 float FltThr_OverCurr_Work2;
 float FltThr_OverLow_Flow1;
 float FltThr_OverLow_Flow2;
+float Auto_Restarttime_Flow;
 union DataBit_Type Cap_Ctrl_Word;
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////

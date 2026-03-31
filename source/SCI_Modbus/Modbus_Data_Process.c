@@ -37,6 +37,7 @@ void Modbus_Send_To_HMI(void)
 	memcpy(&InputRegBuf[26], &SwitchWord2.DataInt, 2);
 	memcpy(&InputRegBuf[27], &SwitchWord3.DataInt, 2);
 	InputRegBuf[28]   = FlowRate*10;
+
 	if(ParaDownloadCtrlWord == 0)
 	{
 		HoldRegBuf[0] = AlmCntThr_UnderVolt_Phase;
@@ -71,8 +72,9 @@ void Modbus_Send_To_HMI(void)
 		HoldRegBuf[29] = FltThr_OverLow_Flow1;
 		HoldRegBuf[30] = AlmCntThr_OverLow_Flow2;
 		HoldRegBuf[31] = FltThr_OverLow_Flow2;
-//		HoldRegBuf[32] = Cap_Ctrl_Word.DataInt;
-
+		HoldRegBuf[32] = Auto_Restarttime_Flow;
+		HoldRegBuf[33] = Cap_Ctrl_Word.DataInt;
+//		HoldRegBuf[33] = ParaSaveFlag;
 	}
 }
 
@@ -112,19 +114,17 @@ void Modbus_Recv_For_HMI(void)
 		FltThr_OverLow_Flow1 = HoldRegBuf[29];
 		AlmCntThr_OverLow_Flow2 = HoldRegBuf[30];
 		FltThr_OverLow_Flow2 = HoldRegBuf[31];
-		Cap_Ctrl_Word.DataInt = HoldRegBuf[32];
+		Auto_Restarttime_Flow = HoldRegBuf[32];
+		Cap_Ctrl_Word.DataInt = HoldRegBuf[33];
 
+
+		ParaSaveFlag = Cap_Ctrl_Word.DataBit.Bit4;
 		if(ParaSaveFlag != ParaSaveFlagOld)
 		{
 			ParaSaveFlagOld = ParaSaveFlag;
 			ParaDownloadCtrlWord = 2;
+			GroupCtrl[5] |= 0x0100;
 			GroupCtrl[6] |= 0x0100;
-			GroupCtrl[7] |= 0x0100;
-			GroupCtrl[8] |= 0x0100;
-			GroupCtrl[9] |= 0x0100;
-			GroupCtrl[10] |= 0x0100;
-			GroupCtrl[11] |= 0x0100;
-			GroupCtrl[15] |= 0x0100;
 		}
 	}
 }

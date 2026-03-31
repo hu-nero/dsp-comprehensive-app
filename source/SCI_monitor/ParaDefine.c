@@ -62,7 +62,7 @@ const struct RTMType sParaData_Group5[]=
 };
 const struct RTMType sParaData_Group6[]=
 {
-/* Line - 16 */32,0x0004,(void*)&GroupCtrl[6],
+/* Line - 16 */34,0x0004,(void*)&GroupCtrl[6],
 /* Line -  1 */  1,0x4043,(void*)&AlmCntThr_UnderVolt_Phase,
 /* Line -  2 */  2,0x40A3,(void*)&AlmThr_UnderVolt_Phase,
 /* Line -  3 */  3,0x4043,(void*)&AlmCntThr_OverVolt_Work1,
@@ -95,7 +95,9 @@ const struct RTMType sParaData_Group6[]=
 /* Line -  30 */ 30,0x40A3,(void*)&FltThr_OverLow_Flow1,
 /* Line - 31 */ 31,0x4043,(void*)&AlmCntThr_OverLow_Flow2,
 /* Line - 32 */ 32,0x40A3,(void*)&FltThr_OverLow_Flow2,
-/* Line - 33 */ 33,0x40A3,(void*)&Cap_Ctrl_Word,
+/* Line - 32 */ 33,0x40A3,(void*)&Auto_Restarttime_Flow,
+/* Line - 33 */ 34,0x40A3,(void*)&Cap_Ctrl_Word,
+
 };
 const struct RTMType sParaData_Group7[]=
 {
@@ -257,7 +259,7 @@ const struct RTMType sParaData_Group23[]=
 };
 const struct  RTMType sParaData_Group24[]=
 {
-/* Total-  28 */  8,0x0000,(void*)&GroupCtrl[24],
+/* Total-  28 */  8,0x0004,(void*)&GroupCtrl[24],
 /* Line -   1 */  1,0x4043,(void*)&IOOut2CtrlWord.DataInt,
 /* Line -   1 */  2,0x4040,(void*)&IOOutput2.DataInt,
 /* Line -   1 */  3,0x4040,(void*)&IOOutFpga2.DataInt,

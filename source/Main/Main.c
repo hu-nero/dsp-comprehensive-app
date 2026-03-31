@@ -79,7 +79,7 @@ void main(void)
 	InitFlash();
 	GPIO_init();
 
-	for(i=0;i<10000;i++)
+	for(i=0;i<1000;i++)
 		for(j=0;j<10000;j++);
 
 	InitXintf();
@@ -745,6 +745,10 @@ void npr_1ms_protection(void)
 			AlmCnt_OverLow_Flow2 --;
 		}
 	}
+
+	// TODO:水流量保护、恢复供水自动重启时间
+	// Auto_Restarttime_Flow
+
 	//////////////////////////////////////////////////////////
 	if(MainStusWord.DataBit.PwrGrid)
 	{

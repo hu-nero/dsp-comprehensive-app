@@ -411,6 +411,35 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             // 清空旋钮状态
             (void)Context->switch_feed(DI_ID_SINGLE);
             (void)Context->switch_feed(DI_ID_BUS1);
+            // 读取旋钮状态
+            single_switch = (SwitchState_t)RemHoldSum.CtrlWord.bit.SlCtrl;
+            parallel_switch = (SwitchState_t)RemHoldSum.CtrlWord.bit.ParCtrl;
+            // 根据开关状态确定目标状态
+            if ((single_switch == SWITCH_OFF) && (parallel_switch == SWITCH_OFF))
+            {
+                target_state = CABINET_STATE_STANDBY;
+            }
+            else if ((single_switch == SWITCH_ON) && (parallel_switch == SWITCH_OFF))
+            {
+                target_state = CABINET_STATE_SINGLE;
+            }
+            else if ((single_switch == SWITCH_OFF) && (parallel_switch == SWITCH_ON))
+            {
+                target_state = CABINET_STATE_PARALLEL;
+            }
+            else
+            {
+                target_state = CABINET_STATE_BACKUP;
+            }
+            // 状态没有变化
+            if (target_state == Context->state)
+            {
+                Context->target_state = CABINET_STATE_INVALID;
+                return;
+            }
+
+            // 保存目标状态
+            Context->target_state = target_state;
 #if 0
             // TODO:接收DCS/监控的单机启动标志
             // 根据远端状态确定目标状态
