@@ -702,6 +702,30 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             {
                 return IO_CompCar_Feed;
             }
+        case DI_ID_REM_SINGLE_START:
+            {
+                return IORem_SingCtrl_Feed;
+            }
+        case DI_ID_REM_SINGLE_END:
+            {
+                return IORem_ParaCtrl_Feed;
+            }
+        case DI_ID_REM_PARALLEL_START:
+            {
+                return IORem_ParaBusOn_Feed;
+            }
+        case DI_ID_REM_PARALLEL_END:
+            {
+                return IORem_ParaBusOff_Feed;
+            }
+        case DI_ID_REM_SHORT_START:
+            {
+                return IORem_DegaussOn_Feed;
+            }
+        case DI_ID_REM_SHORT_END:
+            {
+                return IORem_DegaussOff_Feed;
+            }
         case DI_ID_A3QR1:
             {
                 return IO_SingQR1_Feed;

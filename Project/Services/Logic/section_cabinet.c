@@ -7,6 +7,7 @@
 
 #include "section_cabinet.h"
 #include "Services/Adapter/can_adapter.h"
+#include "Services/Adapter/485_adapter.h"
 #include "SDK/Hal/Timer/hal_timer.h"
 #include <string.h>
 #include "main\Variable.h"
@@ -152,6 +153,7 @@ Cabinet_Process(CabinetContext_t* Context)
     Cabinet_UpdateCommSectionToSyncStatus(Context);
     Cabinet_UpdateCommSectionToPowerStatus(Context);
     Cabinet_UpdateCommSectionToHMIStatus(Context);
+    UART485_Adapter_MainLoop();
     // 急停下只允许面板消磁
     if (Context->emergency_stop_status == true)
     {
@@ -408,29 +410,67 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
         // 自动模式
         else
         {
+        	uint16_t tmp_single_switch,tmp_parallel_switch;
             // 清空旋钮状态
             (void)Context->switch_feed(DI_ID_SINGLE);
             (void)Context->switch_feed(DI_ID_BUS1);
-            // 读取旋钮状态
-            single_switch = (SwitchState_t)RemHoldSum.CtrlWord.bit.SlCtrl;
-            parallel_switch = (SwitchState_t)RemHoldSum.CtrlWord.bit.ParCtrl;
+
+            // 如果没有发生状态转换
+            if (!((Context->state != Context->target_state)  &&
+                 (Context->target_state != CABINET_STATE_INVALID)))
+            {
+                // 读取旋钮状态
+                tmp_single_switch = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SINGLE);
+                tmp_parallel_switch = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_PARALLEL);
+
+                if ((tmp_single_switch == 0) && (tmp_parallel_switch == 0))
+                {
+                    return;
+                }
+
+                if (tmp_single_switch == 1)
+                {
+                    Context->switch_last.single_switch = SWITCH_ON;
+                }
+                else if (tmp_single_switch == 2)
+                {
+                    Context->switch_last.single_switch = SWITCH_OFF;
+                }
+                else
+                {
+                    Context->switch_last.single_switch = Context->switch_list.single_switch;
+                }
+
+                if (tmp_parallel_switch == 1)
+                {
+                    Context->switch_last.bus1_switch = SWITCH_ON;
+                }
+                else if (tmp_parallel_switch == 2)
+                {
+                    Context->switch_last.bus1_switch = SWITCH_OFF;
+                }
+                else
+                {
+                    Context->switch_last.bus1_switch = Context->switch_list.bus1_switch;
+                }
+            }
             // 根据开关状态确定目标状态
-            if ((single_switch == SWITCH_OFF) && (parallel_switch == SWITCH_OFF))
-            {
-                target_state = CABINET_STATE_STANDBY;
-            }
-            else if ((single_switch == SWITCH_ON) && (parallel_switch == SWITCH_OFF))
-            {
-                target_state = CABINET_STATE_SINGLE;
-            }
-            else if ((single_switch == SWITCH_OFF) && (parallel_switch == SWITCH_ON))
-            {
-                target_state = CABINET_STATE_PARALLEL;
-            }
-            else
-            {
-                target_state = CABINET_STATE_BACKUP;
-            }
+			if ((Context->switch_last.single_switch == SWITCH_OFF) && (Context->switch_last.bus1_switch == SWITCH_OFF))
+			{
+				target_state = CABINET_STATE_STANDBY;
+			}
+			else if ((Context->switch_last.single_switch == SWITCH_ON) && (Context->switch_last.bus1_switch == SWITCH_OFF))
+			{
+				target_state = CABINET_STATE_SINGLE;
+			}
+			else if ((Context->switch_last.single_switch == SWITCH_OFF) && (Context->switch_last.bus1_switch == SWITCH_ON))
+			{
+				target_state = CABINET_STATE_PARALLEL;
+			}
+			else
+			{
+				target_state = CABINET_STATE_BACKUP;
+			}
             // 状态没有变化
             if (target_state == Context->state)
             {
@@ -440,42 +480,14 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
 
             // 保存目标状态
             Context->target_state = target_state;
-#if 0
-            // TODO:接收DCS/监控的单机启动标志
-            // 根据远端状态确定目标状态
-            if (((RemHoldSum.CtrlWord.bit.SlCtrl == 0) | (RemHoldSum.CtrlWord.bit.SlCtrl == 2)) && ((RemHoldSum.CtrlWord.bit.ParCtrl == 0) | (RemHoldSum.CtrlWord.bit.ParCtrl == 2)))
-            {
-                target_state = CABINET_STATE_STANDBY;
-            }
-            else if ((RemHoldSum.CtrlWord.bit.SlCtrl == 1) && ((RemHoldSum.CtrlWord.bit.ParCtrl == 0) | (RemHoldSum.CtrlWord.bit.ParCtrl == 2)))
-            {
-                target_state = CABINET_STATE_SINGLE;
-            }
-            else if (((RemHoldSum.CtrlWord.bit.SlCtrl == 0) | (RemHoldSum.CtrlWord.bit.SlCtrl == 2)) && ((RemHoldSum.CtrlWord.bit.ParCtrl == 1)))
-            {
-                target_state = CABINET_STATE_PARALLEL;
-            }
-            else if ((RemHoldSum.CtrlWord.bit.SlCtrl == 1) | (RemHoldSum.CtrlWord.bit.ParCtrl == 1))
-            {
-                target_state = CABINET_STATE_BACKUP;
-            }
-            else
-            {
-                target_state = CABINET_STATE_INVALID;
-            }
-
-            // 状态没有变化
-            if (target_state == Context->state)
-            {
-                Context->target_state = CABINET_STATE_INVALID;
-                return;
-            }
-
-            // 保存目标状态
-            Context->target_state = target_state;
-#endif
+            Context->switch_last.single_switch = SWITCH_OFF;
+            Context->switch_last.bus1_switch = SWITCH_OFF;
         }
     }
+    else if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_TIMEOUT)
+	{
+    	Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
+	}
 
     // 状态转换处理
     switch (Context->state)

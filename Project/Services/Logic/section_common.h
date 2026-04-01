@@ -97,6 +97,12 @@ typedef enum
     DI_ID_Short,               // 短接按钮(点动)
     DI_ID_IMPACT_VEHICLE,      // 冲击车
     DI_ID_COMPENSATION_VEHICLE,// 补偿车
+    DI_ID_REM_SINGLE_START,    // 远控单机启动
+    DI_ID_REM_SINGLE_END,      // 远控单机停止
+    DI_ID_REM_PARALLEL_START,  // 远控并机启动
+    DI_ID_REM_PARALLEL_END,    // 远控并机停止
+    DI_ID_REM_SHORT_START,     // 远控消磁启动
+    DI_ID_REM_SHORT_END,       // 远控消磁停止
     DI_ID_A3QR1,               // 单机QR1
     DI_ID_A3QR2                // 并机QR2
 } DigitalInputType_t;

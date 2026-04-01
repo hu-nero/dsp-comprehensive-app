@@ -1,6 +1,7 @@
 #include "Custom_DCS.h"
 #include "Main\Variable.H"
 #include "SCI_DCS\Sci_DCS_config.H"
+#include "SCI_ModbusM\Custom_Remote.h"
 
 /***************************************************************************************************/
 void Modbus_Send_To_Dcs(void)
@@ -10,7 +11,7 @@ void Modbus_Send_To_Dcs(void)
 
 void Modbus_Recv_For_Dcs(void)
 {
-//	memcpy(&RemHoldSum, RemHoldRegBuf, sizeof(RemHoldSum));
+	memcpy(&RemHoldSum, RemHoldRegBuf, sizeof(RemHoldSum));
 //
 //	if(RemHoldSum.CtrlWord.bit.Cmd)
 //	{

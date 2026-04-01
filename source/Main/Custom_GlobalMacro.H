@@ -10,12 +10,15 @@ union Remote_Ctrl_Word_Type
 	unsigned int all;
 	struct
 	{
-		unsigned SlCtrl:		2;		// 0:NoAct 1:start 2:stop 3:reset
-		unsigned ParCtrl:		2;		// 0:NoAct 1:Begin 2:Exit 3:Invalid
-		unsigned SingPara:		2;		// 0:NoAct 1:SingToPara 2:ParaToSing 3:Invalid
-		unsigned ComCut:		2;		// 0:NoAct 1:Comm 2:Cut 3:Invalid
-		unsigned Reset:			1;		// 0:NoAct 1:Comm 2:Cut 3:Invalid
-		unsigned Rsvd:			7;		//
+		unsigned rem_single_start:		1;		// 0:NoAct 1:enable
+		unsigned rem_single_stop:		1;		// 0:NoAct 1:enable
+		unsigned rem_parallel_start:	1;		// 0:NoAct 1:enable
+		unsigned rem_parallel_stop:		1;		// 0:NoAct 1:enable
+		unsigned rem_short_start:		1;		// 0:NoAct 1:enable
+		unsigned rem_short_stop:		1;		// 0:NoAct 1:enable
+		unsigned ComCut:		        2;		// 0:NoAct 1:Comm 2:Cut 3:Invalid
+		unsigned Reset:			        1;		// 0:NoAct 1:enable
+		unsigned Rsvd:			        7;		//
 	}	bit;
 };
 /***********************************************************/
