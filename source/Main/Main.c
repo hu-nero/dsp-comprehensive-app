@@ -35,7 +35,7 @@
 #include "Hal.h"
 #include "App.h"
 
-/*#define DEBUG*/
+//#define DEBUG
 #define Release
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
@@ -150,7 +150,7 @@ void main(void)
 				{
 					FunFaultReact();
 					ParaDownloadFaultNum = EEPROMAceNum - 1;
-//					NPR_FaultCode = 40;
+                    NPR_FaultCode = 40;
 				}
 			}
 			FaultWord_Map(40);
@@ -499,6 +499,7 @@ void npr_1ms_protection(void)
 	}
 	/////////////////////////////////////////////
 
+    // 工况1
     if ((status1>>4) == 0)
     {
         if(vLine_max > AlmThr_OverVolt_Work1)
@@ -564,6 +565,7 @@ void npr_1ms_protection(void)
             AlmCnt_OverCurr_Work1 = 0;
         }
     }
+    // 工况2
     else
     {
         /////////////////////////////////////////////

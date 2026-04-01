@@ -101,7 +101,7 @@ const struct RTMType sParaData_Group6[]=
 };
 const struct RTMType sParaData_Group7[]=
 {
-/* Line -  31 */ 0,0x0004,(void*)&GroupCtrl[7],
+/* Line -  31 */ 0,0x0000,(void*)&GroupCtrl[7],
 };
 const struct RTMType sParaData_Group8[]=
 {
@@ -109,7 +109,7 @@ const struct RTMType sParaData_Group8[]=
 };
 const struct RTMType sParaData_Group9[]=
 {
-/* Line - 31 */ 0,0x0004,(void*)&GroupCtrl[9],
+/* Line - 31 */ 0,0x0000,(void*)&GroupCtrl[9],
 };
 const struct RTMType sParaData_Group10[]=
 {
@@ -183,7 +183,7 @@ const struct RTMType sParaData_Group14[]=
 };
 const struct RTMType sParaData_Group15[]=
 {
-/* Line -   6 */  3,0x0004,(void*)&GroupCtrl[15],
+/* Line -   6 */  0,0x0000,(void*)&GroupCtrl[15],
 };
 
 const struct RTMType sParaData_Group16[]=
