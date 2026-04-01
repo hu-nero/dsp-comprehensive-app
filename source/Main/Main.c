@@ -479,7 +479,12 @@ void FunStatusUpdate(void)
 /******************************************************************/
 void npr_1ms_protection(void)
 {
-    uint16_t status1 = Cabinet_GetComPowerToSectionParamStatus1();
+	bool online_status;
+	uint16_t status1;
+
+	online_status = Cabinet_GetPowerOnlineStatus();
+	status1 = Cabinet_GetComPowerToSectionParamStatus1();
+
 	//
 	if(vphase_min < AlmThr_UnderVolt_Phase)
 	{
@@ -500,7 +505,7 @@ void npr_1ms_protection(void)
 	/////////////////////////////////////////////
 
     // 工况1
-    if ((status1>>4) == 0)
+    if ((online_status == true) && ((status1>>4) == 0))
     {
         if(vLine_max > AlmThr_OverVolt_Work1)
         {
@@ -566,7 +571,7 @@ void npr_1ms_protection(void)
         }
     }
     // 工况2
-    else
+    else if ((online_status == true) && ((status1>>4) == 1))
     {
         /////////////////////////////////////////////
         if(vLine_max > AlmThr_OverVolt_Work2)

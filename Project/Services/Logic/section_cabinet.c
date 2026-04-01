@@ -64,6 +64,13 @@ static bool Cabinet_CheckSwitchMatch(CabinetContext_t* Context);
 static bool Cabinet_CheckParallelSwitchState(CabinetContext_t* Context);
 static void Cabinet_SendParallelRequest(CabinetContext_t* Context);
 
+bool
+Cabinet_GetPowerOnlineStatus(void)
+{
+	AdapterStatus_t status = CAN_Adapter_GetAdapterStatus();
+	return status.power_online_status;
+}
+
 uint16_t
 Cabinet_GetComPowerToSectionParamStatus1(void)
 {

@@ -154,6 +154,7 @@ extern ExecuteResult_t Cabinet_SetSwitches(CabinetContext_t* Context,
                                     bool emergency);
 extern CabinetState_t Cabinet_GetState(const CabinetContext_t* Context);
 extern ExecuteResult_t Cabinet_RecoverFromEmergency(CabinetContext_t* Context);
+extern bool Cabinet_GetPowerOnlineStatus(void);
 extern uint16_t Cabinet_GetComPowerToSectionParamStatus1(void);
 
 #endif /* SERVICES_LOGIC_SECTION_CABINET_H_ */
