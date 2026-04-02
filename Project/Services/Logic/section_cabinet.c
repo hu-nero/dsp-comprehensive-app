@@ -58,10 +58,6 @@ static bool Cabinet_IsSatisfyPowerParallel(CabinetContext_t* Context);
 static void Cabinet_ProcessFaultReset(CabinetContext_t* Context);
 static void Cabinet_ProcessAutoParallel(CabinetContext_t* Context);
 static uint32_t GetFaultTimerDuration(uint8_t fault_code);
-static bool Cabinet_IsDecoupleSignalReceived(CabinetContext_t* Context);
-static bool Cabinet_IsPowerStarted(CabinetContext_t* Context);
-static bool Cabinet_CheckSwitchMatch(CabinetContext_t* Context);
-static bool Cabinet_CheckParallelSwitchState(CabinetContext_t* Context);
 static void Cabinet_SendParallelRequest(CabinetContext_t* Context);
 
 bool
@@ -178,7 +174,7 @@ Cabinet_Process(CabinetContext_t* Context)
         // 自复位
         if (Context->switch_list.manual_switch == SWITCH_ON)
         {
-            /*Cabinet_ProcessFaultReset(Context);*/
+            Cabinet_ProcessFaultReset(Context);
             /*Cabinet_ProcessAutoParallel(Context);*/
         }
         // (手动/远控模式) 状态转换流程
@@ -2465,42 +2461,6 @@ GetFaultTimerDuration(uint8_t fault_code)
     }
 }
 
-// 检测是否收到同步柜解列信号
-static bool
-Cabinet_IsDecoupleSignalReceived(CabinetContext_t* Context)
-{
-    // TODO: 从CAN接收缓冲区读取同步柜解列标志
-    // 修改can_adapter.c
-    (void)Context;
-    return false;
-}
-
-// 检测功率柜是否已启动（单机运行）
-static bool
-Cabinet_IsPowerStarted(CabinetContext_t* Context)
-{
-    PowerStatus_t power = CAN_Adapter_GetPowerStatus();
-    return (power.run_state == POWER_SINGLE_RUNNING);
-}
-
-// 检查区段柜内开关状态是否匹配单机模式
-static bool
-Cabinet_CheckSwitchMatch(CabinetContext_t* Context)
-{
-    // TODO:待修改
-    return (Context->switch_list.A3QS1_switch == SWITCH_ON &&
-            Context->switch_list.A3K17_switch == SWITCH_OFF);
-}
-
-// 检查并机前开关状态是否匹配
-static bool
-Cabinet_CheckParallelSwitchState(CabinetContext_t* Context)
-{
-    // TODO:待修改
-    return (Context->switch_list.A3QF1_switch == SWITCH_OFF &&
-            Context->switch_list.A3QF2_switch == SWITCH_OFF);
-}
-
 // 发送并网请求（需实现CAN发送）
 static void
 Cabinet_SendParallelRequest(CabinetContext_t* Context)
@@ -2715,14 +2675,15 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 else
                 {
                     // TODO: 同步柜全部解列信号
-                    /*if (true)*/
-                    /*{*/
-                        /*Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_PARALLEL_CIRCUIT;*/
-                    /*}*/
-                    /*else*/
-                    /*{*/
-                        /*return;*/
-                    /*}*/
+                    CommSyncToSection_t status = CAN_Adapter_GetSyncToSectionStatus();
+                    if (status.sync_status.bit.off_grid_all == 1)
+                    {
+                        Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_PARALLEL_CIRCUIT;
+                    }
+                    else
+                    {
+                        return;
+                    }
                 }
             }
             break;
@@ -2740,14 +2701,15 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
 
                 {
                     // TODO: 同步柜全部解列信号
-                    /*if (true)*/
-                    /*{*/
-                        /*Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_PARALLEL_CIRCUIT;*/
-                    /*}*/
-                    /*else*/
-                    /*{*/
-                        /*return;*/
-                    /*}*/
+                    CommSyncToSection_t status = CAN_Adapter_GetSyncToSectionStatus();
+                    if (status.sync_status.bit.off_grid_all == 1)
+                    {
+                        Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_PARALLEL_CIRCUIT;
+                    }
+                    else
+                    {
+                        return;
+                    }
                 }
                 else
                 {
@@ -2761,6 +2723,12 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 res = Cabinet_DisconnectSingleCircuit(Context);
                 if (res == RESULT_SUCCESS)
                 {
+                    // 设置旋钮状态
+                    Context->switch_list.single_switch = SWITCH_OFF;
+                    Context->switch_list.bus1_switch = SWITCH_OFF;
+                    // 设置区段柜状态
+                    Context->state = CABINET_STATE_STANDBY;
+                    // 故障恢复流程
                     Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_CIRCUIT_DEGAUSS;
                 }
                 else if (res == RESULT_FAILED)
@@ -2774,6 +2742,12 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 res = Cabinet_DisconnectParallelCircuit(Context);
                 if (res == RESULT_SUCCESS)
                 {
+                    // 设置旋钮状态
+                    Context->switch_list.single_switch = SWITCH_OFF;
+                    Context->switch_list.bus1_switch = SWITCH_OFF;
+                    // 设置区段柜状态
+                    Context->state = CABINET_STATE_STANDBY;
+                    // 故障恢复流程
                 	Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_CIRCUIT_DEGAUSS;
                 }
                 else if (res == RESULT_FAILED)
@@ -2860,8 +2834,13 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
             break;
         case AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS:
             {
+                CommSyncToSection_t status = CAN_Adapter_GetSyncToSectionStatus();
                 uint32_t now = hal_timer_get_timestamp();
-                if (now-Context->fault_timer_start < Context->fault_timer_duration)
+
+                if ((now-Context->fault_timer_start < Context->fault_timer_duration) ||
+                    (Context->power_status.run_state != POWER_FAULT) &&
+                    (Context->state == CABINET_STATE_PARALLEL) &&
+                    (status.sync_status.bit.off_grid_all == 1))
                 {
                     Context->power_status = CAN_Adapter_GetPowerStatus();
 					if (Context->power_status.run_state == POWER_SINGLE_RUNNING)
@@ -2878,14 +2857,15 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
         case AUTO_RECOVERY_REQUEST_PARALLEL:
             {
                 static uint16_t count = 0;
-                GridConnectionStatus_t grid_state;
+                CommSyncToSection_t grid_state;
                 Cabinet_SendParallelRequest(Context);
-                grid_state = CAN_Adapter_GetGridConnectionStatus();
-                if ((grid_state.state != GRID_CONNECTED) && (count < 50))
+                grid_state = CAN_Adapter_GetSyncToSectionStatus();
+
+                if (((grid_state.sync_status.bit.section_grid_feedback>>CABINET_DEVICE_ADDR) == 0) && (count < 50))
                 {
                     count ++;
                 }
-                else if (grid_state.state == GRID_CONNECTED)
+                else if ((grid_state.sync_status.bit.section_grid_feedback>>CABINET_DEVICE_ADDR) == 1)
                 {
                     count = 0;
                 	Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_PARALLEL_CIRCUIT_DEGAUSS;
@@ -2985,6 +2965,12 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 res = Cabinet_ConnectSingleCircuit(Context);
                 if (res == RESULT_SUCCESS)
                 {
+                    // 设置旋钮状态
+                    Context->switch_list.single_switch = SWITCH_ON;
+                    Context->switch_list.bus1_switch = SWITCH_OFF;
+                    // 设置区段柜状态
+                    Context->state = CABINET_STATE_SINGLE;
+                    // 故障恢复流程
                     Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
                 }
                 else if (res == RESULT_FAILED)
@@ -2998,6 +2984,12 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 res = Cabinet_ConnectParallelCircuit(Context);
                 if (res == RESULT_SUCCESS)
                 {
+                    // 设置旋钮状态
+                    Context->switch_list.single_switch = SWITCH_OFF;
+                    Context->switch_list.bus1_switch = SWITCH_ON;
+                    // 设置区段柜状态
+                    Context->state = CABINET_STATE_PARALLEL;
+                    // 故障恢复流程
                     Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
                 }
                 else if (res == RESULT_FAILED)

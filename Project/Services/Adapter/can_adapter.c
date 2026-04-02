@@ -166,8 +166,8 @@ CAN_Adapter_Init(void)
 bool
 CAN_Adapter_SendParallelRequest(void)
 {
-    uint16_t data[8] = {};
-    return CAN_Agent_SendStatus(eCanPort_1, SYNC_CABINET_DEVICE_ADDR, data);
+    gCommSectionToSyncStatus.section_status.bit.grid_connection_request = 1;
+    return true;
 }
 
 // 发送启动电源命令
