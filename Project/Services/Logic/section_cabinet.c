@@ -356,9 +356,21 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
         if (Context->switch_list.manual_switch == SWITCH_OFF)
         {
         	uint16_t tmp_state = 0;
+
             // 读取旋钮状态
             single_switch = (SwitchState_t)Context->switch_feed(DI_ID_SINGLE);
             parallel_switch = (SwitchState_t)Context->switch_feed(DI_ID_BUS1);
+
+            if ((Context->state == CABINET_STATE_SINGLE) || (Context->state == CABINET_STATE_BACKUP))
+            {
+                // 读取电源柜状态
+                Context->power_status = CAN_Adapter_GetPowerStatus();
+                if ((Context->power_status.run_state == POWER_STANDBY) ||
+                        (Context->power_status.run_state == POWER_FAULT))
+                {
+                    single_switch = SWITCH_ON;
+                }
+            }
             // 如果没有发生状态转换
             if (!((Context->state != Context->target_state)  &&
                  (Context->target_state != CABINET_STATE_INVALID)))
@@ -1381,6 +1393,12 @@ static void
 Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context)
 {
     AdapterStatus_t adapter_status;
+    CommSectionToSync_t section_to_sync_status;
+
+    section_to_sync_status = CAN_Adapter_GetCommSectionToSync();
+    section_to_sync_status.section_status.bit.fault_signal = Context->fault_status;
+    CAN_Adapter_SetCommSectionToSync(section_to_sync_status);
+
     SwitchWord1.DataBit.DO_REMOTE_SINGLE_CTRL_FEED = IOOutput1.DataBit.Bit0;
     SwitchWord1.DataBit.DO_A3QF1 =  IOOutput1.DataBit.Bit2;
     SwitchWord1.DataBit.DO_REMOTE_PARALEL_CTRL_FEED = IOOutput1.DataBit.Bit4;

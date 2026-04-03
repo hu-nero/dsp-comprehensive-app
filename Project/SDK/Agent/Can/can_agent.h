@@ -12,7 +12,8 @@
 #include "SDK/Hal/Can/hal_can.h"
 
 // 本设备地址定义 (4bit)
-#define DEV_ADDRESS_SELF      0x02    // 本设备地址
+#define DEV_ADDRESS_CANA_SELF 0x03    // 本设备CANA地址
+#define DEV_ADDRESS_CANB_SELF 0x02    // 本设备CANB地址
 #define DEV_ADDRESS_BROADCAST 0x0F    // 广播地址
 // 超时时间（单位 ms）
 #define CMD_TIMEOUT_MS    	  500  // 等待响应超时时间

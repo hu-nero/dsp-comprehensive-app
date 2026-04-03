@@ -8,7 +8,7 @@
 #include "string.h"
 #include "SDK/Hal/Timer/hal_timer.h"
 
-static uint16_t g_device_addr[eCanPort_Count] = {DEV_ADDRESS_SELF, DEV_ADDRESS_SELF};
+static uint16_t g_device_addr[eCanPort_Count] = {DEV_ADDRESS_CANA_SELF, DEV_ADDRESS_CANB_SELF};
 static CAN_RxHandler_t g_rx_handler[eCanPort_Count] = {NULL, NULL};
 static CAN_TxHandler_t g_send_status_callback[eCanPort_Count] = {NULL, NULL};
 static CAN_MainLoopHandler_t g_mainloop_callback[eCanPort_Count] = {NULL, NULL};
