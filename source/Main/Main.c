@@ -866,13 +866,13 @@ void GetVIRms(void)
 			UcaOut_sum += UcaOut_HalfMemory[i];
 		}
 
-		UabSl_rms = UabSl_sum*0.05;
-		UbcSl_rms = UbcSl_sum*0.05;
-		UcaSl_rms = UcaSl_sum*0.05;
+		UabSl_rms = UabSl_sum*0.05*1.127;
+		UbcSl_rms = UbcSl_sum*0.05*1.127;
+		UcaSl_rms = UcaSl_sum*0.05*1.127;
 
-		UabPar_rms = UabPar_sum*0.05;
-		UbcPar_rms = UbcPar_sum*0.05;
-		UcaPar_rms = UcaPar_sum*0.05;
+		UabPar_rms = UabPar_sum*0.05*1.127;
+		UbcPar_rms = UbcPar_sum*0.05*1.127;
+		UcaPar_rms = UcaPar_sum*0.05*1.127;
 
 		IaPar_rms = IaPar_sum*0.05;
 		IbPar_rms = IbPar_sum*0.05;
@@ -882,13 +882,13 @@ void GetVIRms(void)
 		IbOvh_rms = IbOvh_sum*0.05;
 		IcOvh_rms = IcOvh_sum*0.05;
 
-		UaOut_rms = UaOut_sum*0.05;
-		UbOut_rms = UbOut_sum*0.05;
-		UcOut_rms = UcOut_sum*0.05;
+		UaOut_rms = UaOut_sum*0.05*1.127;
+		UbOut_rms = UbOut_sum*0.05*1.127;
+		UcOut_rms = UcOut_sum*0.05*1.127;
 
-		UabOut_rms = UabOut_sum*0.05;
-		UbcOut_rms = UbcOut_sum*0.05;
-		UcaOut_rms = UcaOut_sum*0.05;
+		UabOut_rms = UabOut_sum*0.05*1.127;
+		UbcOut_rms = UbcOut_sum*0.05*1.127;
+		UcaOut_rms = UcaOut_sum*0.05*1.127;
 
 		UabSl_sum=0;
 		UbcSl_sum=0;
@@ -920,29 +920,29 @@ void GetVIRms(void)
 
 void RmsFillter(void)
 {
-	UabPar_rmsf = UabPar_rmsf * 0.95 + UabPar_rms * 0.05;
-	UbcPar_rmsf = UbcPar_rmsf * 0.95 + UbcPar_rms * 0.05;
-	UcaPar_rmsf = UcaPar_rmsf * 0.95 + UcaPar_rms * 0.05;
+	UabPar_rmsf = UabPar_rmsf * 0.995 + UabPar_rms * 0.005;
+	UbcPar_rmsf = UbcPar_rmsf * 0.995 + UbcPar_rms * 0.005;
+	UcaPar_rmsf = UcaPar_rmsf * 0.995 + UcaPar_rms * 0.005;
 
-	UabSl_rmsf = UabSl_rmsf * 0.95 + UabSl_rms * 0.05;
-	UbcSl_rmsf = UbcSl_rmsf * 0.95 + UbcSl_rms * 0.05;
-	UcaSl_rmsf = UcaSl_rmsf * 0.95 + UcaSl_rms * 0.05;
+	UabSl_rmsf = UabSl_rmsf * 0.995 + UabSl_rms * 0.005;
+	UbcSl_rmsf = UbcSl_rmsf * 0.995 + UbcSl_rms * 0.005;
+	UcaSl_rmsf = UcaSl_rmsf * 0.995 + UcaSl_rms * 0.005;
 
-	IaOvh_rmsf = IaOvh_rmsf * 0.95 + IaOvh_rms * 0.05;
-	IbOvh_rmsf = IbOvh_rmsf * 0.95 + IbOvh_rms * 0.05;
-	IcOvh_rmsf = IcOvh_rmsf * 0.95 + IcOvh_rms * 0.05;
+	IaOvh_rmsf = IaOvh_rmsf * 0.995 + IaOvh_rms * 0.005;
+	IbOvh_rmsf = IbOvh_rmsf * 0.995 + IbOvh_rms * 0.005;
+	IcOvh_rmsf = IcOvh_rmsf * 0.995 + IcOvh_rms * 0.005;
 
-	IaPar_rmsf = IaPar_rmsf * 0.95 + IaPar_rms * 0.05;
-	IbPar_rmsf = IbPar_rmsf * 0.95 + IbPar_rms * 0.05;
-	IcPar_rmsf = IcPar_rmsf * 0.95 + IcPar_rms * 0.05;
+	IaPar_rmsf = IaPar_rmsf * 0.995 + IaPar_rms * 0.005;
+	IbPar_rmsf = IbPar_rmsf * 0.995 + IbPar_rms * 0.005;
+	IcPar_rmsf = IcPar_rmsf * 0.995 + IcPar_rms * 0.005;
 
-	UaOut_rmsf = UaOut_rmsf * 0.95 + UaOut_rms * 0.05;
-	UbOut_rmsf = UbOut_rmsf * 0.95 + UbOut_rms * 0.05;
-	UcOut_rmsf = UcOut_rmsf * 0.95 + UcOut_rms * 0.05;
+	UaOut_rmsf = UaOut_rmsf * 0.995 + UaOut_rms * 0.005;
+	UbOut_rmsf = UbOut_rmsf * 0.995 + UbOut_rms * 0.005;
+	UcOut_rmsf = UcOut_rmsf * 0.995 + UcOut_rms * 0.005;
 
-	UabOut_rmsf = UabOut_rmsf * 0.95 + UabOut_rms * 0.05;
-	UbcOut_rmsf = UbcOut_rmsf * 0.95 + UbcOut_rms * 0.05;
-	UcaOut_rmsf = UcaOut_rmsf * 0.95 + UcaOut_rms * 0.05;
+	UabOut_rmsf = UabOut_rmsf * 0.995 + UabOut_rms * 0.005;
+	UbcOut_rmsf = UbcOut_rmsf * 0.995 + UbcOut_rms * 0.005;
+	UcaOut_rmsf = UcaOut_rmsf * 0.995 + UcaOut_rms * 0.005;
 }
 
 void CalImbalance(void)
