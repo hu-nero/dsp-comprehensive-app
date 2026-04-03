@@ -2694,7 +2694,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 {
                     // TODO: 同步柜全部解列信号
                     CommSyncToSection_t status = CAN_Adapter_GetSyncToSectionStatus();
-                    if (status.sync_status.bit.off_grid_all == 1)
+                    if ((status.sync_status.bit.off_grid_all == 1) && (Context->state == CABINET_STATE_PARALLEL))
                     {
                         Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_PARALLEL_CIRCUIT;
                     }

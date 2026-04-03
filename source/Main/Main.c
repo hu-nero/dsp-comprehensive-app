@@ -120,7 +120,6 @@ void main(void)
 	CAN_App_Test();
 	for(; ;)
 	{
-        CAN_App_MainLoop();
 		EINT;
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DEBUG
@@ -181,6 +180,7 @@ void main(void)
 		{
 			SysCnt_1msOld = SysCnt_1ms;
 
+            CAN_App_MainLoop();
 			IO_Scan();
 			Source_Select();
 			Inner_ADCScan();
