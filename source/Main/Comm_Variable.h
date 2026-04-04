@@ -2,10 +2,6 @@
 #ifndef _Comm_Variable_H_
 #define _Comm_Variable_H_
 
-///////////////////////
-extern int CANARPDO[4][4];
-extern int CANATPDO[4][4];
-
 
 /**********************************************************************************************/
 ////////////////////////////////////////////////////
@@ -15,8 +11,6 @@ extern int ECANA_NodeID;
 extern int NODE_STATE;
 extern int PDO_SEND_FLAG;
 extern int NMTTimeInterval;
-extern int CANBRPDO[4][4];
-extern int CANBTPDO[4][4];
 
 //////////////////////////////////////////////
 extern int device_name;
@@ -27,63 +21,6 @@ extern int data_100D;
 extern int Guard_time;
 extern int Life_factor;
 
-
-/////////////////////////////////////////////////////////
-                     //CAN
-////////////////////////////////////////////////////////
-extern unsigned int CANSend_1ms,CANSend_1msOld;
-extern unsigned int ECAN_CommFlag;
-//////////////////////////////////////////////////////
-                     //CANA
-//////////////////////////////////////////////////////
-extern unsigned int CANAMB0SendBuffer[16][6];
-extern unsigned int CANAMB0SendFront;
-extern unsigned int CANAMB0SendTeal;
-extern unsigned int ECANA_CH1_SDOIndex;
-extern unsigned int ECANA_CH1_SDOSubIndex;
-///////////////////////////////
-extern unsigned int CANAMB4RecvBuffer[4][6];
-extern unsigned int CANAMB4RecvFront;
-extern unsigned int CANAMB4RecvTeal;
-extern unsigned int CANA_CH1_HCount,CANA_CH1_LCount;
-//////////////////////////////
-extern unsigned int CANAMB5RecvBuffer[4][6];
-extern unsigned int CANAMB5RecvFront;
-extern unsigned int CANAMB5RecvTeal;
-extern unsigned int CANA_CH2_HCount,CANA_CH2_LCount;
-//////////////////////////////
-extern unsigned int CANAMB6RecvBuffer[4][6];
-extern unsigned int CANAMB6RecvFront;
-extern unsigned int CANAMB6RecvTeal;
-extern unsigned int CANA_CH3_HCount,CANA_CH3_LCount;
-//////////////////////////////
-extern unsigned int CANAMB7RecvBuffer[4][6];
-extern unsigned int CANAMB7RecvFront;
-extern unsigned int CANAMB7RecvTeal;
-extern unsigned int CANA_CH4_HCount,CANA_CH4_LCount;
-//////////////////////////////
-extern unsigned int CANAMB8RecvBuffer[4][6];
-extern unsigned int CANAMB8RecvFront;
-extern unsigned int CANAMB8RecvTeal;
-extern unsigned int CANA_CH5_HCount,CANA_CH5_LCount;
-//////////////////////////////////////////////////////////////
-                     //CANB
-//////////////////////////////////////////////////////////////
-extern unsigned int CANBMB0PDOSendBuffer[8][6];
-extern unsigned int CANBMB0PDOSendFront;
-extern unsigned int CANBMB0PDOSendTeal;
-
-extern unsigned int CANBMB0SDOSendBuffer[8][6] ;
-extern unsigned int CANBMB0SDOSendFront;
-extern unsigned int CANBMB0SDOSendTeal;
-
-extern unsigned int CANBMB4RecvBuffer[8][6];
-extern unsigned int CANBMB4RecvFront;
-extern unsigned int CANBMB4RecvTeal;
-
-extern unsigned int CANBMB5RecvBuffer[8][6];
-extern unsigned int CANBMB5RecvFront;
-extern unsigned int CANBMB5RecvTeal;
 /**********************************************************************************************/
 extern int SCICRecvBuffer[100],SCICRecvTail,SCICRecvFront;
 extern int SCICSendBuffer[100],SCICSendTail,SCICSendFront;

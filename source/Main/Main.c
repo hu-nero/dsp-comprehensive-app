@@ -79,7 +79,7 @@ void main(void)
 	InitFlash();
 	GPIO_init();
 
-	for(i=0;i<1500;i++)
+	for(i=0;i<5000;i++)
 		for(j=0;j<10000;j++);
 
 	InitXintf();

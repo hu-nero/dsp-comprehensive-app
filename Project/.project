@@ -76,66 +76,6 @@
 			<locationURI>PARENT-2-PROJECT_LOC/DSP2833x_common/cmd/F28335_NEW.cmd</locationURI>
 		</link>
 		<link>
-			<name>ECANA/DSP28335_ECanA_Protocol_V1.0.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/source/ECANA/DSP28335_ECanA_Protocol_V1.0.c</locationURI>
-		</link>
-		<link>
-			<name>ECANA/DSP28335_ECanA_Reg_V1.0.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/source/ECANA/DSP28335_ECanA_Reg_V1.0.c</locationURI>
-		</link>
-		<link>
-			<name>ECANA/ECANA_CH1_NPR_Table_V1.0.C</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/source/ECANA/ECANA_CH1_NPR_Table_V1.0.C</locationURI>
-		</link>
-		<link>
-			<name>ECANA/ECANA_Data_Process.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/source/ECANA/ECANA_Data_Process.c</locationURI>
-		</link>
-		<link>
-			<name>ECANA/Pub_ECAN_CHx_Protocol_V1.0.obj</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/source/ECANA/Pub_ECAN_CHx_Protocol_V1.0.obj</locationURI>
-		</link>
-		<link>
-			<name>ECANB/Custom_ECanB.H</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/source/ECANB/Custom_ECanB.H</locationURI>
-		</link>
-		<link>
-			<name>ECANB/DSP28335_ECanB_Protocol_V1.0.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/source/ECANB/DSP28335_ECanB_Protocol_V1.0.c</locationURI>
-		</link>
-		<link>
-			<name>ECANB/DSP28335_ECanB_Reg_V1.0.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/source/ECANB/DSP28335_ECanB_Reg_V1.0.c</locationURI>
-		</link>
-		<link>
-			<name>ECANB/ECANB_Data_Process.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/source/ECANB/ECANB_Data_Process.c</locationURI>
-		</link>
-		<link>
-			<name>ECANB/ECANB_Macro.H</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/source/ECANB/ECANB_Macro.H</locationURI>
-		</link>
-		<link>
-			<name>ECANB/MCS2MPR_Protocol_V1.0.C</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/source/ECANB/MCS2MPR_Protocol_V1.0.C</locationURI>
-		</link>
-		<link>
-			<name>ECANB/MCS2MPR_Table_V1.0.C</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/source/ECANB/MCS2MPR_Table_V1.0.C</locationURI>
-		</link>
-		<link>
 			<name>MCBSP_FLASH/DSP2833x_MCBSPB_Reg.C</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/source/MCBSP_Flash/DSP2833x_MCBSPB_Reg.C</locationURI>

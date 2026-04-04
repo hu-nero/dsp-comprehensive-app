@@ -109,6 +109,11 @@ UART485_Adapter_MainLoop(void)
 {
     if(gRemHoldSum.CtrlWord.all != RemHoldSum.CtrlWord.all)
     {
+        // 判断命令是否非法
+        if (RemHoldSum.CtrlWord.bit.Rsvd != 0)
+        {
+            RemHoldSum.CtrlWord.all = gRemHoldSum.CtrlWord.all;
+        }
         // 取出不同的按钮
         if ((RemHoldSum.CtrlWord.bit.rem_single_start == 1) &&
             (RemHoldSum.CtrlWord.bit.rem_single_stop == 0))

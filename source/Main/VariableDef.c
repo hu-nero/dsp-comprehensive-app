@@ -148,7 +148,6 @@ float NPR_Udc_Highlimit = 0;
 float NPR_Udc_LowThr = 0;
 float npr_udc = 0, npr_udcf = 0, npr_udcff = 0;
 float NPR_VoltImbalance_Alarm = 0;
-float NRectifier_Temp_CAN = 0,Transformer_Temp_CAN = 0;
 u16 ParaDownloadCtrlWord = 0;
 int ParaSaveFlag = 0,ParaSaveFlagOld =0;
 float Temp_High = 0,Temp_Low =0;

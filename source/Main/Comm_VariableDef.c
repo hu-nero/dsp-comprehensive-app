@@ -6,11 +6,6 @@ int NODE_STATE=0;
 int PDO_SEND_FLAG = 0;
 int NMTTimeInterval=0;
 
-int CANARPDO[4][4] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-int CANATPDO[4][4] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-
-int CANBRPDO[4][4] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-int CANBTPDO[4][4] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 ///////////////////////////////////////////////
 int device_name=0x0000;
 int data_1005=0;
@@ -21,64 +16,6 @@ int Guard_time = 1000;
 int Life_factor = 1;
 //////////////////////////////////////////////////////
 
-////////
-                     //CAN
-////////
-unsigned int CANSend_1ms =0,CANSend_1msOld=0;
-unsigned int ECAN_CommFlag=0;
-//////////////////////////////////////////////////////
-/////////
-                     //CANA
-/////////
-unsigned int CANAMB0SendBuffer[16][6];
-unsigned int CANAMB0SendFront=0;
-unsigned int CANAMB0SendTeal=0;
-unsigned int ECANA_CH1_SDOIndex=1;
-unsigned int ECANA_CH1_SDOSubIndex=1;
-///////////////////////////////
-unsigned int CANAMB4RecvBuffer[4][6];
-unsigned int CANAMB4RecvFront=0;
-unsigned int CANAMB4RecvTeal=0;
-unsigned int CANA_CH1_HCount=0,CANA_CH1_LCount=0;
-/////////////////////////////
-unsigned int CANAMB5RecvBuffer[4][6];
-unsigned int CANAMB5RecvFront=0;
-unsigned int CANAMB5RecvTeal=0;
-unsigned int CANA_CH2_HCount=0,CANA_CH2_LCount=0;
-/////////////////////////////
-unsigned int CANAMB6RecvBuffer[4][6];
-unsigned int CANAMB6RecvFront=0;
-unsigned int CANAMB6RecvTeal=0;
-unsigned int CANA_CH3_HCount=0,CANA_CH3_LCount=0;
-/////////////////////////////
-unsigned int CANAMB7RecvBuffer[4][6];
-unsigned int CANAMB7RecvFront=0;
-unsigned int CANAMB7RecvTeal=0;
-unsigned int CANA_CH4_HCount=0,CANA_CH4_LCount=0;
-/////////////////////////////
-unsigned int CANAMB8RecvBuffer[4][6];
-unsigned int CANAMB8RecvFront=0;
-unsigned int CANAMB8RecvTeal=0;
-unsigned int CANA_CH5_HCount=0,CANA_CH5_LCount=0;
-/////////
-                     //CANB
-/////////
-//////////////////////////////////////////
-unsigned int CANBMB0PDOSendBuffer[8][6];
-unsigned int CANBMB0PDOSendFront=0;
-unsigned int CANBMB0PDOSendTeal=0;
-
-unsigned int CANBMB0SDOSendBuffer[8][6] ;
-unsigned int CANBMB0SDOSendFront=0;
-unsigned int CANBMB0SDOSendTeal=0;
-
-unsigned int CANBMB4RecvBuffer[8][6];
-unsigned int CANBMB4RecvFront=0;
-unsigned int CANBMB4RecvTeal=0;
-
-unsigned int CANBMB5RecvBuffer[8][6];
-unsigned int CANBMB5RecvFront=0;
-unsigned int CANBMB5RecvTeal=0;
 /**********************************************************************************************/
 int SCICRecvBuffer[100],SCICRecvTail=0,SCICRecvFront=0;
 int SCICSendBuffer[100],SCICSendTail=0,SCICSendFront=0;

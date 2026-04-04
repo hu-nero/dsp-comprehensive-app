@@ -17,7 +17,7 @@ typedef enum
     UART485_ID_REM_SINGLE,    // 远控单机启动
     UART485_ID_REM_PARALLEL,  // 远控并机启动
     UART485_ID_REM_SHORT,     // 远控消磁启动
-    UART485_ID_REM_RESET,       // 远控消磁停止
+    UART485_ID_REM_RESET,     // 远控消磁停止
 } UART485_Adapter_SwitchType_t;
 
 

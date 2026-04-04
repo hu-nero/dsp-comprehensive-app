@@ -193,7 +193,6 @@ extern float NPR_Udc_Highlimit;
 extern float NPR_Udc_LowThr;
 extern float npr_udc, npr_udcf, npr_udcff;
 extern float NPR_VoltImbalance_Alarm;
-extern float NRectifier_Temp_CAN,Transformer_Temp_CAN;
 extern u16 ParaDownloadCtrlWord;
 extern int ParaSaveFlag, ParaSaveFlagOld;
 extern int RegZH_Energy, RegZL_Energy, RegDP_Energy;
