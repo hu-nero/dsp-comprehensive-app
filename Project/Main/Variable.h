@@ -2,8 +2,6 @@
 #define _VARIBALE_H_
 
 #include "DSP2833x_Device.h"
-#include "Arithmetic\Arithmetic.h"
-#include "Arithmetic\NprCtrl.h"
 #include "SCI_monitor\softscope.h"
 #include "Custom_GlobalMacro.H"
 

@@ -86,7 +86,7 @@ const struct InputRegType DcsInputReg_Group[]=
 ///*********************************************************************************/
 const struct HoldRegType DcsHoldReg_Group[]=
 {
-/* Total- 32 */     48, (void*)&DcsGroup[3],
+/* Total- 32 */     16, (void*)&DcsGroup[3],
 /* Line -  1 */ 0x0000, (void*)&DcsHoldRegBuf[0],
 /* Line -  2 */ 0x0001, (void*)&DcsHoldRegBuf[1],
 /* Line -  3 */ 0x0002, (void*)&DcsHoldRegBuf[2],

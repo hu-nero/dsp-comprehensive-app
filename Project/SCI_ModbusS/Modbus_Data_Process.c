@@ -1,7 +1,7 @@
 #include "Custom_ModbusRTU.h"
 #include "Main\Variable.H"
 #include "Main\Comm_Variable.H"
-#include "SCI_Modbus\Sci_Modbus_config.H"
+#include "SCI_ModbusS\Sci_Modbus_config.H"
 #include "GPIO\Custom_IOMacro.H"
 /***************************************************************************************************/
 extern int GroupCtrl[35];

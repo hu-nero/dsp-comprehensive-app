@@ -1,6 +1,6 @@
 #include "Custom_ModbusRTU.h"
 #include "main\Variable.h"
-#include "SCI_Modbus\Sci_Modbus_config.H"
+#include "SCI_ModbusS\Sci_Modbus_config.H"
 
 
 void Func_DiscReg(u8 FuncCode, u8 *pMesBuf, u8 *pTxBuffer);

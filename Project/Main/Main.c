@@ -9,10 +9,6 @@
 #include "main\Variable.h"
 #include "math.h"
 #include "GPIO\Custom_IOMacro.H"
-#include "Arithmetic\Arithmetic.H"
-#include "ECANA\Pub_Custom_ECan.H"
-#include "ECANA\Custom_ECanA.H"
-#include "ECANB\Custom_ECanB.H"
 #include "EPWM\Custom_PWM.H"
 #include "ADCInner\Custom_InnerADC.H"
 #include "Xintf\Custom_Xintf_ADC&IO.H"
@@ -27,8 +23,8 @@
 #include "SCI_monitor\softscope.h"
 #include "SCI_monitor\ParaDeal.h"
 #include "SCI_monitor\SciConfig.h"
-#include "SCI_Modbus\Sci_Modbus_Config.H"
-#include "SCI_Modbus\Custom_ModbusRTU.H"
+#include "SCI_ModbusS\Sci_Modbus_Config.H"
+#include "SCI_ModbusS\Custom_ModbusRTU.H"
 #include "SCI_ModbusM\Custom_Remote.H"
 #include "SCI_DCS\Custom_DCS.H"
 
@@ -182,7 +178,6 @@ void main(void)
 
             CAN_App_MainLoop();
 			IO_Scan();
-			Source_Select();
 			Inner_ADCScan();
 			CalImbalance();
 			FunStatusUpdate();

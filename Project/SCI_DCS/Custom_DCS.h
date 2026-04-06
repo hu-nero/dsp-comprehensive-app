@@ -10,7 +10,7 @@ extern int DcsHoldRegBuf[64];
 
 #define DcsDeviceAddr   0x01
 
-#include "SCI_Modbus\Custom_ModbusRTU.H"
+#include "SCI_ModbusS\Custom_ModbusRTU.H"
 //////////////////////////////////////////////////////////////////////////
 extern void CRC_Check_DCS(u16 *pCrcBuf, u16 LEN, u16 *CRCByteH, u16 *CRCByteL);
 extern void ModbusDcs_Protocol(u16 *pRxBuffer, u16 *pFront, u16 nRear, u16 RevSize, u16 *pTxBuffer);

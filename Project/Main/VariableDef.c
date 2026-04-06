@@ -3,8 +3,6 @@
 #include "Custom_GlobalMacro.H"
 #include "Comm_Variable.H"
 #include "Variable.h"
-#include "Arithmetic\Arithmetic.H"
-#include "Arithmetic\NprCtrl.h"
 #include "IQmathLib.h"
 #include "string.h"
 

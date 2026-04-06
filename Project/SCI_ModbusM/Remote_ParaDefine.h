@@ -1,7 +1,7 @@
 #ifndef _REMOTE_ParaDefine_H_
 #define _REMOTE_ParaDefine_H_
 
-#include "SCI_Modbus\RTU_ParaDefine.h"
+#include "SCI_ModbusS\RTU_ParaDefine.h"
 
 /////////////////////////////////////////////////////////////////
 extern const struct CoilRegType RemCoilReg_Group[];

@@ -10,7 +10,7 @@ extern int RemHoldRegBuf[64];
 
 #define RemDeviceAddr   0x01
 
-#include "SCI_Modbus\Custom_ModbusRTU.H"
+#include "SCI_ModbusS\Custom_ModbusRTU.H"
 //////////////////////////////////////////////////////////////////////////
 extern void CRC_Check_Romote(u16 *pCrcBuf, u16 LEN, u16 *CRCByteH, u16 *CRCByteL);
 extern void ModbusRem_Protocol(u16 *pRxBuffer, u16 *pFront, u16 nRear, u16 RevSize, u16 *pTxBuffer);

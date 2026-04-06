@@ -1,6 +1,6 @@
 #include "Custom_Remote.h"
 #include "Main\Variable.H"
-#include "SCI_Modbus\Sci_Modbus_config.H"
+#include "SCI_ModbusS\Sci_Modbus_config.H"
 
 /***************************************************************************************************/
 void Modbus_Send_To_Rem(void)

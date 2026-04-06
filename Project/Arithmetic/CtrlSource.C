@@ -2,7 +2,6 @@
 #include "main\Comm_Variable.h"
 #include "Main\Custom_GlobalMacro.H"
 #include "IQmathlib.H"
-#include "LVRT.H"
 #include "GPIO\Custom_IOMacro.H"
 #include "math.h"
 
