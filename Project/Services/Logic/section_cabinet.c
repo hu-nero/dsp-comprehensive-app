@@ -60,6 +60,12 @@ static void Cabinet_ProcessAutoParallel(CabinetContext_t* Context);
 static uint32_t GetFaultTimerDuration(uint8_t fault_code);
 static void Cabinet_SendParallelRequest(CabinetContext_t* Context);
 
+uint16_t
+Cabinet_SetExternalAddr(uint16_t Addr)
+{
+	return CAN_Agent_SetExternalAddr(Addr);
+}
+
 bool
 Cabinet_GetPowerOnlineStatus(void)
 {
@@ -88,8 +94,8 @@ Cabinet_Init(CabinetContext_t* Context,
     {
         return false;
     }
-
     CAN_Adapter_Init();
+    UART485_Adapter_Init();
     // 初始化上下文
     memset(Context, 0, sizeof(CabinetContext_t));
 
@@ -156,6 +162,7 @@ Cabinet_Process(CabinetContext_t* Context)
     Cabinet_UpdateCommSectionToSyncStatus(Context);
     Cabinet_UpdateCommSectionToPowerStatus(Context);
     Cabinet_UpdateCommSectionToHMIStatus(Context);
+    (void)Cabinet_SetExternalAddr(Can_External_Addr);// 设置对外CAN地址
     UART485_Adapter_MainLoop();
     // 急停下只允许面板消磁
     if (Context->emergency_stop_status == true)

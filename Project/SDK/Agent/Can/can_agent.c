@@ -25,6 +25,17 @@ static void CAN_Agent_StartCmdTimeout(TeCanPort Port, uint16_t DstAddr, FuncCode
 static void CAN_Agent_StopCmdTimeout(TeCanPort Port, uint16_t DstAddr, FuncCode_t FunCode);
 static void CAN_Agent_CheckCmdTimeouts(TeCanPort Port);
 
+uint16_t
+CAN_Agent_SetExternalAddr(uint16_t Addr)
+{
+	if ((Addr > 0) && (Addr < 0xF))
+	{
+		g_device_addr[eCanPort_0] = Addr;
+		return 0;
+	}
+	return 1;
+}
+
 // CAN 消息ID打包
 inline uint16_t
 CAN_PackID(FuncCode_t FuncCode, uint16_t SrcAddr, uint16_t DstAddr)

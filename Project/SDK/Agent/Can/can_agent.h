@@ -123,6 +123,7 @@ typedef void (*CAN_MainLoopHandler_t)(TeCanPort port);
 extern void CAN_SetRxHandler(TeCanPort Port, CAN_RxHandler_t Handler);
 extern void CAN_Agent_Set_SendStatus_Callback(TeCanPort Port, CAN_TxHandler_t Handler);
 extern void CAN_Agent_Set_MainLoop_Callback(TeCanPort Port, CAN_MainLoopHandler_t Handler);
+extern uint16_t CAN_Agent_SetExternalAddr(uint16_t Addr);
 
 
 #endif /* SERVICES_CAN_AGENT_CAN_AGENT_H_ */

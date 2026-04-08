@@ -107,6 +107,7 @@ float FltThr_OverLow_Flow1;
 float FltThr_OverLow_Flow2;
 float Auto_Restarttime_Flow;
 union DataBit_Type Cap_Ctrl_Word;
+unsigned int Can_External_Addr;
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
@@ -627,6 +628,7 @@ void variable_init(void)
 	NPR_HWFMWord7.DataInt=0;
 
 	Cap_Ctrl_Word.DataInt=0;
+	Can_External_Addr = 0x02;
 	memset(&RemInputSum, 0, sizeof(RemoteInput_t));
 	memset(&DcsInputSum, 0, sizeof(RemoteInput_t));
 	RemHoldSum.CtrlWord.all = 0;

@@ -356,15 +356,12 @@ CAN_Adapter_ParsePowerParam(uint16_t *Data, uint16_t Dlc)
 static void
 CAN_Adapter_ParseSyncCabinetStatus(uint16_t *Data, uint16_t Dlc)
 {
-    uint16_t state;
-
     if ((!Data) || (Dlc < 1))
     {
         return;
     }
 
-    state = (Data[0]&0xFF)|(Data[1]<<8);
-    gCommSyncToSectionStatus.sync_status.all = state;
+    gCommSyncToSectionStatus.sync_status.all = CombineBytes(Data[0], Data[1]);
 }
 
 // 主循环回调
@@ -400,9 +397,15 @@ CAN_Adapter_RxHandler(TeCanPort Port, uint16_t *Data, uint16_t Dlc)
     }
     else if (Port == eCanPort_0)
     {
-        gAdapterStatus.sync_online_status = true;
-        gAdapterStatus.sync_online_start = hal_timer_get_timestamp();
-        CAN_Adapter_ParseSyncCabinetStatus(Data, Dlc);
+        // tmp variable
+        static CommSyncToSection_t state;
+        state.sync_status.all = CombineBytes(Data[0], Data[1]);
+        if (state.sync_status.bit.sync_is_master == 1)
+        {
+            gAdapterStatus.sync_online_status = true;
+            gAdapterStatus.sync_online_start = hal_timer_get_timestamp();
+            CAN_Adapter_ParseSyncCabinetStatus(Data, Dlc);
+        }
     }
 }
 
@@ -430,7 +433,7 @@ CAN_Adapter_SendStatus_Callback(TeCanPort Port, FuncCode_t Func, uint16_t SrcAdd
     {
         uint16_t value;
         gCommSectionToSyncStatus.section_status.bit.heartbeat = heartbeat1;
-        gCommSectionToSyncStatus.section_status.bit.sync_cabinet_online = heartbeat1;
+        gCommSectionToSyncStatus.section_status.bit.sync_cabinet_online = gAdapterStatus.sync_online_status;
         heartbeat1 = !heartbeat1;
         value = gCommSectionToSyncStatus.section_status.all;
 

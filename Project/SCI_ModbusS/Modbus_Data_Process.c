@@ -74,7 +74,7 @@ void Modbus_Send_To_HMI(void)
 		HoldRegBuf[31] = FltThr_OverLow_Flow2;
 		HoldRegBuf[32] = Auto_Restarttime_Flow;
 		HoldRegBuf[33] = Cap_Ctrl_Word.DataInt;
-//		HoldRegBuf[33] = ParaSaveFlag;
+		HoldRegBuf[34] = Can_External_Addr;
 	}
 }
 
@@ -116,6 +116,7 @@ void Modbus_Recv_For_HMI(void)
 		FltThr_OverLow_Flow2 = HoldRegBuf[31];
 		Auto_Restarttime_Flow = HoldRegBuf[32];
 		Cap_Ctrl_Word.DataInt = HoldRegBuf[33];
+		Can_External_Addr = HoldRegBuf[34];
 
 
 		ParaSaveFlag = Cap_Ctrl_Word.DataBit.Bit4;

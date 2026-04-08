@@ -223,12 +223,10 @@ CAN_App_MainLoop(void)
     
     // 点动信号识别
     CAN_App_RecordPanelSwitchStatus();
-    // switch test
-//    CAN_App_Test();
 }
 
 void
-CAN_App_Test(void)
+CAN_App_Switch_Init(void)
 {
 //    uint32_t delay=0x5FFFFF;
     // switch enable test

@@ -98,7 +98,6 @@ void main(void)
 
 	pwm_init();
 	INT28335_process();
-	CAN_App_Init();
 
 	variable_init();
 
@@ -113,7 +112,8 @@ void main(void)
 	Dis_PWM();
 	ParaDownloadCtrlWord=1;
 
-	CAN_App_Test();
+	CAN_App_Init();
+	CAN_App_Switch_Init();
 	for(; ;)
 	{
 		EINT;

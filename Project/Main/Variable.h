@@ -125,6 +125,7 @@ extern float FltThr_OverLow_Flow1;
 extern float FltThr_OverLow_Flow2;
 extern float Auto_Restarttime_Flow;
 extern union DataBit_Type Cap_Ctrl_Word;
+extern unsigned int Can_External_Addr;
 
 extern float UabSl_HalfMemory[20], UbcSl_HalfMemory[20], UcaSl_HalfMemory[20];
 extern float UabPar_HalfMemory[20], UbcPar_HalfMemory[20], UcaPar_HalfMemory[20];
