@@ -57,7 +57,8 @@ union WordSectionPowerInteractStatus_t
 		unsigned CombStep:			4;		// bit0-3
 		unsigned SplitStep:			4;		// bit4-7
 		unsigned WorkSta:			2;		// bit8-9
-		unsigned reserve:	    	5;		// bit10-14
+		unsigned FaultSta:			1;		// bit10
+		unsigned reserve:	    	5;		// bit11-14
 		unsigned Toggle:	    	1;		// bit15
 	}	bit;
 };

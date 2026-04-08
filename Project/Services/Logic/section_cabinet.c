@@ -1339,6 +1339,13 @@ Cabinet_UpdateCommSectionToPowerStatus(CabinetContext_t* Context)
     {
         status.section_status.bit.WorkSta = 2;
     }
+    else if ((Context->switch_list.A3QF1_switch == SWITCH_ON) &&
+        (Context->switch_list.A3QR1_switch == SWITCH_ON) &&
+        (Context->switch_list.A3QF2_switch == SWITCH_ON) &&
+        (Context->switch_list.A3QR2_switch == SWITCH_ON))
+    {
+        status.section_status.bit.WorkSta = 3;
+    }
     else if ((Context->switch_list.A3QF1_switch == SWITCH_OFF) &&
         (Context->switch_list.A3QR1_switch == SWITCH_OFF) &&
         (Context->switch_list.A3QF2_switch == SWITCH_OFF) &&
@@ -1346,10 +1353,7 @@ Cabinet_UpdateCommSectionToPowerStatus(CabinetContext_t* Context)
     {
         status.section_status.bit.WorkSta = 0;
     }
-    else
-    {
-        status.section_status.bit.WorkSta = 3;
-    }
+    status.section_status.bit.FaultSta = Context->fault_status;
 
 
     CAN_Adapter_SetCommSectionToPower(status);

@@ -23,6 +23,9 @@ void Modbus_Send_To_HMI(void)
 	InputRegBuf[12] = IaOut_rmsf *10;
 	InputRegBuf[13] = IbOut_rmsf *10;
 	InputRegBuf[14] = IcOut_rmsf *10;
+//		InputRegBuf[12] = IaPar_rms *10;
+//		InputRegBuf[13] = IbPar_rms *10;
+//		InputRegBuf[14] = IcPar_rms *10;
 	InputRegBuf[15] = P_Sys *10;
 	InputRegBuf[16] = Q_Sys *10;
 	InputRegBuf[17] = S_Sys *10;

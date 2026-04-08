@@ -786,7 +786,7 @@ void GetFlowRate_Calc(void)
 	if(uFlowRate > 2)
 		uFlowRate = 2;
 
-	ftemp = uFlowRate *54.46 - 20.6;
+	ftemp = uFlowRate * 19.81 - 6.691;//uFlowRate *54.46 - 20.6
 
 	FlowRate = FlowRate*0.9 + ftemp*0.1;
 }

@@ -14,7 +14,7 @@ int ADValue[16]={0};
 #define KDCAD    0.06636892541
 #define KGIAD    0.09304423621
 #define KFIAD    0.00762962736//(100A/4V) 0.00381481368(50A/4V)
-#define KREAL    0.00030518509
+#define KREAL    0.00030518509//0.00030518509
 
 extern void FunFaultReact(void);
 /*******************************************************************************/
