@@ -129,8 +129,6 @@ Cabinet_Init(CabinetContext_t* Context,
     Context->switch_feedback_current_value = 0;
 
     // 故障自恢复
-    Context->prev_power_run_state.run_state = POWER_UNKNOWN;
-    Context->prev_power_run_state.status_word = 0;
     Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
     Context->fault_timer_start = 0;
     Context->fault_timer_duration = 0;
@@ -364,6 +362,15 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
         {
         	uint16_t tmp_state = 0;
 
+            // 清空自动控制流程状态
+            Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
+            Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
+            Context->fault_timer_start = 0;
+            Context->fault_timer_duration = 0;
+            Context->parallel_request_sent = false;
+            Context->parallel_request_start = 0;
+            Context->recovery_degauss_start_time = 0;
+            Context->recovery_degauss_delay_ms = 0;
             // 读取旋钮状态
             single_switch = (SwitchState_t)Context->switch_feed(DI_ID_SINGLE);
             parallel_switch = (SwitchState_t)Context->switch_feed(DI_ID_BUS1);

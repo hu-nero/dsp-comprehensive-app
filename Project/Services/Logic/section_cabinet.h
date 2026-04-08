@@ -120,7 +120,6 @@ typedef struct
     uint16_t switch_feedback_current_value;                  // 当前反馈值
 
     // 故障恢复
-    PowerStatus_t prev_power_run_state;                 // 上一次电源运行状态
     AutoRecoveryState_t fault_recovery_state;           // 故障恢复状态
     AutoRecoverySubState_t recovery_degauss_sub_state;  // 自复位消磁子状态
     uint32_t fault_timer_start;                         // 当前步骤计时开始时间
