@@ -397,6 +397,18 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                 }
             }
             break;
+        case DO_ID_K2:
+            {
+                if (State == SWITCH_ON)
+                {
+                    IO_DgssAck_ON;
+                }
+                else if (State == SWITCH_OFF)
+                {
+                    IO_DgssAck_OFF;
+                }
+            }
+            break;
         case DO_ID_REMOTE_PARALEL_CTRL_FEED:
             {
                 if (State == SWITCH_ON)
@@ -421,10 +433,6 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                     CAN_App_TurnOffA3QF1();
                     /*IO_QF1SingOn_Dis;*/
                 }
-            }
-            break;
-        case DO_ID_RESERVE1:
-            {
             }
             break;
         case DO_ID_A3QF2:

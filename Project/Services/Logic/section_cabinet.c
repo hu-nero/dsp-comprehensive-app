@@ -1337,11 +1337,15 @@ Cabinet_UpdateCommSectionToPowerStatus(CabinetContext_t* Context)
     CommSectionToPower_t status;
     status = CAN_Adapter_GetCommSectionToPower();
     if ((Context->switch_list.A3QF1_switch == SWITCH_ON) &&
-        (Context->switch_list.A3QR1_switch == SWITCH_ON))
+        (Context->switch_list.A3QR1_switch == SWITCH_ON) &&
+        (Context->switch_list.A3QF2_switch == SWITCH_OFF) &&
+        (Context->switch_list.A3QR2_switch == SWITCH_OFF))
     {
         status.section_status.bit.WorkSta = 1;
     }
-    else if ((Context->switch_list.A3QF2_switch == SWITCH_ON) &&
+    else if ((Context->switch_list.A3QF1_switch == SWITCH_OFF) &&
+        (Context->switch_list.A3QR1_switch == SWITCH_OFF) &&
+        (Context->switch_list.A3QF2_switch == SWITCH_ON) &&
         (Context->switch_list.A3QR2_switch == SWITCH_ON))
     {
         status.section_status.bit.WorkSta = 2;
@@ -1505,6 +1509,21 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             // 复位故障
             NPR_FaultCode = 0;
         }
+    }
+
+    // 消磁反馈控制K2
+    Context->switch_list.A3QF3_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF3);
+    if (Context->switch_last.A3QF3_switch != Context->switch_list.A3QF3_switch)
+    {
+        if (Context->switch_list.A3QF3_switch == SWITCH_ON)
+        {
+            Context->switch_control(DO_ID_K2, SWITCH_ON);
+        }
+        else
+        {
+            Context->switch_control(DO_ID_K2, SWITCH_OFF);
+        }
+        Context->switch_last.A3QF3_switch = Context->switch_list.A3QF3_switch;
     }
 
     // HMI控制投切电容
