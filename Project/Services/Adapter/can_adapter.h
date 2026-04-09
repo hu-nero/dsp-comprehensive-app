@@ -14,7 +14,6 @@
 #include "Services/Logic/section_common.h"
 
 // 设备地址定义
-#define CABINET_DEVICE_ADDR           0x01    // 区段柜设备地址
 #define POWER_DEVICE_ADDR             0x02    // 电源设备地址
 #define SYNC_CABINET_DEVICE_ADDR      0x01    // 电源设备地址
 

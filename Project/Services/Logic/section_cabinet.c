@@ -12,6 +12,8 @@
 #include <string.h>
 #include "main\Variable.h"
 
+static uint16_t gAutoRequestParallelCount = 0;
+
 static inline void Cabinet_SetCabinetState(CabinetContext_t* Context);
 // 回路执行流程
 static ExecuteResult_t Cabinet_ConnectSingleCircuit(CabinetContext_t* Context);
@@ -363,6 +365,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
         	uint16_t tmp_state = 0;
 
             // 清空自动控制流程状态
+            gAutoRequestParallelCount = 0;
             Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
             Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
             Context->fault_timer_start = 0;
@@ -451,6 +454,17 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 // 读取旋钮状态
                 tmp_single_switch = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SINGLE);
                 tmp_parallel_switch = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_PARALLEL);
+
+                if ((Context->state == CABINET_STATE_SINGLE) || (Context->state == CABINET_STATE_BACKUP))
+                {
+                    // 读取电源柜状态
+                    Context->power_status = CAN_Adapter_GetPowerStatus();
+                    if ((Context->power_status.run_state == POWER_STANDBY) ||
+                            (Context->power_status.run_state == POWER_FAULT))
+                    {
+                        tmp_single_switch = 2;
+                    }
+                }
 
                 if ((tmp_single_switch == 0) && (tmp_parallel_switch == 0))
                 {
@@ -2733,6 +2747,9 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                     CommSyncToSection_t status = CAN_Adapter_GetSyncToSectionStatus();
                     if ((status.sync_status.bit.off_grid_all == 1) && (Context->state == CABINET_STATE_PARALLEL))
                     {
+                        // 计时
+                        Context->fault_timer_start = hal_timer_get_timestamp();
+                        Context->fault_timer_duration = 60000;
                         Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_PARALLEL_CIRCUIT;
                     }
                     else
@@ -2889,18 +2906,14 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
             break;
         case AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS:
             {
-                CommSyncToSection_t status = CAN_Adapter_GetSyncToSectionStatus();
                 uint32_t now = hal_timer_get_timestamp();
 
-                if ((now-Context->fault_timer_start < Context->fault_timer_duration) ||
-                    (Context->power_status.run_state != POWER_FAULT) &&
-                    (Context->state == CABINET_STATE_PARALLEL) &&
-                    (status.sync_status.bit.off_grid_all == 1))
+                if (now-Context->fault_timer_start < Context->fault_timer_duration)
                 {
                     Context->power_status = CAN_Adapter_GetPowerStatus();
-					if (Context->power_status.run_state == POWER_SINGLE_RUNNING)
+                    if (Context->power_status.run_state == POWER_SINGLE_RUNNING)
                     {
-                    	Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_SINGLE_CIRCUIT_DEGAUSS;
+                        Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_SINGLE_CIRCUIT_DEGAUSS;
                     }
                 }
                 else
@@ -2911,22 +2924,33 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
             break;
         case AUTO_RECOVERY_REQUEST_PARALLEL:
             {
-                static uint16_t count = 0;
                 CommSyncToSection_t grid_state;
+                CommSectionToSync_t tmp_state;
+
                 Cabinet_SendParallelRequest(Context);
                 grid_state = CAN_Adapter_GetSyncToSectionStatus();
 
-                if (((grid_state.sync_status.bit.section_grid_feedback>>CABINET_DEVICE_ADDR) == 0) && (count < 50))
+                if (gAutoRequestParallelCount < 60000)
                 {
-                    count ++;
-                }
-                else if ((grid_state.sync_status.bit.section_grid_feedback>>CABINET_DEVICE_ADDR) == 1)
-                {
-                    count = 0;
-                	Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_PARALLEL_CIRCUIT_DEGAUSS;
+                    if (grid_state.sync_status.bit.section_grid_feedback != (Can_External_Addr-1))
+                    {
+                        gAutoRequestParallelCount ++;
+                    }
+                    else
+                    {
+                        gAutoRequestParallelCount = 0;
+                        tmp_state = CAN_Adapter_GetCommSectionToSync();
+                        tmp_state.section_status.bit.grid_connection_request = 0;
+                        CAN_Adapter_SetCommSectionToSync(tmp_state);
+                        Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_PARALLEL_CIRCUIT_DEGAUSS;
+                    }
                 }
                 else
                 {
+                    gAutoRequestParallelCount = 0;
+                    tmp_state = CAN_Adapter_GetCommSectionToSync();
+                    tmp_state.section_status.bit.grid_connection_request = 0;
+                    CAN_Adapter_SetCommSectionToSync(tmp_state);
                 	Context->fault_recovery_state = AUTO_RECOVERY_FAILED;
                 }
             }
@@ -3055,6 +3079,16 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
             break;
         case AUTO_RECOVERY_FAILED:
             {
+                // 清空自动控制流程状态
+                gAutoRequestParallelCount = 0;
+                Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
+                Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
+                Context->fault_timer_start = 0;
+                Context->fault_timer_duration = 0;
+                Context->parallel_request_sent = false;
+                Context->parallel_request_start = 0;
+                Context->recovery_degauss_start_time = 0;
+                Context->recovery_degauss_delay_ms = 0;
                 Cabinet_SetAlarm(Context, ALARM_NONE, "auto recovery failed");
                 Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
             }
