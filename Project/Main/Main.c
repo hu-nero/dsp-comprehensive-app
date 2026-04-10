@@ -481,15 +481,27 @@ void npr_1ms_protection(void)
 	status1 = Cabinet_GetComPowerToSectionParamStatus1();
 
 	//
-	if(vphase_min < AlmThr_UnderVolt_Phase)
+    	if(vphase_min < AlmThr_UnderVolt_Phase)
 	{
 		if(AlmCnt_UnderVolt_Phase < AlmCntThr_UnderVolt_Phase)
 		{
-			AlmCnt_UnderVolt_Phase ++;
+			if (AlmCnt_UnderVolt_Phase > 10)
+			{
+				AlmCnt_UnderVolt_Phase = 10;
+				AlarmWord_Map(1);
+			}
+			else
+			{
+				AlmCnt_UnderVolt_Phase ++;
+			}
 		}
 		else
 		{
-			AlarmWord_Map(1);
+			if (AlmCnt_UnderVolt_Phase > 0)
+			{
+				AlmCnt_UnderVolt_Phase --;
+				AlarmWord_Map(0);
+			}
 		}
 	}
 	else
@@ -497,6 +509,7 @@ void npr_1ms_protection(void)
 		AlmCnt_UnderVolt_Phase = 0;
 		AlarmWord_Clear(1);
 	}
+
 	/////////////////////////////////////////////
 
     // 工况1
