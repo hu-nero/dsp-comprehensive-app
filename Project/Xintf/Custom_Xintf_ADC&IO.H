@@ -6,6 +6,9 @@
 #define FPGARDIOSTS2	*(unsigned  int *)0x4005
 #define FPGARDIOSTS3	*(unsigned  int *)0x4006  // est di
 #define FPGARDSWVER1	*(unsigned  int *)0x4008
+#define FPGARDFREQ      *(unsigned  int *)0x4009;
+#define FPGARDCLKCNTL   *(unsigned  int *)0x400A;
+#define FPGARDCLKCNTH   *(unsigned  int *)0x400B;
 #define AD1				*(unsigned  int *)0x400C
 #define AD2				*(unsigned  int *)0x400D
 /************************************/

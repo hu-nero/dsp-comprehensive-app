@@ -39,6 +39,7 @@ extern float IaPar, IbPar, IcPar;
 extern float IaOvh, IbOvh, IcOvh;
 extern float UaOut, UbOut, UcOut;
 extern float UabOut, UbcOut, UcaOut;
+extern float FpgaMotorFreq;
 
 extern float UabSl_rmsf, UbcSl_rmsf, UcaSl_rmsf;
 extern float UabPar_rmsf, UbcPar_rmsf, UcaPar_rmsf;
@@ -80,6 +81,11 @@ extern unsigned int AlmCnt_UnderVolt_Work1;
 extern unsigned int AlmCntThr_UnderVolt_Work1;
 extern unsigned int AlmCnt_UnderVolt_Work2;
 extern unsigned int AlmCntThr_UnderVolt_Work2;
+
+extern unsigned int FltCnt_UnderVolt_Work1;
+extern unsigned int FltCntThr_UnderVolt_Work1;
+extern unsigned int FltCnt_UnderVolt_Work2;
+extern unsigned int FltCntThr_UnderVolt_Work2;
 
 extern unsigned int AlmCnt_OverImba_Volt;
 extern unsigned int AlmCntThr_OverImba_Volt;

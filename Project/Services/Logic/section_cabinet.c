@@ -113,6 +113,7 @@ Cabinet_Init(CabinetContext_t* Context,
     Context->target_state = CABINET_STATE_INVALID;
 //    Context->mode = CABINET_MODE_MANUAL;
     Context->emergency_stop_status = false;            // 急停状态
+    Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
     Context->fault_status = false;                     // 故障状态
     Context->panel_remote_degauss_flag = false;        // 面板或者远端消磁标志
     // 读取面板、柜体开关状态
@@ -157,7 +158,7 @@ Cabinet_Process(CabinetContext_t* Context)
     // 急停到底1是急停还是0是
     Cabinet_ExecuteEmergencyProcedure(Context);
     // 故障急停、消磁
-//    Cabinet_ExecuteEmergencyStopDegaussProcedure(Context);
+    Cabinet_ExecuteEmergencyStopDegaussProcedure(Context);
     // 更新柜子发布的消息
     Cabinet_UpdateCommSectionToSyncStatus(Context);
     Cabinet_UpdateCommSectionToPowerStatus(Context);
@@ -1175,6 +1176,7 @@ Cabinet_ResetFromEmergency(CabinetContext_t* Context)
         (void)Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
+        (void)Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_RESET, SWITCH_ON);
         // 调用IO_Scan()
         (void)Context->switch_feed(0);
@@ -1516,12 +1518,38 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             Cabinet_ResetFromEmergency(Context);
             Cabinet_SetCabinetState(Context);
             Context->switch_control(DO_ID_RESET,SWITCH_ON);
-            Context->emergency_stop_status = false;
-            Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
+            Context->emergency_stop_status = false;            // 急停状态
+            Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
             Context->fault_status = false;
+            Context->panel_remote_degauss_flag = false;        // 面板或者远端消磁标志
+            Context->demagnetize_state = DEMAGNETIZE_IDLE;
+            Context->demagnetize_counter = 0;
+            Context->demagnetize_start_time = 0;
+            Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
+
+            // 初始化开关反馈等待状态
+            Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
+            Context->switch_feedback_start_time = 0;
+            Context->switch_feedback_id = 0;
+            Context->switch_feedback_target_state = SWITCH_OFF;
+            Context->switch_feedback_current_value = 0;
+
+            // 故障自恢复
+            Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
+            Context->fault_timer_start = 0;
+            Context->fault_timer_duration = 0;
+            Context->fault_code = 0;
+            Context->parallel_request_sent = false;
+            Context->parallel_request_start = 0;
+            Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+            Context->recovery_degauss_start_time = 0;
+            Context->recovery_degauss_delay_ms = 0;
             FaultWord1.DataBit.Bit9 = 0;
             // 复位故障
             NPR_FaultCode = 0;
+
+            // 读取面板、柜体开关状态
+            Cabinet_ReadAllSwitchStatus(Context);
         }
     }
 
@@ -1674,15 +1702,6 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
         Context->target_state = CABINET_STATE_INVALID;
         return RESULT_EMERGENCY_STOP;
     }
-    /*else*/
-    /*{*/
-        /*// 恢复*/
-        /*if (Context->emergency_stop_status == true)*/
-        /*{*/
-            /*Cabinet_ResetFromEmergency(Context);*/
-            /*Context->emergency_stop_status = false;*/
-        /*}*/
-    /*}*/
     return RESULT_SUCCESS;
 }
 
@@ -1746,7 +1765,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
         Context->target_state = CABINET_STATE_INVALID;
 
         // 子状态消磁
-        switch (Context->recovery_degauss_sub_state)
+        switch (Context->flt_degauss_sub_state)
         {
             case AUTO_RECOVERY_SUB_DEGAUSS_START:
                 {
@@ -1754,7 +1773,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                     {
                         // 发出警告
                         Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet has cycle");
-                        Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
+                        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
                         return RESULT_FAILED;
                     }
 
@@ -1762,11 +1781,11 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                     ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, 10000);
                     if (degauss_res == RESULT_SUCCESS)
                     {
-                        Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_WAIT;
+                        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_WAIT;
                     }
                     else if (degauss_res == RESULT_FAILED)
                     {
-                        Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
+                        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
                     }
                 }
                 break;
@@ -1776,7 +1795,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                     uint32_t now = hal_timer_get_timestamp();
                     if (now - Context->recovery_degauss_start_time >= Context->recovery_degauss_delay_ms)
                     {
-                        Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_DONE;
+                        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_DONE;
                     }
                 }
                 break;
@@ -1789,7 +1808,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                     if (res == RESULT_SUCCESS)
                     {
                         Context->fault_recovery_state = AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS;
-                        Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
                         Context->fault_status = true;
                     }
                     else if (res == RESULT_WAIT)
@@ -1798,23 +1817,23 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                     }
                     else
                     {
-                        Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
                     	return res;
                     }
 
-                    Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                    Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
                 }
                 break;
             case AUTO_RECOVERY_SUB_DEGAUSS_FAILED:
                 {
                     // 失败
-                    Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                    Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
                     Context->fault_recovery_state = AUTO_RECOVERY_FAILED;
                 }
                 break;
             default:
                 {
-                    Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
+                    Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
                 }
                 break;
         }

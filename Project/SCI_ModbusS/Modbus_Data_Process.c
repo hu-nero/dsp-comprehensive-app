@@ -40,6 +40,7 @@ void Modbus_Send_To_HMI(void)
 	memcpy(&InputRegBuf[26], &SwitchWord2.DataInt, 2);
 	memcpy(&InputRegBuf[27], &SwitchWord3.DataInt, 2);
 	InputRegBuf[28]   = FlowRate*10;
+	InputRegBuf[29]   = FpgaMotorFreq*10;
 
 	if(ParaDownloadCtrlWord == 0)
 	{

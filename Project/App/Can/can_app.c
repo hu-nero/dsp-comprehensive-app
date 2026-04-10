@@ -573,7 +573,10 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
             {
                 if (State == SWITCH_ON)
                 {
-                    memset(&s_switchStatus, 0, sizeof(uint16_t)*4);
+                    Flag_IORstRef = 0;
+                    Flag_IOSingCtrl = 0;
+                    Flag_IOParaCtrl = 0;
+                    Flag_IODgssCtrl=0;
                 }
                 else if (State == SWITCH_OFF)
                 {

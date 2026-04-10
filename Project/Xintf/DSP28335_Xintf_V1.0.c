@@ -122,6 +122,9 @@ signed int ad_process(signed int a)
 /**********************************************************/
 void Palarell_Extern_ADCScan(void)
 {
+    u16 utmp=0;
+    u16 utmpH, utmpL;
+    u32 ultmp;
 	SINT i,temp;
 	SINT IaPar_ad, IbPar_ad, IcPar_ad;
 	SINT UabSl_ad, UbcSl_ad;
@@ -180,6 +183,19 @@ void Palarell_Extern_ADCScan(void)
 	UcaOut = UcOut - UaOut;
 //J9 water
 	uFlowRate = -(uflowad * KREAL);
+
+    // frequency
+
+    utmpL = FPGARDCLKCNTL;
+    utmpH = FPGARDCLKCNTH;
+    utmp = FPGARDFREQ;
+
+    ultmp = (u32)utmpH*65536 + (u32)utmpL;
+
+    if(ultmp)
+    {
+        FpgaMotorFreq = 100000.0 *utmp /ultmp;
+    }
 }
 /**********************************************************************/
 void IOInMapLogic(void)

@@ -12,12 +12,13 @@ RemoteHold_t RemHoldSum, DcsHoldSum;
 ////////////////////////////////////////////////////////////////////
 float Iout_Imbalance=0, Uout_Imbalance=0;
 
-float UabSl, UbcSl, UcaSl;
-float UabPar, UbcPar, UcaPar;
-float IaPar, IbPar, IcPar;
-float IaOvh, IbOvh, IcOvh;
-float UaOut, UbOut, UcOut;
-float UabOut, UbcOut, UcaOut;
+float UabSl=0, UbcSl=0, UcaSl=0;
+float UabPar=0, UbcPar=0, UcaPar=0;
+float IaPar=0, IbPar=0, IcPar=0;
+float IaOvh=0, IbOvh=0, IcOvh=0;
+float UaOut=0, UbOut=0, UcOut=0;
+float UabOut=0, UbcOut, UcaOut=0;
+float FpgaMotorFreq=0;
 
 float UabSl_rmsf=0, UbcSl_rmsf=0, UcaSl_rmsf=0;
 float UabPar_rmsf=0, UbcPar_rmsf=0, UcaPar_rmsf=0;
@@ -25,9 +26,9 @@ float IaPar_rmsf=0, IbPar_rmsf=0, IcPar_rmsf=0;
 float IaOvh_rmsf=0, IbOvh_rmsf=0, IcOvh_rmsf=0;
 float UaOut_rmsf=0, UbOut_rmsf=0, UcOut_rmsf=0;
 float UabOut_rmsf=0, UbcOut_rmsf=0, UcaOut_rmsf=0;
-float P_Workf, Q_Workf, S_Workf;
-float P_Ovhf, Q_Ovhf, S_Ovhf;
-float IaOut_rmsf, IbOut_rmsf, IcOut_rmsf;
+float P_Workf=0, Q_Workf=0, S_Workf=0;
+float P_Ovhf=0, Q_Ovhf=0, S_Ovhf=0;
+float IaOut_rmsf=0, IbOut_rmsf=0, IcOut_rmsf=0;
 
 float UabSl_sum=0, UbcSl_sum=0, UcaSl_sum=0;
 float UabPar_sum=0, UbcPar_sum=0, UcaPar_sum=0;
@@ -35,15 +36,15 @@ float IaPar_sum=0, IbPar_sum=0, IcPar_sum=0;
 float IaOvh_sum=0, IbOvh_sum=0, IcOvh_sum=0;
 float UaOut_sum=0, UbOut_sum=0, UcOut_sum=0;
 float UabOut_sum=0, UbcOut_sum=0, UcaOut_sum=0;
-float UabSl_rms, UbcSl_rms, UcaSl_rms;
-float UabPar_rms, UbcPar_rms, UcaPar_rms;
-float IaPar_rms, IbPar_rms, IcPar_rms;
-float IaOvh_rms, IbOvh_rms, IcOvh_rms;
-float UaOut_rms, UbOut_rms, UcOut_rms;
-float UabOut_rms, UbcOut_rms, UcaOut_rms;
-float P_Work, Q_Work, S_Work, PF_Work;
-float P_Ovh, Q_Ovh, S_Ovh, PF_Ovh;
-float P_Sys, Q_Sys, S_Sys, PF_Sys;
+float UabSl_rms=0, UbcSl_rms=0, UcaSl_rms=0;
+float UabPar_rms=0, UbcPar_rms=0, UcaPar_rms=0;
+float IaPar_rms=0, IbPar_rms=0, IcPar_rms=0;
+float IaOvh_rms=0, IbOvh_rms=0, IcOvh_rms=0;
+float UaOut_rms=0, UbOut_rms=0, UcOut_rms=0;
+float UabOut_rms=0, UbcOut_rms=0, UcaOut_rms=0;
+float P_Work=0, Q_Work=0, S_Work=0, PF_Work=0;
+float P_Ovh=0, Q_Ovh=0, S_Ovh=0, PF_Ovh=0;
+float P_Sys=0, Q_Sys=0, S_Sys=0, PF_Sys=0;
 
 int Flag_RmsBufFull=0;
 float UabSl_HalfMemory[20], UbcSl_HalfMemory[20], UcaSl_HalfMemory[20];
@@ -65,6 +66,11 @@ unsigned int AlmCnt_UnderVolt_Work1;
 unsigned int AlmCntThr_UnderVolt_Work1;
 unsigned int AlmCnt_UnderVolt_Work2;
 unsigned int AlmCntThr_UnderVolt_Work2;
+
+unsigned int FltCnt_UnderVolt_Work1;
+unsigned int FltCntThr_UnderVolt_Work1;
+unsigned int FltCnt_UnderVolt_Work2;
+unsigned int FltCntThr_UnderVolt_Work2;
 
 unsigned int AlmCnt_OverImba_Volt;
 unsigned int AlmCntThr_OverImba_Volt;
@@ -626,6 +632,60 @@ void variable_init(void)
 	NPR_HWFMWord5.DataInt=0;
 	NPR_HWFMWord6.DataInt=0;
 	NPR_HWFMWord7.DataInt=0;
+
+    AlmCnt_UnderVolt_Phase=0;
+    AlmCntThr_UnderVolt_Phase=0;
+
+    AlmCnt_OverVolt_Work1=0;
+    AlmCntThr_OverVolt_Work1=0;
+    AlmCnt_OverVolt_Work2=0;
+    AlmCntThr_OverVolt_Work2=0;
+
+    AlmCnt_UnderVolt_Work1=0;
+    AlmCntThr_UnderVolt_Work1=0;
+    AlmCnt_UnderVolt_Work2=0;
+    AlmCntThr_UnderVolt_Work2=0;
+
+    AlmCnt_OverImba_Volt=0;
+    AlmCntThr_OverImba_Volt=0;
+    FltCnt_OverImba_Volt=0;
+    FltCntThr_OverImba_Volt=0;
+
+    AlmCnt_OverImba_Curr=0;
+    AlmCntThr_OverImba_Curr=0;
+    FltCnt_OverImba_Curr=0;
+    FltCntThr_OverImba_Curr=0;
+
+    AlmCnt_OverCurr_Work1=0;
+    AlmCntThr_OverCurr_Work1=0;
+    AlmCnt_OverCurr_Work2=0;
+    AlmCntThr_OverCurr_Work2=0;
+
+    AlmCnt_OverLow_Flow1=0;
+    AlmCntThr_OverLow_Flow1=0;
+    AlmCnt_OverLow_Flow2=0;
+    AlmCntThr_OverLow_Flow2=0;
+
+    AlmThr_UnderVolt_Phase=0;
+    AlmThr_OverVolt_Work1=0;
+    FltThr_OverVolt_Work1=0;
+    AlmThr_OverVolt_Work2=0;
+    FltThr_OverVolt_Work2=0;
+    AlmThr_UnderVolt_Work1=0;
+    FltThr_UnderVolt_Work1=0;
+    AlmThr_UnderVolt_Work2=0;
+    FltThr_UnderVolt_Work2=0;
+    AlmThr_OverImba_Volt=0;
+    FltThr_OverImba_Volt=0;
+    AlmThr_OverImba_Curr=0;
+    FltThr_OverImba_Curr=0;
+    AlmThr_OverCurr_Work1=0;
+    FltThr_OverCurr_Work1=0;
+    AlmThr_OverCurr_Work2=0;
+    FltThr_OverCurr_Work2=0;
+    FltThr_OverLow_Flow1=0;
+    FltThr_OverLow_Flow2=0;
+    Auto_Restarttime_Flow=0;
 
 	Cap_Ctrl_Word.DataInt=0;
 	Can_External_Addr = 0x02;
