@@ -1574,37 +1574,45 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     {
         if (Cap_Ctrl_Word.DataBit.Bit0 == 1)
         {
+            Cap_Ctrl_Word.DataBit.Bit0 = 1;
             Context->switch_control(DO_ID_A3QR4, SWITCH_ON);
         }
         else
         {
+            Cap_Ctrl_Word.DataBit.Bit0 = 0;
             Context->switch_control(DO_ID_A3QR4, SWITCH_OFF);
         }
 
         if (Cap_Ctrl_Word.DataBit.Bit1 == 1)
         {
+            Cap_Ctrl_Word.DataBit.Bit1 = 1;
             Context->switch_control(DO_ID_A3QR5, SWITCH_ON);
         }
         else
         {
+            Cap_Ctrl_Word.DataBit.Bit1 = 0;
             Context->switch_control(DO_ID_A3QR5, SWITCH_OFF);
         }
 
         if (Cap_Ctrl_Word.DataBit.Bit2 == 1)
         {
+            Cap_Ctrl_Word.DataBit.Bit2 = 1;
             Context->switch_control(DO_ID_A3QR6, SWITCH_ON);
         }
         else
         {
+            Cap_Ctrl_Word.DataBit.Bit2 = 0;
             Context->switch_control(DO_ID_A3QR6, SWITCH_OFF);
         }
 
         if (Cap_Ctrl_Word.DataBit.Bit3 == 1)
         {
+            Cap_Ctrl_Word.DataBit.Bit3 = 1;
             Context->switch_control(DO_ID_A3QR7, SWITCH_ON);
         }
         else
         {
+            Cap_Ctrl_Word.DataBit.Bit3 = 0;
             Context->switch_control(DO_ID_A3QR7, SWITCH_OFF);
         }
     }

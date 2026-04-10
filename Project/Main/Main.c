@@ -31,8 +31,8 @@
 #include "Hal.h"
 #include "App.h"
 
-#define DEBUG
-//#define Release
+//#define DEBUG
+#define Release
 //////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////
 extern unsigned int RamfuncsLoadStart, RamfuncsLoadEnd, RamfuncsRunStart;
@@ -523,7 +523,7 @@ void npr_1s_protection(void)
                     AlarmWord_Map(2);
                     if(vLine_max > FltThr_OverVolt_Work1)
                     {
-                        NPR_FaultCode = 17;
+                        /*NPR_FaultCode = 17;*/
                         FaultWord_Map(17);
                         AlmCnt_OverVolt_Work1 = 0;
                     }
@@ -543,7 +543,7 @@ void npr_1s_protection(void)
                     AlarmWord_Map(4);
                     if(vLine_min < FltThr_UnderVolt_Work1)
                     {
-                        NPR_FaultCode = 19;
+                        /*NPR_FaultCode = 19;*/
                         FaultWord_Map(19);
                         AlmCnt_UnderVolt_Work1 = 0;
                     }
@@ -588,7 +588,7 @@ void npr_1s_protection(void)
                     AlarmWord_Map(3);
                     if(vLine_max > FltThr_OverVolt_Work2)
                     {
-                        NPR_FaultCode = 18;
+                        /*NPR_FaultCode = 18;*/
                         FaultWord_Map(18);
                         AlmCnt_OverVolt_Work2 = 0;
                     }
@@ -608,7 +608,7 @@ void npr_1s_protection(void)
                     AlarmWord_Map(5);
                     if(vLine_min < FltThr_UnderVolt_Work2)
                     {
-                        NPR_FaultCode = 20;
+                        /*NPR_FaultCode = 20;*/
                         FaultWord_Map(20);
                         AlmCnt_UnderVolt_Work2 = 0;
                     }
