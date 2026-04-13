@@ -1032,7 +1032,7 @@ void CalImbalance(void)
 void GetPQ2r(void)
 {
 	float ftmp = 0;
-	ftmp = UaOut*IaPar + UaOut*IbPar + UaOut*IcPar ;
+	ftmp = UaOut*IaPar + UbOut*IbPar + UcOut*IcPar ;
 	P_Work = P_Work*0.99 + ftmp*0.01;
 
 	ftmp = (UbcOut*IaPar + UcaOut*IbPar + UabOut*IcPar) / Sqrt_3;
@@ -1041,9 +1041,9 @@ void GetPQ2r(void)
 	ftmp = P_Work*P_Work + Q_Work*Q_Work;
 	S_Work = sqrtf(ftmp);
 
-	PF_Work = atan2(Q_Work, P_Work);
+	PF_Work = atan2f(Q_Work, P_Work);
 	//////////////////////////////////////////////////////////////
-	ftmp = UaOut*IaOvh + UaOut*IbOvh + UaOut*IcOvh ;
+	ftmp = UaOut*IaOvh + UbOut*IbOvh + UcOut*IcOvh ;
 	P_Ovh = P_Ovh*0.99 + ftmp*0.01;
 
 	ftmp = (UbcOut*IaOvh + UcaOut*IbOvh + UabOut*IcOvh) / Sqrt_3;
@@ -1054,12 +1054,12 @@ void GetPQ2r(void)
 
 	PF_Ovh = atan2(Q_Ovh, P_Ovh);
 
-	if( MainSta2Word.DataBit.WorkLpQS1 & (!MainSta2Word.DataBit.CheckLpQS1) )
+	if( MainSta2Word.DataBit.WorkLpQS1 && (!MainSta2Word.DataBit.CheckLpQS1) )
 	{
-		if(MainSta2Word.DataBit.SingQF1 | MainSta2Word.DataBit.ParaQF2)
+		if(MainSta2Word.DataBit.SingQF1 || MainSta2Word.DataBit.ParaQF2)
 		{
 			P_Sys = P_Work;
-			Q_Sys = P_Work;
+			Q_Sys = Q_Work;
 			S_Sys = S_Work;
 			PF_Sys = PF_Work;
 		}
@@ -1071,10 +1071,10 @@ void GetPQ2r(void)
 			PF_Sys = 0;
 		}
 	}
-	else if( (!MainSta2Word.DataBit.WorkLpQS1) & (MainSta2Word.DataBit.CheckLpQS1) )
+	else if( (!MainSta2Word.DataBit.WorkLpQS1) && (MainSta2Word.DataBit.CheckLpQS1) )
 	{
 		P_Sys = P_Ovh;
-		Q_Sys = P_Ovh;
+		Q_Sys = Q_Ovh;
 		S_Sys = S_Ovh;
 		PF_Sys = PF_Ovh;
 	}
