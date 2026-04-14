@@ -858,13 +858,13 @@ void GetVIRms(void)
 			UbcPar_sum += UbcPar_HalfMemory[i];
 			UcaPar_sum += UcaPar_HalfMemory[i];
 
-			IaPar_sum += IaPar_HalfMemory[i];
-			IbPar_sum += IbPar_HalfMemory[i];
-			IcPar_sum += IcPar_HalfMemory[i];
+			IaPar_sum += IaPar_HalfMemory[i]*IaPar_HalfMemory[i];
+			IbPar_sum += IbPar_HalfMemory[i]*IbPar_HalfMemory[i];
+			IcPar_sum += IcPar_HalfMemory[i]*IcPar_HalfMemory[i];
 
-			IaOvh_sum += IaOvh_HalfMemory[i];
-			IbOvh_sum += IbOvh_HalfMemory[i];
-			IcOvh_sum += IcOvh_HalfMemory[i];
+			IaOvh_sum += IaOvh_HalfMemory[i]*IaOvh_HalfMemory[i];
+			IbOvh_sum += IbOvh_HalfMemory[i]*IbOvh_HalfMemory[i];
+			IcOvh_sum += IcOvh_HalfMemory[i]*IcOvh_HalfMemory[i];
 
 			UaOut_sum += UaOut_HalfMemory[i];
 			UbOut_sum += UbOut_HalfMemory[i];
@@ -883,13 +883,21 @@ void GetVIRms(void)
 		UbcPar_rms = UbcPar_sum*0.05*1.127;
 		UcaPar_rms = UcaPar_sum*0.05*1.127;
 
-		IaPar_rms = IaPar_sum*0.05;
-		IbPar_rms = IbPar_sum*0.05;
-		IcPar_rms = IcPar_sum*0.05;
+		IaPar_rms = sqrtf((float)IaPar_sum*0.05)*1.123;
+		IbPar_rms = sqrtf((float)IbPar_sum*0.05)*1.123;
+		IcPar_rms = sqrtf((float)IcPar_sum*0.05)*1.123;
 
-		IaOvh_rms = IaOvh_sum*0.05;
-		IbOvh_rms = IbOvh_sum*0.05;
-		IcOvh_rms = IcOvh_sum*0.05;
+		IaOvh_rms = sqrtf((float)IaOvh_sum*0.05)*1.123;
+		IbOvh_rms = sqrtf((float)IbOvh_sum*0.05)*1.123;
+		IcOvh_rms = sqrtf((float)IcOvh_sum*0.05)*1.123;
+
+//		IaPar_rms = IaPar_sum*0.05;
+//		IbPar_rms = IbPar_sum*0.05;
+//		IcPar_rms = IcPar_sum*0.05;
+//
+//		IaOvh_rms = IaOvh_sum*0.05;
+//		IbOvh_rms = IbOvh_sum*0.05;
+//		IcOvh_rms = IcOvh_sum*0.05;
 
 		UaOut_rms = UaOut_sum*0.05*1.127;
 		UbOut_rms = UbOut_sum*0.05*1.127;

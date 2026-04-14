@@ -53,8 +53,8 @@ extern float IaOut_rmsf, IbOut_rmsf, IcOut_rmsf;
 
 extern float UabSl_sum, UbcSl_sum, UcaSl_sum;
 extern float UabPar_sum, UbcPar_sum, UcaPar_sum;
-extern float IaPar_sum, IbPar_sum, IcPar_sum;
-extern float IaOvh_sum, IbOvh_sum, IcOvh_sum;
+extern u64 IaPar_sum, IbPar_sum, IcPar_sum;
+extern u64 IaOvh_sum, IbOvh_sum, IcOvh_sum;
 extern float UaOut_sum, UbOut_sum, UcOut_sum;
 extern float UabOut_sum, UbcOut_sum, UcaOut_sum;
 extern float UabSl_rms, UbcSl_rms, UcaSl_rms;

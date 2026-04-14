@@ -32,8 +32,8 @@ float IaOut_rmsf=0, IbOut_rmsf=0, IcOut_rmsf=0;
 
 float UabSl_sum=0, UbcSl_sum=0, UcaSl_sum=0;
 float UabPar_sum=0, UbcPar_sum=0, UcaPar_sum=0;
-float IaPar_sum=0, IbPar_sum=0, IcPar_sum=0;
-float IaOvh_sum=0, IbOvh_sum=0, IcOvh_sum=0;
+u64 IaPar_sum=0, IbPar_sum=0, IcPar_sum=0;
+u64 IaOvh_sum=0, IbOvh_sum=0, IcOvh_sum=0;
 float UaOut_sum=0, UbOut_sum=0, UcOut_sum=0;
 float UabOut_sum=0, UbcOut_sum=0, UcaOut_sum=0;
 float UabSl_rms=0, UbcSl_rms=0, UcaSl_rms=0;
