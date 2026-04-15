@@ -473,14 +473,10 @@ void FunStatusUpdate(void)
 /******************************************************************/
 void npr_1s_protection(void)
 {
-    bool online_status;
-	uint16_t status1,status2,status3;
+	uint16_t status1,status2;
 
-    online_status = Cabinet_GetPowerOnlineStatus();
 	status1 = Cabinet_GetComPowerToSectionParamStatus1();
-	/*status2 = Cabinet_GetComPowerToSectionParamStatus1();*/
-	/*status2 = Cabinet_GetComSyncToSectionStatus();*/
-
+    status2 = Cabinet_GetComSyncToSectionStatus();
 	/////////////////////////////////////////////
 
     if (((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) ||
@@ -509,7 +505,7 @@ void npr_1s_protection(void)
         }
 
         // 工况1
-        if ((online_status == true) && ((status1>>4) == 0))
+        if ((status1>>4) == 0)
         {
             // 过压故障
             if(vLine_max > FltThr_OverVolt_Work1)
@@ -555,8 +551,9 @@ void npr_1s_protection(void)
             }
 
             /////////////////////////////////////////////
-            // 
-            /*if ((online_status == true) || ((status2>>9) == 0))*/
+            // 单机直接判断欠压；并机需要读取同步柜给的并网有电信号
+            if (((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) ||
+                (((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) && ((status2>>9) == 1)) )
             {
                 // 欠压
                 if(vLine_min < FltThr_UnderVolt_Work1)
@@ -625,7 +622,7 @@ void npr_1s_protection(void)
             }
         }
         // 工况2
-        else if ((online_status == true) && ((status1>>4) == 1))
+        else if ((status1>>4) == 1)
         {
             /////////////////////////////////////////////
             // 过压故障
@@ -672,43 +669,48 @@ void npr_1s_protection(void)
             }
             /////////////////////////////////////////////
             // 欠压
-            if(vLine_min < FltThr_UnderVolt_Work2)
+            // 单机直接判断欠压；并机需要读取同步柜给的并网有电信号
+            if (((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) ||
+                (((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) && ((status2>>9) == 1)) )
             {
-                if(FltCnt_UnderVolt_Work2 > 2)
+                if(vLine_min < FltThr_UnderVolt_Work2)
                 {
-                    FltCnt_UnderVolt_Work2 = 2;
-                    NPR_FaultCode = 20;
-                    FaultWord_Map(20);
-                }
-                else
-                {
-                    FltCnt_UnderVolt_Work2 ++;
-                }
-            }
-            else
-            {
-                if(vLine_min < AlmThr_UnderVolt_Work2)
-                {
-                    if(AlmCnt_UnderVolt_Work2 > (AlmCntThr_UnderVolt_Work2))
+                    if(FltCnt_UnderVolt_Work2 > 2)
                     {
-                        AlmCnt_UnderVolt_Work2 = AlmCntThr_UnderVolt_Work2;
-                        AlarmWord_Map(5);
+                        FltCnt_UnderVolt_Work2 = 2;
+                        NPR_FaultCode = 20;
+                        FaultWord_Map(20);
                     }
                     else
                     {
-                        AlmCnt_UnderVolt_Work2 ++;
+                        FltCnt_UnderVolt_Work2 ++;
                     }
                 }
                 else
                 {
-                    if(FltCnt_UnderVolt_Work2 > 0)
+                    if(vLine_min < AlmThr_UnderVolt_Work2)
                     {
-                        FltCnt_UnderVolt_Work2 = 0;
+                        if(AlmCnt_UnderVolt_Work2 > (AlmCntThr_UnderVolt_Work2))
+                        {
+                            AlmCnt_UnderVolt_Work2 = AlmCntThr_UnderVolt_Work2;
+                            AlarmWord_Map(5);
+                        }
+                        else
+                        {
+                            AlmCnt_UnderVolt_Work2 ++;
+                        }
                     }
-                    if(AlmCnt_UnderVolt_Work2 > 0)
+                    else
                     {
-                        AlmCnt_UnderVolt_Work2 --;
-                        AlarmWord_Clear(5);
+                        if(FltCnt_UnderVolt_Work2 > 0)
+                        {
+                            FltCnt_UnderVolt_Work2 = 0;
+                        }
+                        if(AlmCnt_UnderVolt_Work2 > 0)
+                        {
+                            AlmCnt_UnderVolt_Work2 --;
+                            AlarmWord_Clear(5);
+                        }
                     }
                 }
             }
@@ -806,56 +808,43 @@ void npr_1s_protection(void)
 	//////////////////////////////////////////////////////////
     if (Cap_Ctrl_Word.DataBit.Bit5)
     {
-        if(FlowRate > FltThr_OverLow_Flow1)
+        // 下限I水流量保护
+        if(FlowRate < FltThr_OverLow_Flow1)
         {
-            AlarmWord_Map(10);
-
-            if(AlmCnt_OverLow_Flow1 < AlmCntThr_OverLow_Flow1)
+            if(FltCnt_OverLow_Flow1 > FltCntThr_OverLow_Flow1)
             {
-                AlmCnt_OverLow_Flow1 ++;
-            }
-            else
-            {
+                FltCnt_OverLow_Flow1 = 0;
+                FltCnt_OverLow_Flow2 = 0;
                 NPR_FaultCode = 25;
                 FaultWord_Map(25);
             }
-        }
-        else
-        {
-            AlarmWord_Clear(10);
-
-            if(AlmCnt_OverLow_Flow1 > 0)
-            {
-                AlmCnt_OverLow_Flow1 --;
-            }
-        }
-
-        if(FlowRate > FltThr_OverLow_Flow2)
-        {
-            AlarmWord_Map(10);
-
-            if(AlmCnt_OverLow_Flow2 < AlmCntThr_OverLow_Flow2)
-            {
-                AlmCnt_OverLow_Flow2 ++;
-            }
             else
             {
+                FltCnt_OverLow_Flow1 ++;
+            }
+        }
+        // 下限II水流量保护
+        if(FlowRate < FltThr_OverLow_Flow2)
+        {
+            if(FltCnt_OverLow_Flow2 > FltCntThr_OverLow_Flow2)
+            {
+                FltCnt_OverLow_Flow1 = 0;
+                FltCnt_OverLow_Flow2 = 0;
                 NPR_FaultCode = 25;
                 FaultWord_Map(25);
             }
-        }
-        else
-        {
-            AlarmWord_Clear(10);
-
-            if(AlmCnt_OverLow_Flow2 > 0)
+            else
             {
-                AlmCnt_OverLow_Flow2 --;
+                FltCnt_OverLow_Flow2 ++;
             }
         }
-
         // TODO:水流量保护、恢复供水自动重启时间
         // Auto_Restarttime_Flow
+    }
+    else
+    {
+        FltCnt_OverLow_Flow1 = 0;
+        FltCnt_OverLow_Flow2 = 0;
     }
 
 	//////////////////////////////////////////////////////////

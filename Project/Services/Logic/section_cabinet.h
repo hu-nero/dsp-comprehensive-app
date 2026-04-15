@@ -157,6 +157,7 @@ extern ExecuteResult_t Cabinet_RecoverFromEmergency(CabinetContext_t* Context);
 extern bool Cabinet_GetPowerOnlineStatus(void);
 extern uint16_t Cabinet_GetComPowerToSectionParamStatus1(void);
 extern uint16_t Cabinet_GetComSyncToSectionStatus(void);
+extern uint16_t Cabinet_GetComPowerToSectionStatus(void);
 extern uint16_t Cabinet_SetExternalAddr(uint16_t Addr);
 
 #endif /* SERVICES_LOGIC_SECTION_CABINET_H_ */

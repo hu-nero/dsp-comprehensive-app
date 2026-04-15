@@ -72,9 +72,9 @@ void Modbus_Send_To_HMI(void)
 		HoldRegBuf[25] = AlmCntThr_OverCurr_Work2;
 		HoldRegBuf[26] = AlmThr_OverCurr_Work2;
 		HoldRegBuf[27] = FltThr_OverCurr_Work2;
-		HoldRegBuf[28] = AlmCntThr_OverLow_Flow1;
+		HoldRegBuf[28] = FltCntThr_OverLow_Flow1;
 		HoldRegBuf[29] = FltThr_OverLow_Flow1;
-		HoldRegBuf[30] = AlmCntThr_OverLow_Flow2;
+		HoldRegBuf[30] = FltCntThr_OverLow_Flow2;
 		HoldRegBuf[31] = FltThr_OverLow_Flow2;
 		HoldRegBuf[32] = Auto_Restarttime_Flow;
 		HoldRegBuf[33] = Cap_Ctrl_Word.DataInt;
@@ -114,9 +114,9 @@ void Modbus_Recv_For_HMI(void)
 		AlmCntThr_OverCurr_Work2 = HoldRegBuf[25];
 		AlmThr_OverCurr_Work2 = HoldRegBuf[26];
 		FltThr_OverCurr_Work2 = HoldRegBuf[27];
-		AlmCntThr_OverLow_Flow1 = HoldRegBuf[28];
+		FltCntThr_OverLow_Flow1 = HoldRegBuf[28];
 		FltThr_OverLow_Flow1 = HoldRegBuf[29];
-		AlmCntThr_OverLow_Flow2 = HoldRegBuf[30];
+		FltCntThr_OverLow_Flow2 = HoldRegBuf[30];
 		FltThr_OverLow_Flow2 = HoldRegBuf[31];
 		Auto_Restarttime_Flow = HoldRegBuf[32];
 		Cap_Ctrl_Word.DataInt = HoldRegBuf[33];

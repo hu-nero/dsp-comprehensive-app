@@ -102,10 +102,10 @@ extern unsigned int AlmCntThr_OverCurr_Work1;
 extern unsigned int AlmCnt_OverCurr_Work2;
 extern unsigned int AlmCntThr_OverCurr_Work2;
 
-extern unsigned int AlmCnt_OverLow_Flow1;
-extern unsigned int AlmCntThr_OverLow_Flow1;
-extern unsigned int AlmCnt_OverLow_Flow2;
-extern unsigned int AlmCntThr_OverLow_Flow2;
+extern unsigned int FltCnt_OverLow_Flow1;
+extern unsigned int FltCntThr_OverLow_Flow1;
+extern unsigned int FltCnt_OverLow_Flow2;
+extern unsigned int FltCntThr_OverLow_Flow2;
 
 
 extern float AlmThr_UnderVolt_Phase;

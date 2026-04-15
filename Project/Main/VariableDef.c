@@ -87,10 +87,10 @@ unsigned int AlmCntThr_OverCurr_Work1;
 unsigned int AlmCnt_OverCurr_Work2;
 unsigned int AlmCntThr_OverCurr_Work2;
 
-unsigned int AlmCnt_OverLow_Flow1;
-unsigned int AlmCntThr_OverLow_Flow1;
-unsigned int AlmCnt_OverLow_Flow2;
-unsigned int AlmCntThr_OverLow_Flow2;
+unsigned int FltCnt_OverLow_Flow1;
+unsigned int FltCntThr_OverLow_Flow1;
+unsigned int FltCnt_OverLow_Flow2;
+unsigned int FltCntThr_OverLow_Flow2;
 
 float AlmThr_UnderVolt_Phase;
 float AlmThr_OverVolt_Work1;
@@ -665,10 +665,10 @@ void variable_init(void)
     AlmCnt_OverCurr_Work2=0;
     AlmCntThr_OverCurr_Work2=0;
 
-    AlmCnt_OverLow_Flow1=0;
-    AlmCntThr_OverLow_Flow1=0;
-    AlmCnt_OverLow_Flow2=0;
-    AlmCntThr_OverLow_Flow2=0;
+    FltCnt_OverLow_Flow1=0;
+    FltCntThr_OverLow_Flow1=0;
+    FltCnt_OverLow_Flow2=0;
+    FltCntThr_OverLow_Flow2=0;
 
     AlmThr_UnderVolt_Phase=0;
     AlmThr_OverVolt_Work1=0;

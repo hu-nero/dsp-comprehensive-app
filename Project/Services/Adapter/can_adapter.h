@@ -213,8 +213,9 @@ extern void CAN_Adapter_ClearGridConnectionStatus(void);
 
 extern AdapterStatus_t CAN_Adapter_GetAdapterStatus(void);
 // 柜体交互
-extern CommSyncToSection_t CAN_Adapter_GetSyncToSectionStatus(void);
+extern CommSyncToSection_t CAN_Adapter_GetCommSyncToSectionStatus(void);
 extern CommPowerToSection_t CAN_Adapter_GetCommPowerToSectionParam(void);
+extern uint16_t CAN_Adapter_GetCommPowerToSectionStatus(void);
 extern uint16_t CAN_Adapter_GetCommPowerToSectionStatus1(void);
 
 extern CommSectionToPower_t CAN_Adapter_GetCommSectionToPower(void);

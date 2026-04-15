@@ -122,9 +122,15 @@ CAN_Adapter_SetCommSectionToSync(CommSectionToSync_t Status)
 }
 
 CommSyncToSection_t
-CAN_Adapter_GetSyncToSectionStatus(void)
+CAN_Adapter_GetCommSyncToSectionStatus(void)
 {
     return gCommSyncToSectionStatus;
+}
+
+uint16_t
+CAN_Adapter_GetCommPowerToSectionStatus(void)
+{
+    return gCommPowerToSectionParam.power_section_interact_word;
 }
 
 AdapterStatus_t

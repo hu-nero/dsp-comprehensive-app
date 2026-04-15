@@ -84,7 +84,13 @@ Cabinet_GetComPowerToSectionParamStatus1(void)
 uint16_t
 Cabinet_GetComSyncToSectionStatus(void)
 {
-	return CAN_Adapter_GetSyncToSectionStatus;
+	return CAN_Adapter_GetCommSyncToSectionStatus;
+}
+
+uint16_t
+Cabinet_GetComPowerToSectionStatus(void)
+{
+	return CAN_Adapter_GetCommPowerToSectionStatus;
 }
 
 // 区段柜控制初始化
@@ -1553,6 +1559,10 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             FaultWord1.DataBit.Bit9 = 0;
             // 复位故障
             NPR_FaultCode = 0;
+            AlarmWord1.DataInt = 0;
+            AlarmWord2.DataInt = 0;
+            FaultWord1.DataInt = 0;
+            FaultWord2.DataInt = 0;
 
             // 读取面板、柜体开关状态
             Cabinet_ReadAllSwitchStatus(Context);
@@ -2777,7 +2787,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 else
                 {
                     // TODO: 同步柜全部解列信号
-                    CommSyncToSection_t status = CAN_Adapter_GetSyncToSectionStatus();
+                    CommSyncToSection_t status = CAN_Adapter_GetCommSyncToSectionStatus();
                     if ((status.sync_status.bit.off_grid_all == 1) && (Context->state == CABINET_STATE_PARALLEL))
                     {
                         // 计时
@@ -2806,7 +2816,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
 
                 {
                     // TODO: 同步柜全部解列信号
-                    CommSyncToSection_t status = CAN_Adapter_GetSyncToSectionStatus();
+                    CommSyncToSection_t status = CAN_Adapter_GetCommSyncToSectionStatus();
                     if (status.sync_status.bit.off_grid_all == 1)
                     {
                         Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_PARALLEL_CIRCUIT;
@@ -2961,7 +2971,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 CommSectionToSync_t tmp_state;
 
                 Cabinet_SendParallelRequest(Context);
-                grid_state = CAN_Adapter_GetSyncToSectionStatus();
+                grid_state = CAN_Adapter_GetCommSyncToSectionStatus();
 
                 if (gAutoRequestParallelCount < 60000)
                 {
