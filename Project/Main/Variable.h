@@ -110,8 +110,10 @@ extern unsigned int AlmCntThr_OverLow_Flow2;
 
 extern float AlmThr_UnderVolt_Phase;
 extern float AlmThr_OverVolt_Work1;
+extern float FltCnt_OverVolt_Work1;
 extern float FltThr_OverVolt_Work1;
 extern float AlmThr_OverVolt_Work2;
+extern float FltCnt_OverVolt_Work2;
 extern float FltThr_OverVolt_Work2;
 extern float AlmThr_UnderVolt_Work1;
 extern float FltThr_UnderVolt_Work1;

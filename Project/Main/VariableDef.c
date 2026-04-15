@@ -94,12 +94,16 @@ unsigned int AlmCntThr_OverLow_Flow2;
 
 float AlmThr_UnderVolt_Phase;
 float AlmThr_OverVolt_Work1;
+float FltCnt_OverVolt_Work1;
 float FltThr_OverVolt_Work1;
 float AlmThr_OverVolt_Work2;
+float FltCnt_OverVolt_Work2;
 float FltThr_OverVolt_Work2;
 float AlmThr_UnderVolt_Work1;
+//float FltCnt_UnderVolt_Work1;
 float FltThr_UnderVolt_Work1;
 float AlmThr_UnderVolt_Work2;
+//float FltCnt_UnderVolt_Work2;
 float FltThr_UnderVolt_Work2;
 float AlmThr_OverImba_Volt;
 float FltThr_OverImba_Volt;
@@ -668,12 +672,16 @@ void variable_init(void)
 
     AlmThr_UnderVolt_Phase=0;
     AlmThr_OverVolt_Work1=0;
+    FltCnt_OverVolt_Work1=0;
     FltThr_OverVolt_Work1=0;
     AlmThr_OverVolt_Work2=0;
+    FltCnt_OverVolt_Work2=0;
     FltThr_OverVolt_Work2=0;
     AlmThr_UnderVolt_Work1=0;
+    FltCnt_UnderVolt_Work1=0;
     FltThr_UnderVolt_Work1=0;
     AlmThr_UnderVolt_Work2=0;
+    FltCnt_UnderVolt_Work2=0;
     FltThr_UnderVolt_Work2=0;
     AlmThr_OverImba_Volt=0;
     FltThr_OverImba_Volt=0;
@@ -897,19 +905,19 @@ void AlarmWord_Clear(u16 Code)
 	if((Code >= 1) && (Code <= 16))
 		AlarmWord1.DataInt &= (~ (1<<(Code-1)) );
 	if((Code >= 17) && (Code <= 32))
-		AlarmWord2.DataInt &= (~ (1<<(Code-1)) );
+		AlarmWord2.DataInt &= (~ (1<<(Code-17)) );
 	if((Code >= 33) && (Code <= 48))
-		AlarmWord3.DataInt &= (~ (1<<(Code-1)) );
+		AlarmWord3.DataInt &= (~ (1<<(Code-33)) );
 	if((Code >= 49) && (Code <= 64))
-		AlarmWord4.DataInt &= (~ (1<<(Code-1)) );
+		AlarmWord4.DataInt &= (~ (1<<(Code-49)) );
 	if((Code >= 65) && (Code <= 80))
-		AlarmWord5.DataInt &= (~ (1<<(Code-1)) );
+		AlarmWord5.DataInt &= (~ (1<<(Code-65)) );
 	if((Code >= 81) && (Code <= 96))
-		AlarmWord6.DataInt &= (~ (1<<(Code-1)) );
+		AlarmWord6.DataInt &= (~ (1<<(Code-81)) );
 	if((Code >= 97) && (Code <= 112))
-		AlarmWord7.DataInt &= (~ (1<<(Code-1)) );
+		AlarmWord7.DataInt &= (~ (1<<(Code-97)) );
 	if((Code >= 113) && (Code <= 128))
-		AlarmWord8.DataInt &= (~ (1<<(Code-1)) );
+		AlarmWord8.DataInt &= (~ (1<<(Code-113)) );
 }
 
 //===========================================================================

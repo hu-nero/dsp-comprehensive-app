@@ -81,6 +81,12 @@ Cabinet_GetComPowerToSectionParamStatus1(void)
 	return CAN_Adapter_GetCommPowerToSectionStatus1();
 }
 
+uint16_t
+Cabinet_GetComSyncToSectionStatus(void)
+{
+	return CAN_Adapter_GetSyncToSectionStatus;
+}
+
 // 区段柜控制初始化
 bool
 Cabinet_Init(CabinetContext_t* Context,
