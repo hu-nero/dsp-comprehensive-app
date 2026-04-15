@@ -245,8 +245,8 @@ CAN_Agent_TimeoutCheck(TeCanPort Port)
         g_heartbeat_tick[Port] = current_tick;
     }
 
-    // 状态广播发送周期，默认 1Hz
-    if ((current_tick - g_status_tick[Port]) >= 1000)
+    // 状态广播发送周期，默认 3Hz
+    if ((current_tick - g_status_tick[Port]) >= 300)
     {
         // 回调
         if (g_send_status_callback[Port])
