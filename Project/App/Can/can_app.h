@@ -24,6 +24,7 @@ typedef struct
 } CanAppA3QFxStatus_t;
 
 extern void CAN_App_Init(void);
+extern void CAN_App_RxLoop(void);
 extern void CAN_App_MainLoop(void);
 extern bool CAN_App_SendParam(TeCanPort port, uint16_t DstAddr, ParamDevice_t Device, uint16_t *Data, uint16_t TotalLength);
 

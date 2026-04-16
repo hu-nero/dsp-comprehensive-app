@@ -207,14 +207,19 @@ CAN_App_Init(void)
     memset(&gCanAppA3QFxStatus, 0, sizeof(CanAppA3QFxStatus_t));
 }
 
-// 应用层主循环
+// 数据接收主循环
 void
-CAN_App_MainLoop(void)
+CAN_App_CanRxLoop(void)
 {
     // 分别处理两个CAN端口的协议栈
     CAN_Agent_Process(eCanPort_0);
     CAN_Agent_Process(eCanPort_1);
+}
 
+// 应用层主循环
+void
+CAN_App_MainLoop(void)
+{
     // 处理柜体状态机
     Cabinet_Process(&g_cabinet_context);
     

@@ -117,6 +117,7 @@ void main(void)
 	CAN_App_Switch_Init();
 	for(; ;)
 	{
+        CAN_App_CanRxLoop();
 		EINT;
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DEBUG
