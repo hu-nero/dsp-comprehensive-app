@@ -563,10 +563,22 @@ int CtrlCnt_IORunRefFeed=0;
 int CtrlCnt_IORstRefFeed=0;
 int CtrlCnt_IOFltDelay=0;
 int CtrlCnt_ReactorFanOn=0;
+int CtrlCnt_IORemSingStartFeed=0;
+int CtrlCnt_IORemSingEndFeed=0;
+int CtrlCnt_IORemParaStartFeed=0;
+int CtrlCnt_IORemParaEndFeed=0;
+int CtrlCnt_IORemDgssStartFeed=0;
+int CtrlCnt_IORemDgssEndFeed=0;
 
 u16 CtrlCnt_IOSingCtrl=0;
 u16 CtrlCnt_IOParaCtrl=0;
 u16 CtrlCnt_IODgssCtrl=0;
+u16 CtrlCnt_IORemSingStartCtrl=0;
+u16 CtrlCnt_IORemSingEndCtrl=0;
+u16 CtrlCnt_IORemParaStartCtrl=0;
+u16 CtrlCnt_IORemParaEndCtrl=0;
+u16 CtrlCnt_IORemDgssStartCtrl=0;
+u16 CtrlCnt_IORemDgssEndCtrl=0;
 // Flag
 int Flag_IOSingCtrl=0;
 int Flag_IOParaCtrl=0;
@@ -576,10 +588,12 @@ int Flag_IORstRef=0;
 int FlagRem_Combine=0;
 int FlagRem_Split=0;
 int FlagRem_Reset=0;
-int FlagRem_ParaOn=0;
-int FlagRem_ParaOff=0;
 int FlagRem_SingOn=0;
 int FlagRem_SingOff=0;
+int FlagRem_ParaOn=0;
+int FlagRem_ParaOff=0;
+int FlagRem_DgssOn=0;
+int FlagRem_DgssOff=0;
 
 int Flag_LockPWM=0;
 int Flag_IORunRef=0;

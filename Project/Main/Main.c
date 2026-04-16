@@ -171,17 +171,16 @@ void main(void)
         {
             SysCnt_1sOld = SysCnt_1s;
             npr_1s_protection();
+			FunStatusUpdate();
         }
 		//////////////////////////////////////////////////////////////////////////////
 		if(SysCnt_1ms != SysCnt_1msOld)
 		{
 			SysCnt_1msOld = SysCnt_1ms;
-
             CAN_App_MainLoop();
 			IO_Scan();
 			Inner_ADCScan();
 			CalImbalance();
-			FunStatusUpdate();
 			FunResetAct();
 			RemCommVarRemap();
 			DcsCommVarRemap();
@@ -433,6 +432,15 @@ void FunStatusUpdate(void)
 	MainSta2Word.DataBit.SingQR1 = IO_SingQR1_Feed;
 	MainSta2Word.DataBit.ParaQR2 = IO_ParaQR2_Feed;
 
+	if((AlarmWord1.DataInt) || (AlarmWord2.DataInt))
+	{
+		MainStusWord.DataBit.Alarm = 1;
+	}
+    else
+    {
+		MainStusWord.DataBit.Alarm = 0;
+    }
+
 	if(NPR_FaultCode)
 	{
 		MainStusWord.DataBit.Fault = 1;
@@ -465,9 +473,14 @@ void FunStatusUpdate(void)
 	{
 		IO_FltLed_ON;
 	}
+    else if (MainStusWord.DataBit.Alarm)
+    {
+        IO_FltLed_TOG;
+    }
 	else
 	{
-		IO_FltLed_OFF;
+        /*if (MainStusWord.DataBit.Alarm == 0)*/
+        IO_FltLed_OFF;
 	}
 }
 /******************************************************************/
@@ -1122,10 +1135,10 @@ void CalImbalance(void)
 void GetPQ2r(void)
 {
 	float ftmp = 0;
-	ftmp = UaOut*IaPar + UbOut*IbPar + UcOut*IcPar ;
+	ftmp = UaOut_rmsf*IaPar_rmsf + UbOut_rmsf*IbPar_rmsf + UcOut_rmsf*IcPar_rmsf ;
 	P_Work = P_Work*0.99 + ftmp*0.01;
 
-	ftmp = (UbcOut*IaPar + UcaOut*IbPar + UabOut*IcPar) / Sqrt_3;
+	ftmp = (UbcOut_rmsf*IaPar_rmsf + UcaOut_rmsf*IbPar_rmsf + UabOut_rmsf*IcPar_rmsf) / Sqrt_3;
 	Q_Work = Q_Work*0.99 + ftmp*0.01;
 
 	ftmp = P_Work*P_Work + Q_Work*Q_Work;
@@ -1133,10 +1146,10 @@ void GetPQ2r(void)
 
 	PF_Work = atan2f(Q_Work, P_Work);
 	//////////////////////////////////////////////////////////////
-	ftmp = UaOut*IaOvh + UbOut*IbOvh + UcOut*IcOvh ;
+	ftmp = UaOut_rmsf*IaOvh_rmsf + UbOut_rmsf*IbOvh_rmsf + UcOut_rmsf*IcOvh_rmsf ;
 	P_Ovh = P_Ovh*0.99 + ftmp*0.01;
 
-	ftmp = (UbcOut*IaOvh + UcaOut*IbOvh + UabOut*IcOvh) / Sqrt_3;
+	ftmp = (UbcOut_rmsf*IaOvh_rmsf + UcaOut_rmsf*IbOvh_rmsf + UabOut_rmsf*IcOvh_rmsf) / Sqrt_3;
 	Q_Ovh = Q_Ovh*0.99 + ftmp*0.01;
 
 	ftmp = P_Ovh*P_Ovh + Q_Ovh*Q_Ovh;

@@ -630,10 +630,22 @@ extern int CtrlCnt_IORunRefFeed;
 extern int CtrlCnt_IORstRefFeed;
 extern int CtrlCnt_IOFltDelay;
 extern int CtrlCnt_ReactorFanOn;
+extern int CtrlCnt_IORemSingStartFeed;
+extern int CtrlCnt_IORemSingEndFeed;
+extern int CtrlCnt_IORemParaStartFeed;
+extern int CtrlCnt_IORemParaEndFeed;
+extern int CtrlCnt_IORemDgssStartFeed;
+extern int CtrlCnt_IORemDgssEndFeed;
 
 extern u16 CtrlCnt_IOSingCtrl;
 extern u16 CtrlCnt_IOParaCtrl;
 extern u16 CtrlCnt_IODgssCtrl;
+extern u16 CtrlCnt_IORemSingStartCtrl;
+extern u16 CtrlCnt_IORemSingEndCtrl;
+extern u16 CtrlCnt_IORemParaStartCtrl;
+extern u16 CtrlCnt_IORemParaEndCtrl;
+extern u16 CtrlCnt_IORemDgssStartCtrl;
+extern u16 CtrlCnt_IORemDgssEndCtrl;
 
 // Flag
 extern int Flag_IOSingCtrl;
@@ -644,10 +656,12 @@ extern int Flag_IORstRef;
 extern int FlagRem_Combine;
 extern int FlagRem_Split;
 extern int FlagRem_Reset;
-extern int FlagRem_ParaOn;
-extern int FlagRem_ParaOff;
 extern int FlagRem_SingOn;
 extern int FlagRem_SingOff;
+extern int FlagRem_ParaOn;
+extern int FlagRem_ParaOff;
+extern int FlagRem_DgssOn;
+extern int FlagRem_DgssOff;
 
 extern int Flag_LockPWM;
 extern int Flag_IORunRef;
@@ -685,6 +699,7 @@ extern int SDSendBuff[],SDRecvBuff[];
 
 /****************************************/
 extern void variable_init(void);
+extern void variable_algorithm_init(void);
 extern void variable_NReset_init(void);
 extern void Flash_Fault_ResetVarieble(void);
 extern u16 FaultMask_Map(u16 Code);

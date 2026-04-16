@@ -713,27 +713,39 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             }
         case DI_ID_REM_SINGLE_START:
             {
-                return IORem_SingCtrl_Feed;
+                uint16_t state = FlagRem_SingOn; 
+                FlagRem_SingOn = 0;
+                return state;
             }
         case DI_ID_REM_SINGLE_END:
             {
-                return IORem_ParaCtrl_Feed;
+                uint16_t state = FlagRem_SingOff; 
+                FlagRem_SingOff = 0;
+                return state;
             }
         case DI_ID_REM_PARALLEL_START:
             {
-                return IORem_ParaBusOn_Feed;
+                uint16_t state = FlagRem_ParaOn; 
+                FlagRem_ParaOn = 0;
+                return state;
             }
         case DI_ID_REM_PARALLEL_END:
             {
-                return IORem_ParaBusOff_Feed;
+                uint16_t state = FlagRem_ParaOff; 
+                FlagRem_ParaOff = 0;
+                return state;
             }
         case DI_ID_REM_SHORT_START:
             {
-                return IORem_DegaussOn_Feed;
+                uint16_t state = FlagRem_DgssOn; 
+                FlagRem_DgssOn = 0;
+                return state;
             }
         case DI_ID_REM_SHORT_END:
             {
-                return IORem_DegaussOff_Feed;
+                uint16_t state = FlagRem_DgssOff; 
+                FlagRem_DgssOff = 0;
+                return state;
             }
         case DI_ID_A3QR1:
             {

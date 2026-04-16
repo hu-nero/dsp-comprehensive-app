@@ -84,6 +84,7 @@ extern int CPLDSWVerRead(void);
 
 #define IO_FltLed_ON                IOOutput1.DataBit.Bit15 = 1
 #define IO_FltLed_OFF               IOOutput1.DataBit.Bit15 = 0
+#define IO_FltLed_TOG               IOOutput1.DataBit.Bit15 ^= 1
 
 #define IO_QR1Sing_ON				IOOutput2.DataBit.Bit6 = 0
 #define IO_QR1Sing_OFF				IOOutput2.DataBit.Bit6 = 1
@@ -108,8 +109,8 @@ extern int CPLDSWVerRead(void);
 #define IO_ShockCar_Feed				IOInput1.DataBit.Bit14
 #define IO_CompCar_Feed					IOInput1.DataBit.Bit15
 
-#define IORem_SingCtrl_Feed				IOInput2.DataBit.Bit0
-#define IORem_ParaCtrl_Feed				IOInput2.DataBit.Bit1
+#define IORem_SingCtrlOn_Feed			IOInput2.DataBit.Bit0
+#define IORem_SingCtrlOff_Feed			IOInput2.DataBit.Bit1
 #define IORem_ParaBusOn_Feed			IOInput2.DataBit.Bit2
 #define IORem_ParaBusOff_Feed			IOInput2.DataBit.Bit3
 #define IORem_DegaussOn_Feed            IOInput2.DataBit.Bit4

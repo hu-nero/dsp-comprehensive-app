@@ -263,8 +263,22 @@ void IOInputCtrlFlag(void)
 	static bool bool_io_parallel = false;
 	static bool bool_io_degauss = false;
 
+	static bool bool_io_rem_single_start = false;
+	static bool bool_io_rem_single_end = false;
+	static bool bool_io_rem_parallel_start = false;
+	static bool bool_io_rem_parallel_end = false;
+	static bool bool_io_rem_degauss_start = false;
+	static bool bool_io_rem_degauss_end = false;
+
     if (!IO_LocRem_Feed)
     {
+        bool_io_rem_single_start = false;
+        bool_io_rem_single_end = false;
+        bool_io_rem_parallel_start = false;
+        bool_io_rem_parallel_end = false;
+        bool_io_rem_degauss_start = false;
+        bool_io_rem_degauss_end = false;
+
         if((bool_io_rst == false)&&(IO_RstRef_Feed == 1))
         {
             if(CtrlCnt_IORstRefFeed < 20)
@@ -375,6 +389,162 @@ void IOInputCtrlFlag(void)
     	bool_io_single = false;
     	bool_io_parallel = false;
     	bool_io_degauss = false;
+
+        if((bool_io_rem_single_start == false)&&(IORem_SingCtrlOn_Feed == 1))
+        {
+            if(CtrlCnt_IORemSingStartFeed < 20)
+            {
+                CtrlCnt_IORemSingStartFeed ++;
+            }
+            else
+            {
+                bool_io_rem_single_start = true;
+                CtrlCnt_IORemSingStartFeed = 0;
+            }
+        }
+        else if((bool_io_rem_single_start == true)&&(IORem_SingCtrlOn_Feed == 0))
+        {
+            if(CtrlCnt_IORemSingStartFeed < 20)
+            {
+                CtrlCnt_IORemSingStartFeed ++;
+            }
+            else
+            {
+                bool_io_rem_single_start = false;
+                CtrlCnt_IORemSingStartFeed = 0;
+                FlagRem_SingOn = 1;
+            }
+        }
+
+        if((bool_io_rem_single_end == false)&&(IORem_SingCtrlOff_Feed == 1))
+        {
+            if(CtrlCnt_IORemSingEndFeed < 20)
+            {
+                CtrlCnt_IORemSingEndFeed ++;
+            }
+            else
+            {
+                bool_io_rem_single_end = true;
+                CtrlCnt_IORemSingEndFeed = 0;
+            }
+        }
+        else if((bool_io_rem_single_end == true)&&(IORem_SingCtrlOff_Feed == 0))
+        {
+            if(CtrlCnt_IORemSingEndFeed < 20)
+            {
+                CtrlCnt_IORemSingEndFeed ++;
+            }
+            else
+            {
+                bool_io_rem_single_end = false;
+                CtrlCnt_IORemSingEndFeed = 0;
+                FlagRem_SingOff = 1;
+            }
+        }
+
+        if((bool_io_rem_parallel_start == false)&&(IORem_ParaBusOn_Feed == 1))
+        {
+            if(CtrlCnt_IORemParaStartFeed < 20)
+            {
+                CtrlCnt_IORemParaStartFeed ++;
+            }
+            else
+            {
+                bool_io_rem_parallel_start = true;
+                CtrlCnt_IORemParaStartFeed = 0;
+            }
+        }
+        else if((bool_io_rem_parallel_start == true)&&(IORem_ParaBusOn_Feed == 0))
+        {
+            if(CtrlCnt_IORemParaStartFeed < 20)
+            {
+                CtrlCnt_IORemParaStartFeed ++;
+            }
+            else
+            {
+                bool_io_rem_parallel_start = false;
+                CtrlCnt_IORemParaStartFeed = 0;
+                FlagRem_ParaOn = 1;
+            }
+        }
+
+        if((bool_io_rem_parallel_end == false)&&(IORem_ParaBusOff_Feed == 1))
+        {
+            if(CtrlCnt_IORemParaEndFeed < 20)
+            {
+                CtrlCnt_IORemParaEndFeed ++;
+            }
+            else
+            {
+                bool_io_rem_parallel_end = true;
+                CtrlCnt_IORemParaEndFeed = 0;
+            }
+        }
+        else if((bool_io_rem_parallel_end == true)&&(IORem_ParaBusOff_Feed == 0))
+        {
+            if(CtrlCnt_IORemParaEndFeed < 20)
+            {
+                CtrlCnt_IORemParaEndFeed ++;
+            }
+            else
+            {
+                bool_io_rem_parallel_end = false;
+                CtrlCnt_IORemParaEndFeed = 0;
+                FlagRem_ParaOff = 1;
+            }
+        }
+
+        if((bool_io_rem_degauss_start == false)&&(IORem_DegaussOn_Feed == 1))
+        {
+            if(CtrlCnt_IORemDgssStartFeed < 20)
+            {
+                CtrlCnt_IORemDgssStartFeed ++;
+            }
+            else
+            {
+                bool_io_rem_degauss_start = true;
+                CtrlCnt_IORemDgssStartFeed = 0;
+            }
+        }
+        else if((bool_io_rem_degauss_start == true)&&(IORem_DegaussOn_Feed == 0))
+        {
+            if(CtrlCnt_IORemDgssStartFeed < 20)
+            {
+                CtrlCnt_IORemDgssStartFeed ++;
+            }
+            else
+            {
+                bool_io_rem_degauss_start = false;
+                CtrlCnt_IORemDgssStartFeed = 0;
+                FlagRem_DgssOn = 1;
+            }
+        }
+
+        if((bool_io_rem_degauss_end == false)&&(IORem_DegaussOff_Feed == 1))
+        {
+            if(CtrlCnt_IORemDgssEndFeed < 20)
+            {
+                CtrlCnt_IORemDgssEndFeed ++;
+            }
+            else
+            {
+                bool_io_rem_degauss_end = true;
+                CtrlCnt_IORemDgssEndFeed = 0;
+            }
+        }
+        else if((bool_io_rem_degauss_end == true)&&(IORem_DegaussOff_Feed == 0))
+        {
+            if(CtrlCnt_IORemDgssEndFeed < 20)
+            {
+                CtrlCnt_IORemDgssEndFeed ++;
+            }
+            else
+            {
+                bool_io_rem_degauss_end = false;
+                CtrlCnt_IORemDgssEndFeed = 0;
+                FlagRem_DgssOff = 1;
+            }
+        }
     }
 }
 /**********************************************************************************/

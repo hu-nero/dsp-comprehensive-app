@@ -366,8 +366,8 @@ static void
 Cabinet_UpdateCabinetState(CabinetContext_t* Context)
 {
     CabinetState_t target_state;
-    SwitchState_t single_switch;
-    SwitchState_t parallel_switch;
+    SwitchState_t single_switch,single_off_switch;
+    SwitchState_t parallel_switch,parallel_off_switch;
 
     if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
     {
@@ -378,6 +378,17 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
         	uint16_t tmp_state = 0;
 
             // 清空自动控制流程状态
+            // 清空远控IO状态
+            (void)Context->switch_feed(DI_ID_REM_SINGLE_START);
+            (void)Context->switch_feed(DI_ID_REM_SINGLE_END);
+            (void)Context->switch_feed(DI_ID_REM_PARALLEL_START);
+            (void)Context->switch_feed(DI_ID_REM_PARALLEL_END);
+            (void)Context->switch_feed(DI_ID_REM_SHORT_START);
+            (void)Context->switch_feed(DI_ID_REM_SHORT_END);
+            (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SINGLE);
+            (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_PARALLEL);
+            (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SHORT);
+            (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_RESET);
             gAutoRequestParallelCount = 0;
             Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
             Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
@@ -464,7 +475,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             if (!((Context->state != Context->target_state)  &&
                  (Context->target_state != CABINET_STATE_INVALID)))
             {
-                // 读取旋钮状态
+                // 供电监控:读取旋钮状态
                 tmp_single_switch = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SINGLE);
                 tmp_parallel_switch = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_PARALLEL);
 
@@ -477,11 +488,6 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     {
                         tmp_single_switch = 2;
                     }
-                }
-
-                if ((tmp_single_switch == 0) && (tmp_parallel_switch == 0))
-                {
-                    return;
                 }
 
                 if (tmp_single_switch == 1)
@@ -510,6 +516,43 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     Context->switch_last.bus1_switch = Context->switch_list.bus1_switch;
                 }
             }
+
+            if ((Context->switch_last.single_switch == Context->switch_list.single_switch) &&
+                (Context->switch_last.bus1_switch == Context->switch_list.bus1_switch))
+            {
+                // DCS:读取旋钮状态
+                single_switch = (SwitchState_t)Context->switch_feed(DI_ID_REM_SINGLE_START);
+                single_off_switch = (SwitchState_t)Context->switch_feed(DI_ID_REM_SINGLE_END);
+                parallel_switch = (SwitchState_t)Context->switch_feed(DI_ID_REM_PARALLEL_START);
+                parallel_off_switch = (SwitchState_t)Context->switch_feed(DI_ID_REM_PARALLEL_END);
+
+                // 如果没有发生状态转换
+                if (!((Context->state != Context->target_state)  &&
+                            (Context->target_state != CABINET_STATE_INVALID)))
+                {
+                    if ((single_switch == SWITCH_OFF) && (single_off_switch == SWITCH_OFF) && (parallel_switch == SWITCH_OFF) && (parallel_off_switch == SWITCH_OFF))
+                    {
+                        return;
+                    }
+                    if (single_switch == SWITCH_ON)
+                    {
+                        Context->switch_last.single_switch = SWITCH_ON;
+                    }
+                    if (single_off_switch == SWITCH_ON)
+                    {
+                        Context->switch_last.single_switch = SWITCH_OFF;
+                    }
+                    if (parallel_switch == SWITCH_ON)
+                    {
+                        Context->switch_last.bus1_switch = SWITCH_ON;
+                    }
+                    if (parallel_off_switch == SWITCH_ON)
+                    {
+                        Context->switch_last.bus1_switch = SWITCH_OFF;
+                    }
+                }
+            }
+
             // 根据开关状态确定目标状态
 			if ((Context->switch_last.single_switch == SWITCH_OFF) && (Context->switch_last.bus1_switch == SWITCH_OFF))
 			{
@@ -1898,7 +1941,39 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
     else if (Context->switch_list.manual_switch == SWITCH_ON)
     {
         // TODO:读取远端消磁，或者远端消磁指令触发消磁函数
-        return RESULT_INVALID_STATE;
+        // 消磁面板闭合
+        if (Context->panel_remote_degauss_flag == false)
+        {
+            /*Context->switch_last.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_REM_SHORT_START);*/
+            /*if (Context->switch_last.short_switch == SWITCH_OFF)*/
+            {
+                uint16_t state = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SHORT);
+                if (state == 1)
+                {
+                    Context->switch_last.short_switch = SWITCH_ON;
+                }
+                if (Context->switch_last.short_switch == Context->switch_list.short_switch)
+                {
+                    return RESULT_INVALID_STATE;
+                }
+            }
+        }
+        else if (Context->panel_remote_degauss_flag == true)
+        {
+            /*Context->switch_last.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_REM_SHORT_END);*/
+            /*if (Context->switch_last.short_switch == SWITCH_ON)*/
+            {
+                uint16_t state = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SHORT);
+                if (state == 2)
+                {
+                    Context->switch_last.short_switch = SWITCH_OFF;
+                }
+                if (Context->switch_last.short_switch == Context->switch_list.short_switch)
+                {
+                    return RESULT_INVALID_STATE;
+                }
+            }
+        }
     }
 
     // 判断是否发生状态转换
@@ -1954,6 +2029,7 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
         if (demag_result == RESULT_SUCCESS)
         {
             Context->panel_remote_degauss_flag = true;
+            Context->switch_list.short_switch = SWITCH_ON;
             // TODO:消磁灯常亮
         }
         else if (demag_result == RESULT_WAIT)
@@ -1979,6 +2055,7 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
         if (demag_result == RESULT_SUCCESS)
         {
             Context->panel_remote_degauss_flag = false;
+            Context->switch_list.short_switch = SWITCH_OFF;
             // TODO:消磁灯熄灭
         }
         else if (demag_result == RESULT_WAIT)
@@ -2788,7 +2865,10 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 {
                     // TODO: 同步柜全部解列信号
                     CommSyncToSection_t status = CAN_Adapter_GetCommSyncToSectionStatus();
-                    if ((status.sync_status.bit.off_grid_all == 1) && (Context->state == CABINET_STATE_PARALLEL))
+                    AdapterStatus_t adapter_status = CAN_Adapter_GetAdapterStatus();
+                    if ((status.sync_status.bit.off_grid_all == 1) &&
+                        (Context->state == CABINET_STATE_PARALLEL) &&
+                        (adapter_status.sync_online_status))
                     {
                         // 计时
                         Context->fault_timer_start = hal_timer_get_timestamp();
@@ -2817,7 +2897,9 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 {
                     // TODO: 同步柜全部解列信号
                     CommSyncToSection_t status = CAN_Adapter_GetCommSyncToSectionStatus();
-                    if (status.sync_status.bit.off_grid_all == 1)
+                    AdapterStatus_t adapter_status = CAN_Adapter_GetAdapterStatus();
+                    if ((status.sync_status.bit.off_grid_all == 1) &&
+                        (adapter_status.sync_online_status))
                     {
                         Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_PARALLEL_CIRCUIT;
                     }
@@ -2969,6 +3051,14 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
             {
                 CommSyncToSection_t grid_state;
                 CommSectionToSync_t tmp_state;
+                if (Context->state == CABINET_STATE_PARALLEL)
+                {
+                    gAutoRequestParallelCount = 0;
+                    tmp_state = CAN_Adapter_GetCommSectionToSync();
+                    tmp_state.section_status.bit.grid_connection_request = 0;
+                    CAN_Adapter_SetCommSectionToSync(tmp_state);
+                    Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
+                }
 
                 Cabinet_SendParallelRequest(Context);
                 grid_state = CAN_Adapter_GetCommSyncToSectionStatus();
