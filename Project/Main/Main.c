@@ -117,7 +117,7 @@ void main(void)
 	CAN_App_Switch_Init();
 	for(; ;)
 	{
-        CAN_App_CanRxLoop();
+        CAN_App_RxLoop();
 		EINT;
 ///////////////////////////////////////////////////////////////////////////////
 #ifdef DEBUG
@@ -519,14 +519,14 @@ void npr_1s_protection(void)
         }
 
         // 工况1
-        if ((status1>>4) == 0)
+        if (((status1>>4)&1) == 0)
         { 
             // 过压故障
             if(vLine_max > FltThr_OverVolt_Work1)
             {
-                if(FltCnt_OverVolt_Work1 > 1)
+                if(FltCnt_OverVolt_Work1 > 0)
                 {
-                    FltCnt_OverVolt_Work1 = 1;
+                    FltCnt_OverVolt_Work1 = 0;
                     NPR_FaultCode = 17;
                     FaultWord_Map(17);
                 }
@@ -571,7 +571,7 @@ void npr_1s_protection(void)
                 {
                     if(FltCnt_UnderVolt_Work1 > AlmCntThr_UnderVolt_Work1)
                     {
-                        FltCnt_UnderVolt_Work1 = AlmCntThr_UnderVolt_Work1;
+                        FltCnt_UnderVolt_Work1 = 0;
                         NPR_FaultCode = 19;
                         FaultWord_Map(19);
                     }
@@ -587,9 +587,9 @@ void npr_1s_protection(void)
                 // 欠压告警
                 if(vLine_min < AlmThr_UnderVolt_Work1)
                 {
-                    if(AlmCnt_UnderVolt_Work1 > 1)
+                    if(AlmCnt_UnderVolt_Work1 > 0)
                     {
-                        AlmCnt_UnderVolt_Work1 = 1;
+                        AlmCnt_UnderVolt_Work1 = 0;
                         AlarmWord_Map(4);
                     }
                     else
@@ -606,35 +606,56 @@ void npr_1s_protection(void)
             }
 
             // 电流
-            if(Iphase_max > AlmThr_OverCurr_Work1)
+            // 过流故障
+            if(Iphase_max > FltThr_OverCurr_Work1)
             {
-                if(AlmCnt_OverCurr_Work1 > AlmCntThr_OverCurr_Work1)
+                if(FltCnt_OverCurr_Work1 > 0)
                 {
-                    AlarmWord_Map(8);
-                    if(Iphase_max > FltThr_OverCurr_Work1)
-                    {
-                        NPR_FaultCode = 23;
-                        FaultWord_Map(23);
-                        AlmCnt_OverCurr_Work1 = 0;
-                    }
+                    FltCnt_OverCurr_Work1 = 0;
+                    NPR_FaultCode = 23;
+                    FaultWord_Map(23);
+                }
+                else
+                {
+                    FltCnt_OverCurr_Work1 ++;
                 }
             }
             else
             {
-                AlarmWord_Clear(8);
-                AlmCnt_OverCurr_Work1 = 0;
+                FltCnt_OverCurr_Work1 = 0;
+            }
+            // 过流告警
+            if(Iphase_max > AlmThr_OverCurr_Work1)
+            {
+                if(AlmCnt_OverCurr_Work1 > AlmCntThr_OverCurr_Work1)
+                {
+                    AlmCnt_OverCurr_Work1 = AlmCntThr_OverCurr_Work1;
+                    AlarmWord_Map(8);
+                }
+                else
+                {
+                    AlmCnt_OverCurr_Work1 ++;
+                }
+            }
+            else
+            {
+                if(AlmCnt_OverCurr_Work1 > 0)
+                {
+                    AlmCnt_OverCurr_Work1 --;
+                    AlarmWord_Clear(8);
+                }
             }
         }
         // 工况2
-        else if ((status1>>4) == 1)
+        else if (((status1>>4)&1) == 1)
         {
             /////////////////////////////////////////////
             // 过压故障
             if(vLine_max > FltThr_OverVolt_Work2)
             {
-                if(FltCnt_OverVolt_Work2 > 1)
+                if(FltCnt_OverVolt_Work2 > 0)
                 {
-                    FltCnt_OverVolt_Work2 = 1;
+                    FltCnt_OverVolt_Work2 = 0;
                     NPR_FaultCode = 18;
                     FaultWord_Map(18);
                 }
@@ -679,7 +700,7 @@ void npr_1s_protection(void)
                 {
                     if(FltCnt_UnderVolt_Work2 > AlmCntThr_UnderVolt_Work2)
                     {
-                        FltCnt_UnderVolt_Work2 = AlmCntThr_UnderVolt_Work2;
+                        FltCnt_UnderVolt_Work2 = 0;
                         NPR_FaultCode = 20;
                         FaultWord_Map(20);
                     }
@@ -688,16 +709,12 @@ void npr_1s_protection(void)
                         FltCnt_UnderVolt_Work2 ++;
                     }
                 }
-                else
-                {
-                    FltCnt_UnderVolt_Work2 = 0;
-                }
                 // 欠压告警
                 if(vLine_min < AlmThr_UnderVolt_Work2)
                 {
-                    if(AlmCnt_UnderVolt_Work2 > 1)
+                    if(AlmCnt_UnderVolt_Work2 > 0)
                     {
-                        AlmCnt_UnderVolt_Work2 = 1;
+                        AlmCnt_UnderVolt_Work2 = 0;
                         AlarmWord_Map(5);
                     }
                     else
@@ -711,26 +728,50 @@ void npr_1s_protection(void)
 					AlarmWord_Clear(5);
                 }
             }
+            else
+            {
+            	FltCnt_UnderVolt_Work2 = 0;
+            }
 
             // 电流
-            if(Iphase_max > AlmThr_OverCurr_Work2)
+            // 过流故障
+            if(Iphase_max > FltThr_OverCurr_Work2)
             {
-                AlmCnt_OverCurr_Work2 ++;
-                if(AlmCnt_OverCurr_Work2 > AlmCntThr_OverCurr_Work2)
+                if(FltCnt_OverCurr_Work2 > 0)
                 {
-                    AlarmWord_Map(9);
-                    if(Iphase_max > FltThr_OverCurr_Work2)
-                    {
-                        NPR_FaultCode = 24;
-                        FaultWord_Map(24);
-                        AlmCnt_OverCurr_Work2 = 0;
-                    }
+                    FltCnt_OverCurr_Work2 = 0;
+                    NPR_FaultCode = 24;
+                    FaultWord_Map(24);
+                }
+                else
+                {
+                    FltCnt_OverCurr_Work2 ++;
                 }
             }
             else
             {
-                AlarmWord_Clear(9);
-                AlmCnt_OverCurr_Work2 = 0;
+                FltCnt_OverCurr_Work2 = 0;
+            }
+            // 过流告警
+            if(Iphase_max > AlmThr_OverCurr_Work2)
+            {
+                if(AlmCnt_OverCurr_Work2 > AlmCntThr_OverCurr_Work2)
+                {
+                    AlmCnt_OverCurr_Work2 = AlmCntThr_OverCurr_Work2;
+                    AlarmWord_Map(9);
+                }
+                else
+                {
+                    AlmCnt_OverCurr_Work2 ++;
+                }
+            }
+            else
+            {
+                if(AlmCnt_OverCurr_Work2 > 0)
+                {
+                    AlmCnt_OverCurr_Work2 --;
+                    AlarmWord_Clear(9);
+                }
             }
         }
         //////////////////////////////////////////////////
@@ -773,13 +814,13 @@ void npr_1s_protection(void)
             AlmCnt_OverImba_Curr ++;
             if(AlmCnt_OverImba_Curr > AlmCntThr_OverImba_Curr)
             {
-                AlarmWord_Map(6);
+                AlarmWord_Map(7);
             }
         }
         else
         {
             AlmCnt_OverImba_Curr = 0;
-            AlarmWord_Clear(6);
+            AlarmWord_Clear(7);
         }
 
         if(Iout_Imbalance > FltThr_OverImba_Curr)

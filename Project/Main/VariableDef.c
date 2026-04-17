@@ -83,8 +83,10 @@ unsigned int FltCnt_OverImba_Curr;
 unsigned int FltCntThr_OverImba_Curr;
 
 unsigned int AlmCnt_OverCurr_Work1;
+unsigned int FltCnt_OverCurr_Work1;
 unsigned int AlmCntThr_OverCurr_Work1;
 unsigned int AlmCnt_OverCurr_Work2;
+unsigned int FltCnt_OverCurr_Work2;
 unsigned int AlmCntThr_OverCurr_Work2;
 
 unsigned int FltCnt_OverLow_Flow1;
@@ -675,8 +677,10 @@ void variable_init(void)
     FltCntThr_OverImba_Curr=0;
 
     AlmCnt_OverCurr_Work1=0;
+    FltCnt_OverCurr_Work1=0;
     AlmCntThr_OverCurr_Work1=0;
     AlmCnt_OverCurr_Work2=0;
+    FltCnt_OverCurr_Work2=0;
     AlmCntThr_OverCurr_Work2=0;
 
     FltCnt_OverLow_Flow1=0;

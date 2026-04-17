@@ -209,7 +209,7 @@ CAN_App_Init(void)
 
 // 数据接收主循环
 void
-CAN_App_CanRxLoop(void)
+CAN_App_RxLoop(void)
 {
     // 分别处理两个CAN端口的协议栈
     CAN_Agent_Process(eCanPort_0);

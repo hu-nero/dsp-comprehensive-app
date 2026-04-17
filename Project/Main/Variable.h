@@ -98,8 +98,10 @@ extern unsigned int FltCnt_OverImba_Curr;
 extern unsigned int FltCntThr_OverImba_Curr;
 
 extern unsigned int AlmCnt_OverCurr_Work1;
+extern unsigned int FltCnt_OverCurr_Work1;
 extern unsigned int AlmCntThr_OverCurr_Work1;
 extern unsigned int AlmCnt_OverCurr_Work2;
+extern unsigned int FltCnt_OverCurr_Work2;
 extern unsigned int AlmCntThr_OverCurr_Work2;
 
 extern unsigned int FltCnt_OverLow_Flow1;
