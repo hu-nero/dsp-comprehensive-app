@@ -23,6 +23,7 @@ typedef enum
 
 extern void UART485_Adapter_Init(void);
 extern uint16_t UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_Adapter_SwitchType_t Type);
+extern uint16_t UART485_Adapter_GetDcsSwitchCtrlStatus(UART485_Adapter_SwitchType_t Type);
 void UART485_Adapter_MainLoop(void);
 
 #endif /* SERVICES_ADAPTER_485_ADAPTER_H_ */

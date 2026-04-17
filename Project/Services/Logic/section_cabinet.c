@@ -24,6 +24,7 @@ static ExecuteResult_t Cabinet_DisconnectParallelCircuit(CabinetContext_t* Conte
 // 执行流程
 static ExecuteResult_t Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context);
+static ExecuteResult_t Cabinet_Execute10sDegaussProcedure(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ExecuteRecoveryDegaussProcedure(CabinetContext_t* Context, uint16_t DelayMs);
@@ -84,13 +85,13 @@ Cabinet_GetComPowerToSectionParamStatus1(void)
 uint16_t
 Cabinet_GetComSyncToSectionStatus(void)
 {
-	return CAN_Adapter_GetCommSyncToSectionStatus;
+	return (uint16_t)CAN_Adapter_GetCommSyncToSectionStatus().sync_status.all;
 }
 
 uint16_t
 Cabinet_GetComPowerToSectionStatus(void)
 {
-	return CAN_Adapter_GetCommPowerToSectionStatus;
+	return CAN_Adapter_GetCommPowerToSectionStatus();
 }
 
 // 区段柜控制初始化
@@ -125,6 +126,7 @@ Cabinet_Init(CabinetContext_t* Context,
     Context->target_state = CABINET_STATE_INVALID;
 //    Context->mode = CABINET_MODE_MANUAL;
     Context->emergency_stop_status = false;            // 急停状态
+    Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
     Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
     Context->fault_status = false;                     // 故障状态
     Context->panel_remote_degauss_flag = false;        // 面板或者远端消磁标志
@@ -391,6 +393,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_RESET);
             gAutoRequestParallelCount = 0;
             Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
+            Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
             Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
             Context->fault_timer_start = 0;
             Context->fault_timer_duration = 0;
@@ -520,7 +523,51 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             if ((Context->switch_last.single_switch == Context->switch_list.single_switch) &&
                 (Context->switch_last.bus1_switch == Context->switch_list.bus1_switch))
             {
-                // DCS:读取旋钮状态
+                // Dcs-485:读取旋钮状态
+                tmp_single_switch = UART485_Adapter_GetDcsSwitchCtrlStatus(UART485_ID_REM_SINGLE);
+                tmp_parallel_switch = UART485_Adapter_GetDcsSwitchCtrlStatus(UART485_ID_REM_PARALLEL);
+
+                if ((Context->state == CABINET_STATE_SINGLE) || (Context->state == CABINET_STATE_BACKUP))
+                {
+                    // 读取电源柜状态
+                    Context->power_status = CAN_Adapter_GetPowerStatus();
+                    if ((Context->power_status.run_state == POWER_STANDBY) ||
+                            (Context->power_status.run_state == POWER_FAULT))
+                    {
+                        tmp_single_switch = 2;
+                    }
+                }
+
+                if (tmp_single_switch == 1)
+                {
+                    Context->switch_last.single_switch = SWITCH_ON;
+                }
+                else if (tmp_single_switch == 2)
+                {
+                    Context->switch_last.single_switch = SWITCH_OFF;
+                }
+                else
+                {
+                    Context->switch_last.single_switch = Context->switch_list.single_switch;
+                }
+
+                if (tmp_parallel_switch == 1)
+                {
+                    Context->switch_last.bus1_switch = SWITCH_ON;
+                }
+                else if (tmp_parallel_switch == 2)
+                {
+                    Context->switch_last.bus1_switch = SWITCH_OFF;
+                }
+                else
+                {
+                    Context->switch_last.bus1_switch = Context->switch_list.bus1_switch;
+                }
+            }
+            if ((Context->switch_last.single_switch == Context->switch_list.single_switch) &&
+                (Context->switch_last.bus1_switch == Context->switch_list.bus1_switch))
+            {
+                // DCS-干节点:读取旋钮状态
                 single_switch = (SwitchState_t)Context->switch_feed(DI_ID_REM_SINGLE_START);
                 single_off_switch = (SwitchState_t)Context->switch_feed(DI_ID_REM_SINGLE_END);
                 parallel_switch = (SwitchState_t)Context->switch_feed(DI_ID_REM_PARALLEL_START);
@@ -1574,6 +1621,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             Cabinet_SetCabinetState(Context);
             Context->switch_control(DO_ID_RESET,SWITCH_ON);
             Context->emergency_stop_status = false;            // 急停状态
+            Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
             Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
             Context->fault_status = false;
             Context->panel_remote_degauss_flag = false;        // 面板或者远端消磁标志
@@ -1773,6 +1821,84 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
 }
 
 static ExecuteResult_t
+Cabinet_Execute10sDegaussProcedure(CabinetContext_t* Context)
+{
+    ExecuteResult_t res = RESULT_WAIT;
+    // 子状态消磁
+    switch (Context->degauss_10s_sub_state)
+    {
+        case AUTO_RECOVERY_SUB_DEGAUSS_START:
+            {
+                if (Cabinet_HasCycle(Context))
+                {
+                    // 发出警告
+                    Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet has cycle");
+                    Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
+                    return RESULT_FAILED;
+                }
+
+                // 自复位消磁
+                ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, 10000);
+                if (degauss_res == RESULT_SUCCESS)
+                {
+                    Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_WAIT;
+                }
+                else if (degauss_res == RESULT_FAILED)
+                {
+                    Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
+                }
+            }
+            break;
+        case AUTO_RECOVERY_SUB_DEGAUSS_WAIT:
+            {
+                // 等待消磁
+                uint32_t now = hal_timer_get_timestamp();
+                if (now - Context->recovery_degauss_start_time >= Context->recovery_degauss_delay_ms)
+                {
+                    Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_DONE;
+                }
+            }
+            break;
+        case AUTO_RECOVERY_SUB_DEGAUSS_DONE:
+            {
+                // 断开消磁
+                Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
+                // 等待开关反馈稳定3秒
+                res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
+                if (res == RESULT_SUCCESS)
+                {
+                    Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                }
+                else if (res == RESULT_WAIT)
+                {
+                    return res;
+                }
+                else
+                {
+                    Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                    return res;
+                }
+
+                Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
+            }
+            break;
+        case AUTO_RECOVERY_SUB_DEGAUSS_FAILED:
+            {
+                // 失败
+                Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                res = RESULT_FAILED;
+            }
+            break;
+        default:
+            {
+                Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
+            }
+            break;
+    }
+    return res;
+}
+
+static ExecuteResult_t
 Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 {
 	ExecuteResult_t res;
@@ -1911,7 +2037,6 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 static ExecuteResult_t
 Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
 {
-    SwitchState_t switchStateS1_1,switchStateS1_2;
     ExecuteResult_t demag_result;
 
     // 手动/自动
@@ -1919,59 +2044,26 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
     // 手动模式
     if (Context->switch_list.manual_switch == SWITCH_OFF)
     {
-        // 消磁面板闭合
         if (Context->panel_remote_degauss_flag == false)
         {
-            Context->switch_list.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_Short);
-            if (Context->switch_list.short_switch == SWITCH_OFF)
+            Context->switch_last.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_Short);
+            if (Context->switch_last.short_switch == SWITCH_ON)
             {
-                return RESULT_INVALID_STATE;
-            }
-        }
-        else if (Context->panel_remote_degauss_flag == true)
-        {
-            Context->switch_list.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_Short);
-            if (Context->switch_list.short_switch == SWITCH_ON)
-            {
-                return RESULT_INVALID_STATE;
+                Context->panel_remote_degauss_flag = true;
             }
         }
     }
     // 自动模式
     else if (Context->switch_list.manual_switch == SWITCH_ON)
     {
-        // TODO:读取远端消磁，或者远端消磁指令触发消磁函数
-        // 消磁面板闭合
         if (Context->panel_remote_degauss_flag == false)
         {
-            /*Context->switch_last.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_REM_SHORT_START);*/
-            /*if (Context->switch_last.short_switch == SWITCH_OFF)*/
+            Context->switch_last.short_switch = (SwitchState_t)
+            ((Context->switch_feed(DI_ID_REM_SHORT_START)) ||
+             ((UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SINGLE)==1)?1:0));
+            if (Context->switch_last.short_switch == SWITCH_ON)
             {
-                uint16_t state = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SHORT);
-                if (state == 1)
-                {
-                    Context->switch_last.short_switch = SWITCH_ON;
-                }
-                if (Context->switch_last.short_switch == Context->switch_list.short_switch)
-                {
-                    return RESULT_INVALID_STATE;
-                }
-            }
-        }
-        else if (Context->panel_remote_degauss_flag == true)
-        {
-            /*Context->switch_last.short_switch = (SwitchState_t)Context->switch_feed(DI_ID_REM_SHORT_END);*/
-            /*if (Context->switch_last.short_switch == SWITCH_ON)*/
-            {
-                uint16_t state = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SHORT);
-                if (state == 2)
-                {
-                    Context->switch_last.short_switch = SWITCH_OFF;
-                }
-                if (Context->switch_last.short_switch == Context->switch_list.short_switch)
-                {
-                    return RESULT_INVALID_STATE;
-                }
+                Context->panel_remote_degauss_flag = true;
             }
         }
     }
@@ -1984,88 +2076,18 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
         Cabinet_SetAlarm(Context, ALARM_NONE, "Execution of panel demagnetization failed");
         // 清空面板消磁的状态
         Context->switch_control(DO_ID_SHORT_SET, SWITCH_OFF);
+        Context->panel_remote_degauss_flag = false;
+        Context->switch_last.short_switch = SWITCH_OFF;
+        Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
         return RESULT_FAILED;
     }
 
-    // 第一次按下面板消磁按钮
-    if (Context->panel_remote_degauss_flag == false)
+    if (Context->panel_remote_degauss_flag == true)
     {
-        // 读取刀闸QS1
-        switchStateS1_1 = (SwitchState_t)Context->switch_feed(DI_ID_A3QS1);
-        switchStateS1_2 = (SwitchState_t)Context->switch_feed(DI_ID_A3K17);
-        if ((switchStateS1_1 == SWITCH_OFF) &&
-                (switchStateS1_2 == SWITCH_OFF))
-        {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Abnormal position of knife switch QS1");
-            return RESULT_FAILED;
-        }
-        else if ((switchStateS1_1 == SWITCH_ON) &&
-                (switchStateS1_2 == SWITCH_OFF))
-        {
-            // 判断柜内是否有回路
-            if (Cabinet_HasCycle(Context))
-            {
-                // 发出警告
-                Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet has cycle");
-                return RESULT_FAILED;
-            }
-        }
-        else if ((switchStateS1_1 == SWITCH_OFF) &&
-                (switchStateS1_2 == SWITCH_ON))
-        {
-            // TODO:读取同步柜消息，判断所有电源A2QF2是否闭合
-            if (0)
-            {
-                // 发出警告
-                Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet has cycle");
-                return RESULT_FAILED;
-            }
-        }
-
-        // 闭合消磁
-        Context->switch_control(DO_ID_A3QR3, SWITCH_ON);
-        // 等待开关反馈稳定3秒
-        demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_ON, 3000, 300, 150);
-        if (demag_result == RESULT_SUCCESS)
-        {
-            Context->panel_remote_degauss_flag = true;
-            Context->switch_list.short_switch = SWITCH_ON;
-            // TODO:消磁灯常亮
-        }
-        else if (demag_result == RESULT_WAIT)
-        {
-            return RESULT_WAIT;
-        }
-        else
-        {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "first Demagnetization failed");
-            return RESULT_FAILED;
-        }
-    }
-    // 第二次闭合消磁按钮
-    else if (Context->panel_remote_degauss_flag == true)
-    {
-        // 清空旋钮状态
-        (void)Context->switch_feed(DI_ID_SINGLE);
-        (void)Context->switch_feed(DI_ID_BUS1);
-        // 断开消磁
-        Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
-        // 等待开关反馈稳定3秒
-        demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 3000, 300, 150);
-        if (demag_result == RESULT_SUCCESS)
+        demag_result = Cabinet_Execute10sDegaussProcedure(Context);
+        if ((demag_result == RESULT_SUCCESS) || (demag_result == RESULT_FAILED))
         {
             Context->panel_remote_degauss_flag = false;
-            Context->switch_list.short_switch = SWITCH_OFF;
-            // TODO:消磁灯熄灭
-        }
-        else if (demag_result == RESULT_WAIT)
-        {
-            return demag_result;
-        }
-        else
-        {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "second Demagnetization failed");
-            return RESULT_FAILED;
         }
     }
     return RESULT_SUCCESS;

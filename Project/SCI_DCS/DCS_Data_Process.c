@@ -11,33 +11,4 @@ void Modbus_Send_To_Dcs(void)
 void Modbus_Recv_For_Dcs(void)
 {
 	memcpy(&DcsHoldSum, DcsHoldRegBuf, sizeof(DcsHoldSum));
-
-//	if(RemHoldSum.CtrlWord.bit.Cmd)
-//	{
-//		switch(RemHoldSum.CtrlWord.bit.Cmd)
-//		{
-//			case 1: FlagRemote_Start = 1; break;
-//			case 2: FlagRemote_Stop = 1; break;
-//			case 3: FlagRemote_Reset = 1; break;
-//			default: break;
-//		}
-//	}
-//	else if(RemHoldSum.CtrlWord.bit.FastChar)
-//	{
-//
-//	}
-//	else if(RemHoldSum.CtrlWord.bit.ComCut)
-//	{
-//		switch(RemHoldSum.CtrlWord.bit.ComCut)
-//		{
-//			case 0: break;
-//			case 1: FlagRemote_Combine = 1;  break;
-//			case 2: FlagRemote_Split = 1;   break;
-//			case 3: break;
-//		}
-//	}
-//	else if(RemHoldSum.CtrlWord.bit.SingPara)
-//	{
-//
-//	}
 }

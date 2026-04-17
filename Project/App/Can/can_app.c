@@ -705,8 +705,11 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             }
         case DI_ID_Short:
             {
+                uint16_t state = Flag_IODgssCtrl; 
+                Flag_IODgssCtrl = 0;
                 /*return IO_DgssCtrl_Feed;*/
-                return s_switchStatus[3];
+                /*return s_switchStatus[3];*/
+                return state;
             }
         case DI_ID_IMPACT_VEHICLE:
             {

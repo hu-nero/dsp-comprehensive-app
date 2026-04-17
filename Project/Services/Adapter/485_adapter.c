@@ -8,7 +8,7 @@
 #include "Main\Variable.h"
 
 static RemoteHold_t gRemHoldSum,gDcsHoldSum;
-static RemoteHold_t gRemSwitchCtrlWord;
+static RemoteHold_t gRemSwitchCtrlWord,gDcsSwitchCtrlWord;
 
 uint16_t
 UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_Adapter_SwitchType_t Type)
@@ -94,6 +94,89 @@ UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_Adapter_SwitchType_t Type)
     return state;
 }
 
+uint16_t
+UART485_Adapter_GetDcsSwitchCtrlStatus(UART485_Adapter_SwitchType_t Type)
+{
+    uint16_t state;
+    switch (Type)
+    {
+        case UART485_ID_REM_SINGLE:
+            {
+                if ((gDcsSwitchCtrlWord.CtrlWord.bit.rem_single_start == 1) &&
+                    (gDcsSwitchCtrlWord.CtrlWord.bit.rem_single_stop == 0))
+                {
+                    state = 1;
+                }
+                else if ((gDcsSwitchCtrlWord.CtrlWord.bit.rem_single_start == 0) &&
+                    (gDcsSwitchCtrlWord.CtrlWord.bit.rem_single_stop == 1))
+                {
+                    state = 2;
+                }
+                else
+                {
+                    state = 0;
+                }
+                gDcsSwitchCtrlWord.CtrlWord.bit.rem_single_start = 0;
+                gDcsSwitchCtrlWord.CtrlWord.bit.rem_single_stop = 0;
+            }
+            break;
+        case UART485_ID_REM_PARALLEL:
+            {
+                if ((gDcsSwitchCtrlWord.CtrlWord.bit.rem_parallel_start == 1) &&
+                    (gDcsSwitchCtrlWord.CtrlWord.bit.rem_parallel_stop == 0))
+                {
+                    state = 1;
+                }
+                else if ((gDcsSwitchCtrlWord.CtrlWord.bit.rem_parallel_start == 0) &&
+                    (gDcsSwitchCtrlWord.CtrlWord.bit.rem_parallel_stop == 1))
+                {
+                    state = 2;
+                }
+                else
+                {
+                    state = 0;
+                }
+                gDcsSwitchCtrlWord.CtrlWord.bit.rem_parallel_start = 0;
+                gDcsSwitchCtrlWord.CtrlWord.bit.rem_parallel_stop = 0;
+            }
+            break;
+        case UART485_ID_REM_SHORT:
+            {
+                if ((gDcsSwitchCtrlWord.CtrlWord.bit.rem_short_start == 1) &&
+                    (gDcsSwitchCtrlWord.CtrlWord.bit.rem_short_stop == 0))
+                {
+                    state = 1;
+                }
+                else if ((gDcsSwitchCtrlWord.CtrlWord.bit.rem_short_start == 0) &&
+                    (gDcsSwitchCtrlWord.CtrlWord.bit.rem_short_stop == 1))
+                {
+                    state = 2;
+                }
+                else
+                {
+                    state = 0;
+                }
+                gDcsSwitchCtrlWord.CtrlWord.bit.rem_short_start = 0;
+                gDcsSwitchCtrlWord.CtrlWord.bit.rem_short_stop = 0;
+            }
+            break;
+        case UART485_ID_REM_RESET:
+            {
+                if (gDcsSwitchCtrlWord.CtrlWord.bit.Reset == 1)
+                {
+                    state = 1;
+                }
+                else if (gDcsSwitchCtrlWord.CtrlWord.bit.Reset == 0)
+                {
+                    state = 2;
+                }
+                gDcsSwitchCtrlWord.CtrlWord.bit.Reset = 0;
+            }
+            break;
+        default:return 0;
+    }
+    return state;
+}
 // 适配器初始化
 void
 UART485_Adapter_Init(void)
@@ -102,6 +185,7 @@ UART485_Adapter_Init(void)
     gRemHoldSum.CtrlWord.all = 0;
     gDcsHoldSum.CtrlWord.all = 0;
     gRemSwitchCtrlWord.CtrlWord.all = 0;
+    gDcsSwitchCtrlWord.CtrlWord.all = 0;
 }
 
 void
@@ -164,6 +248,65 @@ UART485_Adapter_MainLoop(void)
         }
 
         RemHoldSum.CtrlWord.all = gRemHoldSum.CtrlWord.all;
+    }
+
+    if(gDcsHoldSum.CtrlWord.all != DcsHoldSum.CtrlWord.all)
+    {
+        // 判断命令是否非法
+        if (DcsHoldSum.CtrlWord.bit.Rsvd != 0)
+        {
+            DcsHoldSum.CtrlWord.all = gDcsHoldSum.CtrlWord.all;
+        }
+        // 取出不同的按钮
+        if ((DcsHoldSum.CtrlWord.bit.rem_single_start == 1) &&
+            (DcsHoldSum.CtrlWord.bit.rem_single_stop == 0))
+        {
+            gDcsSwitchCtrlWord.CtrlWord.bit.rem_single_start = 1;
+            gDcsSwitchCtrlWord.CtrlWord.bit.rem_single_stop = 0;
+        }
+        else if ((DcsHoldSum.CtrlWord.bit.rem_single_start == 0) &&
+            (DcsHoldSum.CtrlWord.bit.rem_single_stop == 1))
+        {
+            gDcsSwitchCtrlWord.CtrlWord.bit.rem_single_start = 0;
+            gDcsSwitchCtrlWord.CtrlWord.bit.rem_single_stop = 1;
+        }
+
+        if ((DcsHoldSum.CtrlWord.bit.rem_parallel_start == 1) &&
+            (DcsHoldSum.CtrlWord.bit.rem_parallel_stop == 0))
+        {
+            gDcsSwitchCtrlWord.CtrlWord.bit.rem_parallel_start = 1;
+            gDcsSwitchCtrlWord.CtrlWord.bit.rem_parallel_stop = 0;
+        }
+        else if ((DcsHoldSum.CtrlWord.bit.rem_parallel_start == 0) &&
+            (DcsHoldSum.CtrlWord.bit.rem_parallel_stop == 1))
+        {
+            gDcsSwitchCtrlWord.CtrlWord.bit.rem_parallel_start = 0;
+            gDcsSwitchCtrlWord.CtrlWord.bit.rem_parallel_stop = 1;
+        }
+
+        if ((DcsHoldSum.CtrlWord.bit.rem_short_start == 1) &&
+            (DcsHoldSum.CtrlWord.bit.rem_short_stop == 0))
+        {
+            gDcsSwitchCtrlWord.CtrlWord.bit.rem_short_start = 1;
+            gDcsSwitchCtrlWord.CtrlWord.bit.rem_short_stop = 0;
+        }
+        else if ((DcsHoldSum.CtrlWord.bit.rem_short_start == 0) &&
+            (DcsHoldSum.CtrlWord.bit.rem_short_stop == 1))
+        {
+            gDcsSwitchCtrlWord.CtrlWord.bit.rem_short_start = 0;
+            gDcsSwitchCtrlWord.CtrlWord.bit.rem_short_stop = 1;
+        }
+
+        if (DcsHoldSum.CtrlWord.bit.Reset == 1)
+        {
+            gDcsSwitchCtrlWord.CtrlWord.bit.Reset = 1;
+        }
+        else if (DcsHoldSum.CtrlWord.bit.Reset == 0)
+        {
+            gDcsSwitchCtrlWord.CtrlWord.bit.Reset = 0;
+        }
+
+        DcsHoldSum.CtrlWord.all = gDcsHoldSum.CtrlWord.all;
     }
 }
 

@@ -105,6 +105,7 @@ typedef struct
     bool emergency_stop_status;            // 急停状态
     bool fault_status;                     // 故障状态
     bool panel_remote_degauss_flag;        // 面板或者远端消磁标志
+    AutoRecoverySubState_t degauss_10s_sub_state;  // 自复位消磁子状态
     AutoRecoverySubState_t flt_degauss_sub_state;  // 自复位消磁子状态
     SwitchStateList_t switch_list;         // 所有开关
     SwitchStateList_t switch_last;         // 所有开关
