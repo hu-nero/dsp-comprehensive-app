@@ -630,12 +630,17 @@ void npr_1s_protection(void)
             {
                 if(AlmCnt_OverCurr_Work1 > AlmCntThr_OverCurr_Work1)
                 {
-                    AlmCnt_OverCurr_Work1 = AlmCntThr_OverCurr_Work1;
-                    AlarmWord_Map(8);
+                    AlmCnt_OverCurr_Work1 = 0;
+                    NPR_FaultCode = 23;
+                    FaultWord_Map(23);
                 }
                 else
                 {
                     AlmCnt_OverCurr_Work1 ++;
+                    if(AlmCnt_OverCurr_Work1 > 1)
+                    {
+                        AlarmWord_Map(8);
+                    }
                 }
             }
             else
@@ -758,12 +763,17 @@ void npr_1s_protection(void)
             {
                 if(AlmCnt_OverCurr_Work2 > AlmCntThr_OverCurr_Work2)
                 {
-                    AlmCnt_OverCurr_Work2 = AlmCntThr_OverCurr_Work2;
-                    AlarmWord_Map(9);
+                    AlmCnt_OverCurr_Work2 = 0;
+                    NPR_FaultCode = 24;
+                    FaultWord_Map(24);
                 }
                 else
                 {
                     AlmCnt_OverCurr_Work2 ++;
+                    if(AlmCnt_OverCurr_Work2 > 1)
+                    {
+                        AlarmWord_Map(9);
+                    }
                 }
             }
             else
@@ -954,7 +964,6 @@ void npr_1s_protection(void)
     ////////////////////////////////////////////////////
     if(MainStusWord.DataBit.Estop)
     {
-        /*NPR_FaultCode = 26;*/
         FaultWord_Map(26);
     }
 }
