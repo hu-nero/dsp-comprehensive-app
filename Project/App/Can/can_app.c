@@ -61,7 +61,7 @@ static CabinetContext_t g_cabinet_context;
 static ExecuteResult_t Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State);
 static uint16_t Hardware_SwitchFeed(uint16_t SwitchId);
 static uint16_t Hardware_VoltageRead(VoltageReadType_t VoltagePhaseType);
-static uint16_t Hardware_CurrentRead(CurrentReadType_t CurrentPhaseType);
+static float Hardware_CurrentRead(CurrentReadType_t CurrentPhaseType);
 static void Hardware_AlarmCallback(AlarmType_t AlarmType, const char* Message);
 
 void CAN_App_JogSignalHandler(void);
@@ -814,22 +814,22 @@ Hardware_VoltageRead(VoltageReadType_t VoltagePhaseType)
     return 0;
 }
 
-static uint16_t
+static float
 Hardware_CurrentRead(CurrentReadType_t CurrentPhaseType)
 {
     switch (CurrentPhaseType)
     {
         case CURRENT_I5_PHASE_A:
             {
-                return ADC0_CH3_Value;
+                return IaPar_rmsf;
             }
         case CURRENT_I5_PHASE_B:
             {
-                return ADC0_CH4_Value;
+                return IbPar_rmsf;
             }
         case CURRENT_I5_PHASE_C:
             {
-                return ADC0_CH5_Value;
+                return IcPar_rmsf;
             }
         case CURRENT_I6_PHASE_A:
             {

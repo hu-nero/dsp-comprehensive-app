@@ -113,6 +113,8 @@ extern unsigned int FltCntThr_OverLow_Flow1;
 extern unsigned int FltCnt_OverLow_Flow2;
 extern unsigned int FltCntThr_OverLow_Flow2;
 
+extern unsigned int FltCnt_UnderCurr_Silicon;
+extern unsigned int FltCnt_OverCurr_Silicon;
 
 extern float AlmThr_UnderVolt_Phase;
 extern float AlmThr_OverVolt_Work1;
@@ -140,6 +142,8 @@ extern float FltThr_OverLow_Flow2;
 extern float Auto_Restarttime_Flow;
 extern union DataBit_Type Cap_Ctrl_Word;
 extern unsigned int Can_External_Addr;
+extern float FltThr_UnderCurr_Silicon;
+extern float FltThr_OverCurr_Silicon;
 
 extern float UabSl_HalfMemory[20], UbcSl_HalfMemory[20], UcaSl_HalfMemory[20];
 extern float UabPar_HalfMemory[20], UbcPar_HalfMemory[20], UcaPar_HalfMemory[20];

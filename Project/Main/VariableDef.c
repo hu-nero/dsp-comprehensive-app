@@ -99,6 +99,9 @@ unsigned int FltCntThr_OverLow_Flow1;
 unsigned int FltCnt_OverLow_Flow2;
 unsigned int FltCntThr_OverLow_Flow2;
 
+unsigned int FltCnt_UnderCurr_Silicon;
+unsigned int FltCnt_OverCurr_Silicon;
+
 float AlmThr_UnderVolt_Phase;
 float AlmThr_OverVolt_Work1;
 float FltCnt_OverVolt_Work1;
@@ -125,6 +128,8 @@ float FltThr_OverLow_Flow2;
 float Auto_Restarttime_Flow;
 union DataBit_Type Cap_Ctrl_Word;
 unsigned int Can_External_Addr;
+float FltThr_UnderCurr_Silicon;
+float FltThr_OverCurr_Silicon;
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
@@ -718,8 +723,13 @@ void variable_init(void)
     FltThr_OverLow_Flow2=0;
     Auto_Restarttime_Flow=0;
 
+    FltCnt_UnderCurr_Silicon = 0;
+    FltCnt_OverCurr_Silicon = 0;
+
 	Cap_Ctrl_Word.DataInt=0;
 	Can_External_Addr = 0x02;
+	FltThr_UnderCurr_Silicon = 0;
+	FltThr_UnderCurr_Silicon = 0;
 	memset(&RemInputSum, 0, sizeof(RemoteInput_t));
 	memset(&DcsInputSum, 0, sizeof(RemoteInput_t));
 	RemHoldSum.CtrlWord.all = 0;

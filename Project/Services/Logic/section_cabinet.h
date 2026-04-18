@@ -16,7 +16,7 @@ typedef uint16_t (*SwitchFeedFunc_t)(uint16_t SwitchId);
 // 电压读取回调函数
 typedef uint16_t (*VoltageReadFunc_t)(VoltageReadType_t VoltagePhaseType);
 // 电流读取回调函数
-typedef uint16_t (*CurrentReadFunc_t)(CurrentReadType_t CurrentPhaseType);
+typedef float (*CurrentReadFunc_t)(CurrentReadType_t CurrentPhaseType);
 // 报警回调函数
 typedef void (*AlarmCallback_t)(AlarmType_t AlarmType, const char* Message);
 

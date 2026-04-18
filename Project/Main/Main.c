@@ -451,7 +451,8 @@ void FunStatusUpdate(void)
 	{
 		MainStusWord.DataBit.Fault = 0;
 
-		if(MainSta2Word.DataBit.SingQF1 | MainSta2Word.DataBit.ParaQF2)
+		if((MainSta2Word.DataBit.SingQF1 && MainSta2Word.DataBit.SingQR1) ||
+           (MainSta2Word.DataBit.ParaQF2 && MainSta2Word.DataBit.ParaQR2))
 		{
 			MainStusWord.DataBit.Running = 1;
 		}
@@ -884,6 +885,53 @@ void npr_1s_protection(void)
         FltCnt_OverLow_Flow1 = 0;
         FltCnt_OverLow_Flow2 = 0;
     }
+
+    // 可控硅关断
+    if (MainStusWord.DataBit.Running)
+    {
+        if ((IaPar_rms < FltThr_UnderCurr_Silicon) &&
+            (IbPar_rms < FltThr_UnderCurr_Silicon) &&
+            (IcPar_rms < FltThr_UnderCurr_Silicon))
+        {
+        	if(FltCnt_UnderCurr_Silicon > 7)
+			{
+				FltCnt_UnderCurr_Silicon = 7;
+				NPR_FaultCode = 27;
+				FaultWord_Map(27);
+			}
+			else
+			{
+				FltCnt_UnderCurr_Silicon ++;
+			}
+        }
+        else
+        {
+			FltCnt_UnderCurr_Silicon = 0;
+        }
+    }
+    else
+    {
+        if ((IaPar_rms > FltThr_OverCurr_Silicon) &&
+            (IbPar_rms > FltThr_OverCurr_Silicon) &&
+            (IcPar_rms > FltThr_OverCurr_Silicon))
+        {
+			if(FltCnt_OverCurr_Silicon > 7)
+			{
+				FltCnt_OverCurr_Silicon = 7;
+				NPR_FaultCode = 28;
+				FaultWord_Map(28);
+			}
+			else
+			{
+				FltCnt_OverCurr_Silicon ++;
+			}
+		}
+		else
+		{
+			FltCnt_OverCurr_Silicon = 0;
+		}
+    }
+
 
     //////////////////////////////////////////////////////////
     if(MainStusWord.DataBit.PwrGrid)
