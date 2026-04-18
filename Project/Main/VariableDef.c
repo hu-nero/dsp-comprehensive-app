@@ -32,16 +32,20 @@ float IaOut_rmsf=0, IbOut_rmsf=0, IcOut_rmsf=0;
 
 float UabSl_sum=0, UbcSl_sum=0, UcaSl_sum=0;
 float UabPar_sum=0, UbcPar_sum=0, UcaPar_sum=0;
-u64 IaPar_sum=0, IbPar_sum=0, IcPar_sum=0;
-u64 IaOvh_sum=0, IbOvh_sum=0, IcOvh_sum=0;
+float IaPar_sum=0, IbPar_sum=0, IcPar_sum=0;
+float IaOvh_sum=0, IbOvh_sum=0, IcOvh_sum=0;
 float UaOut_sum=0, UbOut_sum=0, UcOut_sum=0;
 float UabOut_sum=0, UbcOut_sum=0, UcaOut_sum=0;
+float work1_sum=0,work2_sum=0,work3_sum=0,work4_sum=0;
+
 float UabSl_rms=0, UbcSl_rms=0, UcaSl_rms=0;
 float UabPar_rms=0, UbcPar_rms=0, UcaPar_rms=0;
 float IaPar_rms=0, IbPar_rms=0, IcPar_rms=0;
 float IaOvh_rms=0, IbOvh_rms=0, IcOvh_rms=0;
 float UaOut_rms=0, UbOut_rms=0, UcOut_rms=0;
 float UabOut_rms=0, UbcOut_rms=0, UcaOut_rms=0;
+float work1_rms=0,work2_rms=0,work3_rms=0,work4_rms=0;
+
 float P_Work=0, Q_Work=0, S_Work=0, PF_Work=0;
 float P_Ovh=0, Q_Ovh=0, S_Ovh=0, PF_Ovh=0;
 float P_Sys=0, Q_Sys=0, S_Sys=0, PF_Sys=0;
@@ -53,6 +57,7 @@ float IaPar_HalfMemory[20], IbPar_HalfMemory[20], IcPar_HalfMemory[20];
 float IaOvh_HalfMemory[20], IbOvh_HalfMemory[20], IcOvh_HalfMemory[20];
 float UaOut_HalfMemory[20], UbOut_HalfMemory[20], UcOut_HalfMemory[20];
 float UabOut_HalfMemory[20], UbcOut_HalfMemory[20], UcaOut_HalfMemory[20];
+float work1[20], work2[20], work3[20], work4[20];
 
 unsigned int AlmCnt_UnderVolt_Phase;
 unsigned int AlmCntThr_UnderVolt_Phase;

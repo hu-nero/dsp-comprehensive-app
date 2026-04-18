@@ -17,7 +17,7 @@ typedef struct
 	s16 UaOut, UbOut, UcOut;
 	s16 UabOut, UbcOut, UcaOut;
 	s16 IaOut, IbOut, IcOut;
-	s16 P_Sys, Q_Sys, S_Sys, PF_Sys;
+	s32 P_Sys, Q_Sys, S_Sys, PF_Sys;
 	s16 Ublk, Iblk;
 	s16 FLwater;
 }	RemoteInput_t;
@@ -53,16 +53,20 @@ extern float IaOut_rmsf, IbOut_rmsf, IcOut_rmsf;
 
 extern float UabSl_sum, UbcSl_sum, UcaSl_sum;
 extern float UabPar_sum, UbcPar_sum, UcaPar_sum;
-extern u64 IaPar_sum, IbPar_sum, IcPar_sum;
-extern u64 IaOvh_sum, IbOvh_sum, IcOvh_sum;
+extern float IaPar_sum, IbPar_sum, IcPar_sum;
+extern float IaOvh_sum, IbOvh_sum, IcOvh_sum;
 extern float UaOut_sum, UbOut_sum, UcOut_sum;
 extern float UabOut_sum, UbcOut_sum, UcaOut_sum;
+extern float work1_sum,work2_sum,work3_sum,work4_sum;
+
 extern float UabSl_rms, UbcSl_rms, UcaSl_rms;
 extern float UabPar_rms, UbcPar_rms, UcaPar_rms;
 extern float IaPar_rms, IbPar_rms, IcPar_rms;
 extern float IaOvh_rms, IbOvh_rms, IcOvh_rms;
 extern float UaOut_rms, UbOut_rms, UcOut_rms;
 extern float UabOut_rms, UbcOut_rms, UcaOut_rms;
+extern float work1_rms,work2_rms,work3_rms,work4_rms;
+
 extern float P_Work, Q_Work, S_Work, PF_Work;
 extern float P_Ovh, Q_Ovh, S_Ovh, PF_Ovh;
 extern float P_Sys, Q_Sys, S_Sys, PF_Sys;
@@ -143,6 +147,7 @@ extern float IaPar_HalfMemory[20], IbPar_HalfMemory[20], IcPar_HalfMemory[20];
 extern float IaOvh_HalfMemory[20], IbOvh_HalfMemory[20], IcOvh_HalfMemory[20];
 extern float UaOut_HalfMemory[20], UbOut_HalfMemory[20], UcOut_HalfMemory[20];
 extern float UabOut_HalfMemory[20], UbcOut_HalfMemory[20], UcaOut_HalfMemory[20];
+extern float work1[20], work2[20], work3[20], work4[20];
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////

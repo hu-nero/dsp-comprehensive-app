@@ -1003,21 +1003,13 @@ void GetVIRms(void)
 		UbcPar_rms = UbcPar_sum*0.05*1.127;
 		UcaPar_rms = UcaPar_sum*0.05*1.127;
 
-		IaPar_rms = sqrtf((float)IaPar_sum*0.05)*1.123;
-		IbPar_rms = sqrtf((float)IbPar_sum*0.05)*1.123;
-		IcPar_rms = sqrtf((float)IcPar_sum*0.05)*1.123;
+        IaPar_rms = sqrtf((float)IaPar_sum*0.05);
+        IbPar_rms = sqrtf((float)IbPar_sum*0.05);
+        IcPar_rms = sqrtf((float)IcPar_sum*0.05);
 
-		IaOvh_rms = sqrtf((float)IaOvh_sum*0.05)*1.123;
-		IbOvh_rms = sqrtf((float)IbOvh_sum*0.05)*1.123;
-		IcOvh_rms = sqrtf((float)IcOvh_sum*0.05)*1.123;
-
-//		IaPar_rms = IaPar_sum*0.05;
-//		IbPar_rms = IbPar_sum*0.05;
-//		IcPar_rms = IcPar_sum*0.05;
-//
-//		IaOvh_rms = IaOvh_sum*0.05;
-//		IbOvh_rms = IbOvh_sum*0.05;
-//		IcOvh_rms = IcOvh_sum*0.05;
+        IaOvh_rms = sqrtf((float)IaOvh_sum*0.05);
+        IbOvh_rms = sqrtf((float)IbOvh_sum*0.05);
+        IcOvh_rms = sqrtf((float)IcOvh_sum*0.05);
 
 		UaOut_rms = UaOut_sum*0.05*1.127;
 		UbOut_rms = UbOut_sum*0.05*1.127;
@@ -1160,36 +1152,64 @@ void CalImbalance(void)
 void GetPQ2r(void)
 {
 	float ftmp = 0;
-	ftmp = UaOut_rmsf*IaPar_rmsf + UbOut_rmsf*IbPar_rmsf + UcOut_rmsf*IcPar_rmsf ;
-	P_Work = P_Work*0.99 + ftmp*0.01;
+	u16 i=0;
 
-	ftmp = (UbcOut_rmsf*IaPar_rmsf + UcaOut_rmsf*IbPar_rmsf + UabOut_rmsf*IcPar_rmsf) / Sqrt_3;
-	Q_Work = Q_Work*0.99 + ftmp*0.01;
+	    if(Flag_RmsBufFull==0)
+	    {
+	        for(i=0; i<5; i++)
+	        {
+	           work1[i] = UaOut_HalfMemory[i]*IaPar_HalfMemory[i]+UbOut_HalfMemory[i]*IbPar_HalfMemory[i]+UbOut_HalfMemory[i]*IbPar_HalfMemory[i];
 
-	ftmp = P_Work*P_Work + Q_Work*Q_Work;
-	S_Work = sqrtf(ftmp);
+	           work2[i] = (UbcOut_HalfMemory[i]*IaPar_HalfMemory[i]+UbOut_HalfMemory[i]*IbPar_HalfMemory[i]+UbOut_HalfMemory[i]*IbPar_HalfMemory[i])/ Sqrt_3;
 
-	PF_Work = atan2f(Q_Work, P_Work);
-	//////////////////////////////////////////////////////////////
-	ftmp = UaOut_rmsf*IaOvh_rmsf + UbOut_rmsf*IbOvh_rmsf + UcOut_rmsf*IcOvh_rmsf ;
-	P_Ovh = P_Ovh*0.99 + ftmp*0.01;
+	           work3[i] = UaOut_HalfMemory[i]*IaOvh_HalfMemory[i]+UbOut_HalfMemory[i]*IbOvh_HalfMemory[i]+UbOut_HalfMemory[i]*IbOvh_HalfMemory[i];
 
-	ftmp = (UbcOut_rmsf*IaOvh_rmsf + UcaOut_rmsf*IbOvh_rmsf + UabOut_rmsf*IcOvh_rmsf) / Sqrt_3;
-	Q_Ovh = Q_Ovh*0.99 + ftmp*0.01;
+	           work4[i] = (UbcOut_HalfMemory[i]*IaOvh_HalfMemory[i]+UcaOut_HalfMemory[i]*IbOvh_HalfMemory[i]+UabOut_HalfMemory[i]*IcOvh_HalfMemory[i])/ Sqrt_3;
+	        }
+	    }
+	    if(Flag_RmsBufFull)
+	        {
+	            for(i=0; i<5; i++)
+	            {
+	                work1_sum += work1[i];
+	                work2_sum += work2[i];
+	                work3_sum += work3[i];
+	                work4_sum += work4[i];
+	            }
+	            work1_rms = work1_sum*0.2;
+	            work2_rms = work2_sum*0.2;
+	            work3_rms = work3_sum*0.2;
+	            work4_rms = work4_sum*0.2;
 
-	ftmp = P_Ovh*P_Ovh + Q_Ovh*Q_Ovh;
-	S_Ovh = sqrtf(ftmp);
+	            work1_sum=0;
+	            work2_sum=0;
+	            work3_sum=0;
+	            work4_sum=0;
 
-	PF_Ovh = atan2(Q_Ovh, P_Ovh);
+	        }
+	    P_Work = P_Work*0.999 + work1_rms*0.001;
+
+	    Q_Work = Q_Work*0.999 + work2_rms*0.001;
+        ftmp = P_Work*P_Work + Q_Work*Q_Work;
+        S_Work = sqrtf(ftmp);
+
+        PF_Work = atan2f(Q_Work, P_Work);
+	    P_Ovh = P_Ovh*0.99 + work3_rms*0.01;
+	    Q_Ovh = Q_Ovh*0.99 + work4_rms*0.01;
+	    ftmp = P_Ovh*P_Ovh + Q_Ovh*Q_Ovh;
+	    S_Ovh = sqrtf(ftmp);
+
+	    PF_Ovh = atan2(Q_Ovh, P_Ovh);
+
 
 	if( MainSta2Word.DataBit.WorkLpQS1 && (!MainSta2Word.DataBit.CheckLpQS1) )
 	{
 		if(MainSta2Word.DataBit.SingQF1 || MainSta2Word.DataBit.ParaQF2)
 		{
-			P_Sys = P_Work;
-			Q_Sys = Q_Work;
-			S_Sys = S_Work;
-			PF_Sys = PF_Work;
+			P_Sys = fabs(P_Work)*0.001*1.052;
+			Q_Sys = fabs(Q_Work)*0.001*0.756;
+			S_Sys = fabs(S_Work)*0.001;
+			PF_Sys = fabs(PF_Work);
 		}
 		else
 		{
@@ -1201,10 +1221,10 @@ void GetPQ2r(void)
 	}
 	else if( (!MainSta2Word.DataBit.WorkLpQS1) && (MainSta2Word.DataBit.CheckLpQS1) )
 	{
-		P_Sys = P_Ovh;
-		Q_Sys = Q_Ovh;
-		S_Sys = S_Ovh;
-		PF_Sys = PF_Ovh;
+		P_Sys = fabs(P_Ovh)*0.001*1.052;
+		Q_Sys = fabs(Q_Ovh)*0.001*0.756;
+		S_Sys = fabs(S_Ovh)*0.001;
+		PF_Sys = fabs(PF_Ovh);
 	}
 	else
 	{
