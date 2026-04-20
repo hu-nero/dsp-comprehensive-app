@@ -23,6 +23,7 @@ static ExecuteResult_t Cabinet_DisconnectSingleCircuit(CabinetContext_t* Context
 static ExecuteResult_t Cabinet_DisconnectParallelCircuit(CabinetContext_t* Context);
 
 // 执行流程
+static void Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_Execute10sDegaussProcedure(CabinetContext_t* Context);
@@ -164,6 +165,7 @@ Cabinet_Init(CabinetContext_t* Context,
     Context->emergency_degauss_complete_time = 0;
     Context->fault_auto_recovery_enabled = false;
     Context->u16npr_old_code = 0;
+    Context->fault_auto_recovery_times = 0;
 
     return true;
 }
@@ -205,6 +207,7 @@ Cabinet_Process(CabinetContext_t* Context)
         // 自复位
         if (Context->switch_list.manual_switch == SWITCH_ON)
         {
+            Cabinet_ExecuteFaultAutoReset(Context);
             Cabinet_ProcessFaultReset(Context);
             Cabinet_ProcessAutoParallel(Context);
             // 故障自动恢复处理
@@ -1676,6 +1679,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         {
             // 复位
             Cabinet_SetCabinetReset(Context);
+            Context->fault_auto_recovery_times = 0;
         }
     }
 
@@ -1765,6 +1769,12 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     {
         Cabinet_ResetFromEmergency(Context);
     }
+    return res;
+}
+
+static void
+Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
+{
     // 记录故障状态
     if (Context->u16npr_old_code != NPR_FaultCode)
     {
@@ -1772,15 +1782,31 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         {
             Context->fault_status = true;
         }
-        if (NPR_FaultCode == 0)
+        if ((NPR_FaultCode == 0) &&
+            (((Context->u16npr_old_code >= 17) && (Context->u16npr_old_code <= 22)) ||
+             ((Context->u16npr_old_code >= 27) && (Context->u16npr_old_code <= 29)) ||
+             (Context->u16npr_old_code == 25)))
         {
-            // 消磁完成，记录时间戳并使能自动恢复
-            Context->emergency_degauss_complete_time = hal_timer_get_timestamp();
-            Context->fault_auto_recovery_enabled = true;
+            if ((Context->u16npr_old_code == 25) || (Context->u16npr_old_code == 29))
+            {
+                // 消磁完成，记录时间戳并使能自动恢复
+                Context->emergency_degauss_complete_time = hal_timer_get_timestamp();
+                Context->fault_auto_recovery_enabled = true;
+            }
+            // 其他故障重启一次
+            else
+            {
+                if (Context->fault_auto_recovery_times < 1)
+                {
+                    Context->fault_auto_recovery_times ++;
+                    // 消磁完成，记录时间戳并使能自动恢复
+                    Context->emergency_degauss_complete_time = hal_timer_get_timestamp();
+                    Context->fault_auto_recovery_enabled = true;
+                }
+            }
         }
         Context->u16npr_old_code = NPR_FaultCode;
     }
-    return res;
 }
 
 // 面板急停功能
@@ -1992,6 +2018,19 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                 return RESULT_FAILED;
             }
         }
+        if (((NPR_FaultCode >= 17) && (NPR_FaultCode <= 22)) ||
+            ((NPR_FaultCode >= 27) && (NPR_FaultCode <= 28)))
+		{
+            Context->u16npr_old_code = NPR_FaultCode;
+			NPR_FaultCode = 0;
+			FaultWord_Clear(17);
+			FaultWord_Clear(19);
+			FaultWord_Clear(18);
+			FaultWord_Clear(20);
+			FaultWord_Clear(21);
+			FaultWord_Clear(22);
+		}
+        Cabinet_ExecuteFaultAutoReset(Context);
         // 清空状态
         Context->switch_list.single_switch = SWITCH_OFF;
         Context->switch_list.bus1_switch = SWITCH_OFF;
@@ -2946,6 +2985,7 @@ Cabinet_ProcessFaultAutoRecovery(CabinetContext_t* Context)
             // 复位
             Cabinet_SetCabinetReset(Context);
             Context->fault_auto_recovery_enabled = true;
+            // 转单机
             Context->target_state = CABINET_STATE_SINGLE;
             Cabinet_SetAlarm(Context, ALARM_NONE, "Auto recovery to single mode");
         }
@@ -2959,6 +2999,7 @@ Cabinet_ProcessFaultAutoRecovery(CabinetContext_t* Context)
             // 复位
             Cabinet_SetCabinetReset(Context);
             Context->fault_auto_recovery_enabled = true;
+            // 转并机
             Context->target_state = CABINET_STATE_PARALLEL;
             Cabinet_SetAlarm(Context, ALARM_NONE, "Auto recovery to parallel mode");
         }
