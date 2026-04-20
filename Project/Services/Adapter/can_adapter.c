@@ -130,6 +130,18 @@ CAN_Adapter_SetCommSectionToSync(CommSectionToSync_t Status)
     gCommSectionToSyncStatus = Status;
 }
 
+uint16_t
+CAN_Adapter_GetAvoidOverdrive(void)
+{
+    return gCommSectionToSyncStatus.section_status.bit.avoid_overdrive;
+}
+
+void
+CAN_Adapter_SetAvoidOverdrive(uint16_t Status)
+{
+    gCommSectionToSyncStatus.section_status.bit.avoid_overdrive = Status&1;
+}
+
 CommSyncToSection_t
 CAN_Adapter_GetCommSyncToSectionStatus(void)
 {

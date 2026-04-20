@@ -469,6 +469,11 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             if ((Context->switch_last.single_switch == SWITCH_OFF) && (Context->switch_last.bus1_switch == SWITCH_OFF))
             {
                 target_state = CABINET_STATE_STANDBY;
+                if (Context->state == CABINET_STATE_PARALLEL)
+                {
+                    // 退过激
+                    CAN_Adapter_SetAvoidOverdrive(1);
+                }
             }
             else if ((Context->switch_last.single_switch == SWITCH_ON) && (Context->switch_last.bus1_switch == SWITCH_OFF))
             {
@@ -650,6 +655,11 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             if ((Context->switch_last.single_switch == SWITCH_OFF) && (Context->switch_last.bus1_switch == SWITCH_OFF))
             {
                 target_state = CABINET_STATE_STANDBY;
+                if (Context->state == CABINET_STATE_PARALLEL)
+                {
+                    // 退过激
+                    CAN_Adapter_SetAvoidOverdrive(1);
+                }
             }
             else if ((Context->switch_last.single_switch == SWITCH_ON) && (Context->switch_last.bus1_switch == SWITCH_OFF))
             {
@@ -1279,6 +1289,11 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
                     if (demag_result == RESULT_SUCCESS)
                     {
+                        if (CAN_Adapter_GetAvoidOverdrive())
+                        {
+                            // 退过激
+                            CAN_Adapter_SetAvoidOverdrive(0);
+                        }
                         // 设置旋钮状态
                         Context->switch_list.single_switch = SWITCH_OFF;
                         Context->switch_list.bus1_switch = SWITCH_OFF;

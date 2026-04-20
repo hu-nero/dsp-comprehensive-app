@@ -92,7 +92,7 @@ union WordSectionStatus_t
 		unsigned grid_connection_request:	1;// bit5
 		unsigned grid_connection_done:      1;// bit6
 		unsigned fault_signal:			    1;// bit7
-		unsigned overdrive:			        1;// bit8
+		unsigned avoid_overdrive:		    1;// bit8
 		unsigned reserve2:  	    	    7;// bit9-15
 	}	bit;
 };
@@ -222,6 +222,8 @@ extern CommSectionToPower_t CAN_Adapter_GetCommSectionToPower(void);
 extern void CAN_Adapter_SetCommSectionToPower(CommSectionToPower_t Status);
 extern CommSectionToSync_t CAN_Adapter_GetCommSectionToSync(void);
 extern void CAN_Adapter_SetCommSectionToSync(CommSectionToSync_t Status);
+extern uint16_t CAN_Adapter_GetAvoidOverdrive(void);
+extern void CAN_Adapter_SetAvoidOverdrive(uint16_t Status);
 
 // CANB
 extern bool CAN_Adapter_SendParallelRequest(void);
