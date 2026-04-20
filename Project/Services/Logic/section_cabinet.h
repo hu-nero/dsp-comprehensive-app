@@ -101,14 +101,13 @@ typedef struct
 {
     CabinetState_t state;                  // 当前状态
     CabinetState_t target_state;           // 保存的目标状态
-//    CabinetMode_t mode;                  // 当前模式
     bool emergency_stop_status;            // 急停状态
     bool fault_status;                     // 故障状态
     bool panel_remote_degauss_flag;        // 面板或者远端消磁标志
     AutoRecoverySubState_t degauss_10s_sub_state;  // 自复位消磁子状态
     AutoRecoverySubState_t flt_degauss_sub_state;  // 自复位消磁子状态
-    SwitchStateList_t switch_list;         // 所有开关
-    SwitchStateList_t switch_last;         // 所有开关
+    SwitchStateList_t switch_last;         // 所有开关指令
+    SwitchStateList_t switch_list;         // 所有开关状态
     PowerStatus_t power_status;			   // 电源柜状态
     DemagnetizeState_t demagnetize_state;  // 消磁状态
     uint16_t demagnetize_counter;          // 消磁计数器（ms）
@@ -131,7 +130,13 @@ typedef struct
     uint32_t parallel_request_start;                    // 并网请求发送时间戳
     uint32_t recovery_degauss_start_time;               // 自复位消磁开始时间
     uint16_t recovery_degauss_delay_ms;                 // 自复位消磁延时
-    
+
+    // 故障急停自动恢复相关
+    CabinetState_t state_before_fault;                  // 故障前保存的状态
+    SwitchStateList_t switch_list_before_fault;         // 故障前保存的开关状态
+    uint32_t emergency_degauss_complete_time;           // 急停消磁完成时间戳
+    bool fault_auto_recovery_enabled;                   // 故障自动恢复使能标志
+    uint16_t u16npr_old_code;
 
     // 回调函数指针
     SwitchControlFunc_t switch_control;

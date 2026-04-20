@@ -38,27 +38,36 @@ uint16_t CombineBytes(uint16_t Lo, uint16_t Hi)
 PowerStatus_t
 CAN_Adapter_GetPowerStatus(void)
 {
+    static uint16_t tmp_single_to_parallel_flag = 0;
 	union WordPowerSectionInteractStatus_t status;
 	status.all = gCommPowerToSectionParam.power_section_interact_word;
     switch (status.bit.WorkSta)
     {
 		case 0:
 		{
+            tmp_single_to_parallel_flag = 0;
 			gPowerStatus.run_state = POWER_STANDBY;
 		}
 		break;
 		case 1:
 		{
 			gPowerStatus.run_state = POWER_SINGLE_RUNNING;
+            tmp_single_to_parallel_flag = 1;
 		}
 		break;
 		case 2:
 		{
 			gPowerStatus.run_state = POWER_PARALLEL_RUNNING;
+            if (tmp_single_to_parallel_flag == 1)
+            {
+                gPowerStatus.single_to_parallel_flag = true;
+            }
+            tmp_single_to_parallel_flag = 2;
 		}
 		break;
 		case 3:
 		{
+            tmp_single_to_parallel_flag = 3;
 			gPowerStatus.run_state = POWER_FAULT;
 		}
 		break;

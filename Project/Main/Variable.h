@@ -715,8 +715,9 @@ extern void variable_NReset_init(void);
 extern void Flash_Fault_ResetVarieble(void);
 extern u16 FaultMask_Map(u16 Code);
 extern void FaultWord_Map(u16 Code);
-extern void AlarmWord_Clear(u16 Code);
+extern void FaultWord_Clear(u16 Code);
 extern void AlarmWord_Map(u16 Code);
+extern void AlarmWord_Clear(u16 Code);
 /*******************************************************/
 #endif
 

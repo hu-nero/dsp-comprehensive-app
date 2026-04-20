@@ -565,7 +565,7 @@ void npr_1s_protection(void)
             /////////////////////////////////////////////
             // 单机直接判断欠压；并机需要读取同步柜给的并网有电信号
             if (((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) ||
-                (((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) && ((status2>>9) == 1)) )
+                (((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) && (((status2>>9)&1) == 1)) )
             {
                 // 欠压故障
                 if(vLine_min < FltThr_UnderVolt_Work1)
@@ -588,9 +588,9 @@ void npr_1s_protection(void)
                 // 欠压告警
                 if(vLine_min < AlmThr_UnderVolt_Work1)
                 {
-                    if(AlmCnt_UnderVolt_Work1 > 0)
+                    if(AlmCnt_UnderVolt_Work1 > 1)
                     {
-                        AlmCnt_UnderVolt_Work1 = 0;
+                        AlmCnt_UnderVolt_Work1 = 1;
                         AlarmWord_Map(4);
                     }
                     else
@@ -605,14 +605,19 @@ void npr_1s_protection(void)
                 }
                 //////////////////////////////////////////////////
             }
+            else
+            {
+                FltCnt_UnderVolt_Work1 = 0;
+                AlmCnt_UnderVolt_Work1 = 0;
+            }
 
             // 电流
             // 过流故障
             if(Iphase_max > FltThr_OverCurr_Work1)
             {
-                if(FltCnt_OverCurr_Work1 > 0)
+                if(FltCnt_OverCurr_Work1 > 1)
                 {
-                    FltCnt_OverCurr_Work1 = 0;
+                    FltCnt_OverCurr_Work1 = 1;
                     NPR_FaultCode = 23;
                     FaultWord_Map(23);
                 }
@@ -659,9 +664,9 @@ void npr_1s_protection(void)
             // 过压故障
             if(vLine_max > FltThr_OverVolt_Work2)
             {
-                if(FltCnt_OverVolt_Work2 > 0)
+                if(FltCnt_OverVolt_Work2 > 1)
                 {
-                    FltCnt_OverVolt_Work2 = 0;
+                    FltCnt_OverVolt_Work2 = 1;
                     NPR_FaultCode = 18;
                     FaultWord_Map(18);
                 }
@@ -699,7 +704,7 @@ void npr_1s_protection(void)
             // 欠压
             // 单机直接判断欠压；并机需要读取同步柜给的并网有电信号
             if (((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) ||
-                (((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) && ((status2>>9) == 1)) )
+                (((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) && (((status2>>9)&1) == 1)) )
             {
                 // 欠压故障
                 if(vLine_min < FltThr_UnderVolt_Work2)
@@ -715,12 +720,16 @@ void npr_1s_protection(void)
                         FltCnt_UnderVolt_Work2 ++;
                     }
                 }
+                else
+                {
+                    FltCnt_UnderVolt_Work2 = 0;
+                }
                 // 欠压告警
                 if(vLine_min < AlmThr_UnderVolt_Work2)
                 {
-                    if(AlmCnt_UnderVolt_Work2 > 0)
+                    if(AlmCnt_UnderVolt_Work2 > 1)
                     {
-                        AlmCnt_UnderVolt_Work2 = 0;
+                        AlmCnt_UnderVolt_Work2 = 1;
                         AlarmWord_Map(5);
                     }
                     else
@@ -737,15 +746,16 @@ void npr_1s_protection(void)
             else
             {
             	FltCnt_UnderVolt_Work2 = 0;
+                AlmCnt_UnderVolt_Work2 = 0;
             }
 
             // 电流
             // 过流故障
             if(Iphase_max > FltThr_OverCurr_Work2)
             {
-                if(FltCnt_OverCurr_Work2 > 0)
+                if(FltCnt_OverCurr_Work2 > 1)
                 {
-                    FltCnt_OverCurr_Work2 = 0;
+                    FltCnt_OverCurr_Work2 = 1;
                     NPR_FaultCode = 24;
                     FaultWord_Map(24);
                 }
@@ -854,6 +864,19 @@ void npr_1s_protection(void)
             }
         }
     }
+    else
+    {
+        AlarmWord_Clear(1);
+        AlarmWord_Clear(2);
+        AlarmWord_Clear(4);
+        AlarmWord_Clear(8);
+        AlarmWord_Clear(3);
+        AlarmWord_Clear(5);
+        AlarmWord_Clear(9);
+        AlarmWord_Clear(6);
+        AlarmWord_Clear(7);
+
+    }
     //////////////////////////////////////////////////////////
     if (Cap_Ctrl_Word.DataBit.Bit5)
     {
@@ -862,8 +885,7 @@ void npr_1s_protection(void)
         {
             if(FltCnt_OverLow_Flow1 > FltCntThr_OverLow_Flow1)
             {
-                FltCnt_OverLow_Flow1 = 0;
-                FltCnt_OverLow_Flow2 = 0;
+                FltCnt_OverLow_Flow1 = FltCntThr_OverLow_Flow1;
                 NPR_FaultCode = 25;
                 FaultWord_Map(25);
             }
@@ -872,23 +894,46 @@ void npr_1s_protection(void)
                 FltCnt_OverLow_Flow1 ++;
             }
         }
+        else
+        {
+            if (FltCnt_OverLow_Flow1 > 0)
+            {
+                FltCnt_OverLow_Flow1 --;
+            }
+            else if ((FltCnt_OverLow_Flow1 == 0) &&
+                    (NPR_FaultCode == 25))
+            {
+                NPR_FaultCode = 0;
+                FaultWord_Clear(25);
+            }
+        }
         // 下限II水流量保护
-        if(FlowRate < FltThr_OverLow_Flow2)
+        if (FlowRate < FltThr_OverLow_Flow2)
         {
             if(FltCnt_OverLow_Flow2 > FltCntThr_OverLow_Flow2)
             {
-                FltCnt_OverLow_Flow1 = 0;
-                FltCnt_OverLow_Flow2 = 0;
-                NPR_FaultCode = 25;
-                FaultWord_Map(25);
+                FltCnt_OverLow_Flow2 = FltCntThr_OverLow_Flow2;
+                NPR_FaultCode = 29;
+                FaultWord_Map(29);
             }
             else
             {
                 FltCnt_OverLow_Flow2 ++;
             }
         }
-        // TODO:水流量保护、恢复供水自动重启时间
-        // Auto_Restarttime_Flow
+        else
+        {
+            if(FltCnt_OverLow_Flow2 > 0)
+            {
+                FltCnt_OverLow_Flow2 --;
+            }
+            else if ((FltCnt_OverLow_Flow2 == 0) &&
+                    (NPR_FaultCode == 29))
+            {
+                NPR_FaultCode = 0;
+                FaultWord_Clear(29);
+            }
+        }
     }
     else
     {

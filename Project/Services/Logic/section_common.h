@@ -29,13 +29,6 @@ typedef struct
     uint32_t status_word;          // 状态字原始值
 } PowerStatus_t;
 
-// 区段柜面板模式
-//typedef enum
-//{
-    //CABINET_MODE_MANUAL = 0,   // 手动模式
-    //CABINET_MODE_AUTO          // 自动模式
-//} CabinetMode_t;
-
 // 开关状态
 typedef enum
 {

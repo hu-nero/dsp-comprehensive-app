@@ -775,28 +775,28 @@ Hardware_VoltageRead(VoltageReadType_t VoltagePhaseType)
     {
         case VOLTAGE_U5_PHASE_A:
             {
-                return ADC0_CH0_Value;
+                return UabSl_rmsf;
             }
         case VOLTAGE_U5_PHASE_B:
             {
-                return ADC0_CH1_Value;
+                return UbcSl_rmsf;
             }
         case VOLTAGE_U5_PHASE_C:
             {
-                return ADC0_CH2_Value;
+                return UcaSl_rmsf;
             }
         case VOLTAGE_U6_PHASE_A:
             {
+                return UabPar_rmsf;
             }
-            break;
         case VOLTAGE_U6_PHASE_B:
             {
+                return UbcPar_rmsf;
             }
-            break;
         case VOLTAGE_U6_PHASE_C:
             {
+                return UcaPar_rmsf;
             }
-            break;
         case VOLTAGE_U7_PHASE_A:
             {
             }

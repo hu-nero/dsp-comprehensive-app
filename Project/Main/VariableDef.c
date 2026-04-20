@@ -825,7 +825,6 @@ void Flash_Fault_ResetVarieble(void)
 /******************************************************************************************/
 void FaultWord_Map(u16 Code)
 {
-
 	if((Code >= 1) && (Code <= 16))
 	{
 		FaultWord2.DataInt |= (1<<(Code-1));
@@ -859,6 +858,26 @@ void FaultWord_Map(u16 Code)
 		FaultWord8.DataInt |= (1<<(Code-113));
 	}
 
+}
+
+void FaultWord_Clear(u16 Code)
+{
+	if((Code >= 1) && (Code <= 16))
+		FaultWord2.DataInt &= (~ (1<<(Code-1)) );
+	if((Code >= 17) && (Code <= 32))
+		FaultWord1.DataInt &= (~ (1<<(Code-17)) );
+	if((Code >= 33) && (Code <= 48))
+		FaultWord3.DataInt &= (~ (1<<(Code-33)) );
+	if((Code >= 49) && (Code <= 64))
+		FaultWord4.DataInt &= (~ (1<<(Code-49)) );
+	if((Code >= 65) && (Code <= 80))
+		FaultWord5.DataInt &= (~ (1<<(Code-65)) );
+	if((Code >= 81) && (Code <= 96))
+		FaultWord6.DataInt &= (~ (1<<(Code-81)) );
+	if((Code >= 97) && (Code <= 112))
+		FaultWord7.DataInt &= (~ (1<<(Code-97)) );
+	if((Code >= 113) && (Code <= 128))
+		FaultWord8.DataInt &= (~ (1<<(Code-113)) );
 }
 /*****************************************************************************************/
 u16 FaultMask_Map(u16 Code)

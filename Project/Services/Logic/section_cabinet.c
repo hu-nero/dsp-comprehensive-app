@@ -14,7 +14,8 @@
 
 static uint16_t gAutoRequestParallelCount = 0;
 
-static inline void Cabinet_SetCabinetState(CabinetContext_t* Context);
+static inline void Cabinet_SetCabinetReset(CabinetContext_t* Context);
+static ExecuteResult_t Cabinet_ResetFromEmergency(CabinetContext_t* Context);
 // 回路执行流程
 static ExecuteResult_t Cabinet_ConnectSingleCircuit(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ConnectParallelCircuit(CabinetContext_t* Context);
@@ -59,6 +60,7 @@ static bool Cabinet_IsSatisfyPowerParallel(CabinetContext_t* Context);
 
 // 故障恢复函数
 static void Cabinet_ProcessFaultReset(CabinetContext_t* Context);
+static void Cabinet_ProcessFaultAutoRecovery(CabinetContext_t* Context);
 static void Cabinet_ProcessAutoParallel(CabinetContext_t* Context);
 static uint32_t GetFaultTimerDuration(uint8_t fault_code);
 static void Cabinet_SendParallelRequest(CabinetContext_t* Context);
@@ -126,9 +128,9 @@ Cabinet_Init(CabinetContext_t* Context,
     Context->target_state = CABINET_STATE_INVALID;
 //    Context->mode = CABINET_MODE_MANUAL;
     Context->emergency_stop_status = false;            // 急停状态
-    Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
-    Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
-    Context->fault_status = false;                     // 故障状态
+    Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
+    Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+    Context->fault_status = true;                     // 故障状态
     Context->panel_remote_degauss_flag = false;        // 面板或者远端消磁标志
     // 读取面板、柜体开关状态
     Cabinet_ReadAllSwitchStatus(Context);
@@ -155,6 +157,13 @@ Cabinet_Init(CabinetContext_t* Context,
     Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
     Context->recovery_degauss_start_time = 0;
     Context->recovery_degauss_delay_ms = 0;
+
+    // 故障急停自动恢复相关
+    Context->state_before_fault = CABINET_STATE_STANDBY;
+    memset(&Context->switch_list_before_fault, 0, sizeof(SwitchStateList_t));
+    Context->emergency_degauss_complete_time = 0;
+    Context->fault_auto_recovery_enabled = false;
+    Context->u16npr_old_code = 0;
 
     return true;
 }
@@ -197,7 +206,12 @@ Cabinet_Process(CabinetContext_t* Context)
         if (Context->switch_list.manual_switch == SWITCH_ON)
         {
             Cabinet_ProcessFaultReset(Context);
-            /*Cabinet_ProcessAutoParallel(Context);*/
+            Cabinet_ProcessAutoParallel(Context);
+            // 故障自动恢复处理
+            if (Context->fault_auto_recovery_enabled == true)
+            {
+                Cabinet_ProcessFaultAutoRecovery(Context);
+            }
         }
         // (手动/远控模式) 状态转换流程
         if (Context->panel_remote_degauss_flag == false)
@@ -244,46 +258,53 @@ Cabinet_Process(CabinetContext_t* Context)
 }
 
 static inline void
-Cabinet_SetCabinetState(CabinetContext_t* Context)
+Cabinet_SetCabinetReset(CabinetContext_t* Context)
 {
-    switch(Context->state)
-    {
-        case CABINET_STATE_STANDBY:
-            {
-                // 设置旋钮状态
-                Context->switch_list.single_switch = SWITCH_OFF;
-                Context->switch_list.bus1_switch = SWITCH_OFF;
-            }
-            break;
-        case CABINET_STATE_SINGLE:
-            {
-                // 设置旋钮状态
-                Context->switch_list.single_switch = SWITCH_ON;
-                Context->switch_list.bus1_switch = SWITCH_OFF;
-            }
-            break;
-        case CABINET_STATE_PARALLEL:
-            {
-                // 设置旋钮状态
-                Context->switch_list.single_switch = SWITCH_OFF;
-                Context->switch_list.bus1_switch = SWITCH_ON;
-            }
-            break;
-        case CABINET_STATE_BACKUP:
-            {
-                // 设置旋钮状态
-                Context->switch_list.single_switch = SWITCH_ON;
-                Context->switch_list.bus1_switch = SWITCH_ON;
-            }
-            break;
-        default:
-            {
-                // 设置旋钮状态
-                Context->switch_list.single_switch = SWITCH_OFF;
-                Context->switch_list.bus1_switch = SWITCH_OFF;
-            }
-            break;
-    }
+    Cabinet_ResetFromEmergency(Context);
+    Context->switch_list.single_switch = SWITCH_OFF;
+    Context->switch_list.bus1_switch = SWITCH_OFF;
+    Context->switch_control(DO_ID_RESET,SWITCH_ON);
+    Context->emergency_stop_status = false;            // 急停状态
+    Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
+    Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+    Context->fault_status = true;
+    Context->panel_remote_degauss_flag = false;        // 面板或者远端消磁标志
+    Context->demagnetize_state = DEMAGNETIZE_IDLE;
+    Context->demagnetize_counter = 0;
+    Context->demagnetize_start_time = 0;
+    Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
+
+    // 初始化开关反馈等待状态
+    Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
+    Context->switch_feedback_start_time = 0;
+    Context->switch_feedback_id = 0;
+    Context->switch_feedback_target_state = SWITCH_OFF;
+    Context->switch_feedback_current_value = 0;
+
+    // 故障自恢复
+    Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
+    Context->fault_timer_start = 0;
+    Context->fault_timer_duration = 0;
+    Context->fault_code = 0;
+    Context->parallel_request_sent = false;
+    Context->parallel_request_start = 0;
+    Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+    Context->recovery_degauss_start_time = 0;
+    Context->recovery_degauss_delay_ms = 0;
+    FaultWord1.DataBit.Bit9 = 0;
+    // 复位故障
+    NPR_FaultCode = 0;
+    AlarmWord1.DataInt = 0;
+    AlarmWord2.DataInt = 0;
+    FaultWord1.DataInt = 0;
+    FaultWord2.DataInt = 0;
+
+    // 清除急停和故障标志，使能状态转换流程
+    Context->fault_auto_recovery_enabled = false;
+    Context->emergency_degauss_complete_time = 0;
+
+    // 读取面板、柜体开关状态
+    Cabinet_ReadAllSwitchStatus(Context);
 }
 
 static inline void
@@ -378,8 +399,12 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
         if (Context->switch_list.manual_switch == SWITCH_OFF)
         {
         	uint16_t tmp_state = 0;
+            CommSectionToSync_t tmp_sync_state;
 
-            // 清空自动控制流程状态
+            // 清空同步柜请求状态
+            tmp_sync_state = CAN_Adapter_GetCommSectionToSync();
+            tmp_sync_state.section_status.bit.grid_connection_request = 0;
+            CAN_Adapter_SetCommSectionToSync(tmp_sync_state);
             // 清空远控IO状态
             (void)Context->switch_feed(DI_ID_REM_SINGLE_START);
             (void)Context->switch_feed(DI_ID_REM_SINGLE_END);
@@ -401,6 +426,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             Context->parallel_request_start = 0;
             Context->recovery_degauss_start_time = 0;
             Context->recovery_degauss_delay_ms = 0;
+            Context->fault_auto_recovery_enabled = false;
             // 读取旋钮状态
             single_switch = (SwitchState_t)Context->switch_feed(DI_ID_SINGLE);
             parallel_switch = (SwitchState_t)Context->switch_feed(DI_ID_BUS1);
@@ -564,6 +590,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     Context->switch_last.bus1_switch = Context->switch_list.bus1_switch;
                 }
             }
+
             if ((Context->switch_last.single_switch == Context->switch_list.single_switch) &&
                 (Context->switch_last.bus1_switch == Context->switch_list.bus1_switch))
             {
@@ -600,23 +627,39 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 }
             }
 
+            if (Context->fault_auto_recovery_enabled == true)
+            {
+                if ((Context->target_state == CABINET_STATE_SINGLE) && (Context->state == CABINET_STATE_STANDBY))
+                {
+                    Context->switch_last.single_switch = SWITCH_ON;
+                    Context->switch_last.bus1_switch = SWITCH_OFF;
+                    Context->fault_auto_recovery_enabled = false;
+                }
+                else if ((Context->target_state == CABINET_STATE_PARALLEL) && (Context->state == CABINET_STATE_STANDBY))
+                {
+                    Context->switch_last.single_switch = SWITCH_OFF;
+                    Context->switch_last.bus1_switch = SWITCH_ON;
+                    Context->fault_auto_recovery_enabled = false;
+                }
+            }
+
             // 根据开关状态确定目标状态
-			if ((Context->switch_last.single_switch == SWITCH_OFF) && (Context->switch_last.bus1_switch == SWITCH_OFF))
-			{
-				target_state = CABINET_STATE_STANDBY;
-			}
-			else if ((Context->switch_last.single_switch == SWITCH_ON) && (Context->switch_last.bus1_switch == SWITCH_OFF))
-			{
-				target_state = CABINET_STATE_SINGLE;
-			}
-			else if ((Context->switch_last.single_switch == SWITCH_OFF) && (Context->switch_last.bus1_switch == SWITCH_ON))
-			{
-				target_state = CABINET_STATE_PARALLEL;
-			}
-			else
-			{
-				target_state = CABINET_STATE_BACKUP;
-			}
+            if ((Context->switch_last.single_switch == SWITCH_OFF) && (Context->switch_last.bus1_switch == SWITCH_OFF))
+            {
+                target_state = CABINET_STATE_STANDBY;
+            }
+            else if ((Context->switch_last.single_switch == SWITCH_ON) && (Context->switch_last.bus1_switch == SWITCH_OFF))
+            {
+                target_state = CABINET_STATE_SINGLE;
+            }
+            else if ((Context->switch_last.single_switch == SWITCH_OFF) && (Context->switch_last.bus1_switch == SWITCH_ON))
+            {
+                target_state = CABINET_STATE_PARALLEL;
+            }
+            else
+            {
+                target_state = CABINET_STATE_BACKUP;
+            }
             // 状态没有变化
             if (target_state == Context->state)
             {
@@ -1482,7 +1525,14 @@ Cabinet_UpdateCommSectionToPowerStatus(CabinetContext_t* Context)
     {
         status.section_status.bit.WorkSta = 0;
     }
-    status.section_status.bit.FaultSta = Context->fault_status;
+    if (NPR_FaultCode)
+    {
+        status.section_status.bit.FaultSta = 1;
+    }
+    else
+    {
+        status.section_status.bit.FaultSta = 0;
+    }
 
 
     CAN_Adapter_SetCommSectionToPower(status);
@@ -1536,7 +1586,14 @@ Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context)
     CommSectionToSync_t section_to_sync_status;
 
     section_to_sync_status = CAN_Adapter_GetCommSectionToSync();
-    section_to_sync_status.section_status.bit.fault_signal = Context->fault_status;
+    if (NPR_FaultCode != 0)
+    {
+        section_to_sync_status.section_status.bit.fault_signal = 1;
+    }
+    else
+    {
+        section_to_sync_status.section_status.bit.fault_signal = 0;
+    }
     CAN_Adapter_SetCommSectionToSync(section_to_sync_status);
 
     SwitchWord1.DataBit.DO_REMOTE_SINGLE_CTRL_FEED = IOOutput1.DataBit.Bit0;
@@ -1617,46 +1674,8 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         // TODO:急停
         if ((Context->emergency_stop_status == true) | (NPR_FaultCode != 0))
         {
-            Cabinet_ResetFromEmergency(Context);
-            Cabinet_SetCabinetState(Context);
-            Context->switch_control(DO_ID_RESET,SWITCH_ON);
-            Context->emergency_stop_status = false;            // 急停状态
-            Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
-            Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
-            Context->fault_status = false;
-            Context->panel_remote_degauss_flag = false;        // 面板或者远端消磁标志
-            Context->demagnetize_state = DEMAGNETIZE_IDLE;
-            Context->demagnetize_counter = 0;
-            Context->demagnetize_start_time = 0;
-            Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
-
-            // 初始化开关反馈等待状态
-            Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
-            Context->switch_feedback_start_time = 0;
-            Context->switch_feedback_id = 0;
-            Context->switch_feedback_target_state = SWITCH_OFF;
-            Context->switch_feedback_current_value = 0;
-
-            // 故障自恢复
-            Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
-            Context->fault_timer_start = 0;
-            Context->fault_timer_duration = 0;
-            Context->fault_code = 0;
-            Context->parallel_request_sent = false;
-            Context->parallel_request_start = 0;
-            Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
-            Context->recovery_degauss_start_time = 0;
-            Context->recovery_degauss_delay_ms = 0;
-            FaultWord1.DataBit.Bit9 = 0;
-            // 复位故障
-            NPR_FaultCode = 0;
-            AlarmWord1.DataInt = 0;
-            AlarmWord2.DataInt = 0;
-            FaultWord1.DataInt = 0;
-            FaultWord2.DataInt = 0;
-
-            // 读取面板、柜体开关状态
-            Cabinet_ReadAllSwitchStatus(Context);
+            // 复位
+            Cabinet_SetCabinetReset(Context);
         }
     }
 
@@ -1746,6 +1765,21 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     {
         Cabinet_ResetFromEmergency(Context);
     }
+    // 记录故障状态
+    if (Context->u16npr_old_code != NPR_FaultCode)
+    {
+        if (Context->u16npr_old_code == 0)
+        {
+            Context->fault_status = true;
+        }
+        if (NPR_FaultCode == 0)
+        {
+            // 消磁完成，记录时间戳并使能自动恢复
+            Context->emergency_degauss_complete_time = hal_timer_get_timestamp();
+            Context->fault_auto_recovery_enabled = true;
+        }
+        Context->u16npr_old_code = NPR_FaultCode;
+    }
     return res;
 }
 
@@ -1810,8 +1844,8 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
             }
         }
         // 置故障位
-        Context->fault_status = true;
         NPR_FaultCode = 26;
+        Context->fault_status = false;
         FaultWord1.DataBit.Bit9 = 1;
         Context->state = CABINET_STATE_STANDBY;
         Context->target_state = CABINET_STATE_INVALID;
@@ -1902,8 +1936,12 @@ static ExecuteResult_t
 Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 {
 	ExecuteResult_t res;
-    if ((NPR_FaultCode != 0) && (Context->fault_status == false))
+    if ((NPR_FaultCode != 0) && (Context->fault_status == true))
     {
+        // 进入消磁前保存故障前的状态
+        Context->state_before_fault = Context->state;
+        Context->switch_list_before_fault = Context->switch_list;
+
         // 设置急停状态
         Context->emergency_stop_status = true;
         Context->target_state = CABINET_STATE_INVALID;
@@ -1954,83 +1992,90 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                 return RESULT_FAILED;
             }
         }
+        // 清空状态
+        Context->switch_list.single_switch = SWITCH_OFF;
+        Context->switch_list.bus1_switch = SWITCH_OFF;
+        // 读取面板、柜体开关状态
+        Cabinet_ReadAllSwitchStatus(Context);
+
         Context->state = CABINET_STATE_STANDBY;
         Context->target_state = CABINET_STATE_INVALID;
-
-        // 子状态消磁
-        switch (Context->flt_degauss_sub_state)
-        {
-            case AUTO_RECOVERY_SUB_DEGAUSS_START:
-                {
-                    if (Cabinet_HasCycle(Context))
-                    {
-                        // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet has cycle");
-                        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
-                        return RESULT_FAILED;
-                    }
-
-                    // 自复位消磁
-                    ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, 10000);
-                    if (degauss_res == RESULT_SUCCESS)
-                    {
-                        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_WAIT;
-                    }
-                    else if (degauss_res == RESULT_FAILED)
-                    {
-                        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
-                    }
-                }
-                break;
-            case AUTO_RECOVERY_SUB_DEGAUSS_WAIT:
-                {
-                    // 等待消磁
-                    uint32_t now = hal_timer_get_timestamp();
-                    if (now - Context->recovery_degauss_start_time >= Context->recovery_degauss_delay_ms)
-                    {
-                        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_DONE;
-                    }
-                }
-                break;
-            case AUTO_RECOVERY_SUB_DEGAUSS_DONE:
-                {
-                    // 断开消磁
-                    Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
-                    // 等待开关反馈稳定3秒
-                    res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
-                    if (res == RESULT_SUCCESS)
-                    {
-                        Context->fault_recovery_state = AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS;
-                        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
-                        Context->fault_status = true;
-                    }
-                    else if (res == RESULT_WAIT)
-                    {
-                    	return res;
-                    }
-                    else
-                    {
-                        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
-                    	return res;
-                    }
-
-                    Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
-                }
-                break;
-            case AUTO_RECOVERY_SUB_DEGAUSS_FAILED:
-                {
-                    // 失败
-                    Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
-                    Context->fault_recovery_state = AUTO_RECOVERY_FAILED;
-                }
-                break;
-            default:
-                {
-                    Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
-                }
-                break;
-        }
+        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
+        Context->fault_status = false;
     }
+
+	// 子状态消磁
+	switch (Context->flt_degauss_sub_state)
+	{
+		case AUTO_RECOVERY_SUB_DEGAUSS_START:
+			{
+				if (Cabinet_HasCycle(Context))
+				{
+					// 发出警告
+					Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet has cycle");
+					Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
+					return RESULT_FAILED;
+				}
+
+				// 自复位消磁
+				ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, 10000);
+				if (degauss_res == RESULT_SUCCESS)
+				{
+					Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_WAIT;
+				}
+				else if (degauss_res == RESULT_FAILED)
+				{
+					Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
+				}
+			}
+			break;
+		case AUTO_RECOVERY_SUB_DEGAUSS_WAIT:
+			{
+				// 等待消磁
+				uint32_t now = hal_timer_get_timestamp();
+				if (now - Context->recovery_degauss_start_time >= Context->recovery_degauss_delay_ms)
+				{
+					Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_DONE;
+				}
+			}
+			break;
+		case AUTO_RECOVERY_SUB_DEGAUSS_DONE:
+			{
+				// 断开消磁
+				Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
+				// 等待开关反馈稳定3秒
+				res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
+				if (res == RESULT_SUCCESS)
+				{
+					Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+			        Context->emergency_stop_status = false;
+				}
+				else if (res == RESULT_WAIT)
+				{
+					return res;
+				}
+				else
+				{
+					Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+					return res;
+				}
+
+				Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+			}
+			break;
+		case AUTO_RECOVERY_SUB_DEGAUSS_FAILED:
+			{
+				// 失败
+				Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+		        Context->emergency_stop_status = false;
+			}
+			break;
+		default:
+			{
+				Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+			}
+			break;
+	}
     return RESULT_EMERGENCY_STOP;
 }
 
@@ -2088,6 +2133,7 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
         if ((demag_result == RESULT_SUCCESS) || (demag_result == RESULT_FAILED))
         {
             Context->panel_remote_degauss_flag = false;
+            Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
         }
     }
     return RESULT_SUCCESS;
@@ -2103,7 +2149,7 @@ Cabinet_ExecuteRecoveryDegaussProcedure(CabinetContext_t* Context, uint16_t Dela
     {
         Context->switch_control(DO_ID_A3QR3, SWITCH_ON);
         // 等待开关反馈稳定 5 秒
-        demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_ON, 5000, 3000, 50);
+        demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_ON, 5000, 3000, 1500);
         if (demag_result == RESULT_SUCCESS)
         {
             Context->recovery_degauss_delay_ms = DelayMs;
@@ -2855,6 +2901,76 @@ Cabinet_DisconnectParallelCircuit(CabinetContext_t* Context)
     return res;
 }
 
+// 故障急停后60秒自动恢复处理
+static void
+Cabinet_ProcessFaultAutoRecovery(CabinetContext_t* Context)
+{
+    uint32_t now;
+    static uint32_t auto_restarttime = 0;
+
+    auto_restarttime = Auto_Restarttime_Flow*1000;
+    // 检查NPR_FaultCode是否已清0
+    if (NPR_FaultCode != 0)
+    {
+        // 故障未清除，检查是否超时60秒
+        now = hal_timer_get_timestamp();
+        if (now - Context->emergency_degauss_complete_time >= auto_restarttime)
+        {
+            // 60秒超时，故障仍未清除，关闭自动恢复
+            Context->fault_auto_recovery_enabled = false;
+            Context->emergency_degauss_complete_time = 0;
+            Cabinet_SetAlarm(Context, ALARM_NONE, "Fault auto recovery timeout, fault not cleared");
+        }
+        return;
+    }
+
+    // 故障已清除（NPR_FaultCode == 0），检查是否在60秒内
+    now = hal_timer_get_timestamp();
+    if (now - Context->emergency_degauss_complete_time >= auto_restarttime)
+    {
+        // 超过60秒，关闭自动恢复
+        Context->fault_auto_recovery_enabled = false;
+        Context->emergency_degauss_complete_time = 0;
+        Cabinet_SetAlarm(Context, ALARM_NONE, "Fault auto recovery timeout");
+        return;
+    }
+
+    // 读取电源柜状态
+    Context->power_status = CAN_Adapter_GetPowerStatus();
+    // 根据故障前保存的状态设置目标状态，触发待机→单机/并机的转换流程
+    if ((Context->state_before_fault == CABINET_STATE_SINGLE) && (Context->state == CABINET_STATE_STANDBY))
+    {
+        if ((Context->power_status.run_state == POWER_SINGLE_RUNNING) ||
+            (Context->power_status.run_state == POWER_PARALLEL_RUNNING))
+        {
+            // 复位
+            Cabinet_SetCabinetReset(Context);
+            Context->fault_auto_recovery_enabled = true;
+            Context->target_state = CABINET_STATE_SINGLE;
+            Cabinet_SetAlarm(Context, ALARM_NONE, "Auto recovery to single mode");
+        }
+    }
+    else if ((Context->state_before_fault == CABINET_STATE_PARALLEL) && (Context->state == CABINET_STATE_STANDBY))
+    {
+        if ((Context->voltage_read(VOLTAGE_U6_PHASE_A) > 50) &&
+            (Context->voltage_read(VOLTAGE_U6_PHASE_B) > 50) &&
+            (Context->voltage_read(VOLTAGE_U6_PHASE_C) > 50))
+        {
+            // 复位
+            Cabinet_SetCabinetReset(Context);
+            Context->fault_auto_recovery_enabled = true;
+            Context->target_state = CABINET_STATE_PARALLEL;
+            Cabinet_SetAlarm(Context, ALARM_NONE, "Auto recovery to parallel mode");
+        }
+    }
+    else
+    {
+        // 其他状态（如待机、备机）保持待机，不进行转换
+        Context->target_state = CABINET_STATE_INVALID;
+        Cabinet_SetAlarm(Context, ALARM_NONE, "Auto recovery to standby");
+    }
+}
+
 // 核心故障恢复状态机
 static void
 Cabinet_ProcessFaultReset(CabinetContext_t* Context)
@@ -3256,7 +3372,9 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
 static void
 Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
 {
+    static uint16_t count = 0;
     ExecuteResult_t res;
+    uint16_t status;
 
     // 读取电源柜状态
     Context->power_status = CAN_Adapter_GetPowerStatus();
@@ -3266,36 +3384,65 @@ Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
         return;
     }
 
-    // 闭合并机回路
-    res = Cabinet_ConnectParallelCircuit(Context);
-    if (res == RESULT_SUCCESS)
+    count++;
+    if (count < 60000)
     {
-        ;
-    }
-    else if (res == RESULT_WAIT)
-    {
-        return;
-    }
-    else
-    {
-        Cabinet_SetAlarm(Context, ALARM_NONE, "The parallel operation circuit connection failed");
-        return;
-    }
+        status = Cabinet_GetComSyncToSectionStatus();
+        CommSyncToSection_t grid_status = CAN_Adapter_GetCommSyncToSectionStatus();
+        if ((Context->state == CABINET_STATE_SINGLE) &&
+                ((status>>9)&1 == 1) &&
+                (grid_status.sync_status.bit.off_grid_all == 0))
+        {
+            // 闭合并机回路
+            res = Cabinet_ConnectParallelCircuit(Context);
+            if (res == RESULT_SUCCESS)
+            {
+                // 设置旋钮状态
+                Context->switch_list.single_switch = SWITCH_ON;
+                Context->switch_list.bus1_switch = SWITCH_ON;
+                // 设置区段柜状态
+                Context->state = CABINET_STATE_BACKUP;
+            }
+            else if (res == RESULT_WAIT)
+            {
+                return;
+            }
+            else
+            {
+                Cabinet_SetAlarm(Context, ALARM_NONE, "The parallel operation circuit connection failed");
+                return;
+            }
+        }
 
-    // 断开单机回路
-    res = Cabinet_DisconnectSingleCircuit(Context);
-    if (res == RESULT_SUCCESS)
-    {
-        CAN_Adapter_ClearPowerStatus();
-    }
-    else if (res == RESULT_WAIT)
-    {
-        return;
+        if (Context->state == CABINET_STATE_BACKUP)
+        {
+            // 断开单机回路
+            res = Cabinet_DisconnectSingleCircuit(Context);
+            if (res == RESULT_SUCCESS)
+            {
+                // 设置旋钮状态
+                Context->switch_list.single_switch = SWITCH_OFF;
+                Context->switch_list.bus1_switch = SWITCH_ON;
+                // 设置区段柜状态
+                Context->state = CABINET_STATE_PARALLEL;
+                // 清空单转并状态标志
+                CAN_Adapter_ClearPowerStatus();
+            }
+            else if (res == RESULT_WAIT)
+            {
+                return;
+            }
+            else
+            {
+                Cabinet_SetAlarm(Context, ALARM_NONE, "The parallel operation circuit connection failed");
+                return;
+            }
+        }
     }
     else
     {
-        Cabinet_SetAlarm(Context, ALARM_NONE, "The parallel operation circuit connection failed");
-        return;
+        count = 0;
+        CAN_Adapter_ClearPowerStatus();
     }
 }
 
