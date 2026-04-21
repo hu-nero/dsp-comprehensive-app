@@ -647,22 +647,6 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                 }
             }
 
-            if (Context->fault_auto_recovery_enabled == true)
-            {
-                if ((Context->target_state == CABINET_STATE_SINGLE) && (Context->state == CABINET_STATE_STANDBY))
-                {
-                    Context->switch_last.single_switch = SWITCH_ON;
-                    Context->switch_last.bus1_switch = SWITCH_OFF;
-                    Context->fault_auto_recovery_enabled = false;
-                }
-                else if ((Context->target_state == CABINET_STATE_PARALLEL) && (Context->state == CABINET_STATE_STANDBY))
-                {
-                    Context->switch_last.single_switch = SWITCH_OFF;
-                    Context->switch_last.bus1_switch = SWITCH_ON;
-                    Context->fault_auto_recovery_enabled = false;
-                }
-            }
-
             // 根据开关状态确定目标状态
             if ((Context->switch_last.single_switch == SWITCH_OFF) && (Context->switch_last.bus1_switch == SWITCH_OFF))
             {
@@ -1861,6 +1845,8 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                 Context->emergency_degauss_complete_time = hal_timer_get_timestamp();
                 Context->fault_auto_recovery_enabled = true;
                 Context->fault_cleared_processed = true;
+                Context->fault_recovery_state = AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS;
+                Context->fault_timer_duration = Auto_Restarttime_Flow*1000;
             }
             else
             {
@@ -2064,6 +2050,11 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
+            if (Context->state == CABINET_STATE_PARALLEL)
+            {
+                // 退过激
+                CAN_Adapter_SetAvoidOverdrive(1);
+            }
             // 等待开关反馈稳定3秒
             res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 5000, 3000, 50);
             // 防止急停后，再面板消磁 switch_feedback_wait_state状态干扰
@@ -3051,7 +3042,6 @@ Cabinet_ProcessFaultAutoRecovery(CabinetContext_t* Context)
         {
             // 复位
             Cabinet_SetCabinetReset(Context);
-            Context->fault_auto_recovery_enabled = true;
             // 转单机
             Context->target_state = CABINET_STATE_SINGLE;
             Cabinet_SetAlarm(Context, ALARM_NONE, "Auto recovery to single mode");
@@ -3065,7 +3055,6 @@ Cabinet_ProcessFaultAutoRecovery(CabinetContext_t* Context)
         {
             // 复位
             Cabinet_SetCabinetReset(Context);
-            Context->fault_auto_recovery_enabled = true;
             // 转并机
             Context->target_state = CABINET_STATE_PARALLEL;
             Cabinet_SetAlarm(Context, ALARM_NONE, "Auto recovery to parallel mode");
@@ -3185,6 +3174,8 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 res = Cabinet_DisconnectParallelCircuit(Context);
                 if (res == RESULT_SUCCESS)
                 {
+                    // 退过激
+                    CAN_Adapter_SetAvoidOverdrive(1);
                     // 设置旋钮状态
                     Context->switch_list.single_switch = SWITCH_OFF;
                     Context->switch_list.bus1_switch = SWITCH_OFF;
@@ -3244,6 +3235,8 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                             res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
                             if (res == RESULT_SUCCESS)
                             {
+                                // 取消退过激
+                                CAN_Adapter_SetAvoidOverdrive(0);
                                 Context->fault_recovery_state = AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS;
                                 Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
                             }
@@ -3535,6 +3528,8 @@ Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
                 Context->state = CABINET_STATE_PARALLEL;
                 // 清空单转并状态标志
                 CAN_Adapter_ClearPowerStatus();
+                // 取消退过激
+                CAN_Adapter_SetAvoidOverdrive(0);
             }
             else if (res == RESULT_WAIT)
             {

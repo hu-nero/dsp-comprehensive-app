@@ -909,11 +909,8 @@ void npr_1s_protection(void)
         else
         {
             AlarmWord_Clear(10);
-            if (FltCnt_OverLow_Flow1 > 0)
-            {
-                FltCnt_OverLow_Flow1 --;
-            }
-            else if ((FltCnt_OverLow_Flow1 == 0) &&
+            FltCnt_OverLow_Flow1 = 0;
+            if ((FltCnt_OverLow_Flow1 == 0) &&
                     (NPR_FaultCode == 25))
             {
                 NPR_FaultCode = 0;
@@ -938,11 +935,8 @@ void npr_1s_protection(void)
         else
         {
             AlarmWord_Clear(13);
-            if(FltCnt_OverLow_Flow2 > 0)
-            {
-                FltCnt_OverLow_Flow2 --;
-            }
-            else if ((FltCnt_OverLow_Flow2 == 0) &&
+            FltCnt_OverLow_Flow2 = 0;
+            if ((FltCnt_OverLow_Flow2 == 0) &&
                     (NPR_FaultCode == 29))
             {
                 NPR_FaultCode = 0;
