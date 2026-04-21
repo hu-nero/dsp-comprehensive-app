@@ -136,8 +136,10 @@ typedef struct
     SwitchStateList_t switch_list_before_fault;         // 故障前保存的开关状态
     uint32_t emergency_degauss_complete_time;           // 急停消磁完成时间戳
     bool fault_auto_recovery_enabled;                   // 故障自动恢复使能标志
-    uint16_t fault_auto_recovery_times;                 // 故障自动恢复次数记录
     uint16_t u16npr_old_code;
+    uint16_t last_fault_code;                           // 上一次发生的故障码
+    uint32_t last_fault_timestamp;                      // 上一次故障发生的时间戳（ms）
+    bool fault_cleared_processed;                   // 故障自动恢复使能标志
 
     // 回调函数指针
     SwitchControlFunc_t switch_control;

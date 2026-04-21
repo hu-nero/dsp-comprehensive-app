@@ -173,6 +173,7 @@ void main(void)
             SysCnt_1sOld = SysCnt_1s;
             npr_1s_protection();
 			FunStatusUpdate();
+            MainStusWord.DataBit.Toggle ^= 1;
         }
 		//////////////////////////////////////////////////////////////////////////////
 		if(SysCnt_1ms != SysCnt_1msOld)
@@ -253,7 +254,6 @@ void  RealTime20msFun(void)
 	UINT SysTime_Month = 0;
 	UINT SysTimeYearL = 0;
 	/******************************************/
-	MainStusWord.DataBit.Toggle ^= 1;
 
 	temp = (Time_L & 0x000000FF);
 	SysTimeSecond = (((temp & 0x00F0) >> 4) * 10 + (temp & 0x000F));
@@ -875,7 +875,18 @@ void npr_1s_protection(void)
         AlarmWord_Clear(9);
         AlarmWord_Clear(6);
         AlarmWord_Clear(7);
-
+        AlmCnt_UnderVolt_Phase = 0;
+        AlmCnt_OverVolt_Work1 = 0;
+        AlmCnt_UnderVolt_Work1 = 0;
+        FltCnt_OverCurr_Work1 = 0;
+        FltCnt_OverVolt_Work2 = 0;
+        AlmCnt_OverVolt_Work2 = 0;
+        AlmCnt_UnderVolt_Work2 = 0;
+        FltCnt_OverCurr_Work2 = 0;
+        AlmCnt_OverImba_Volt = 0;
+        FltCnt_OverImba_Volt = 0;
+        AlmCnt_OverImba_Curr = 0;
+        FltCnt_OverImba_Curr = 0;
     }
     //////////////////////////////////////////////////////////
     if (Cap_Ctrl_Word.DataBit.Bit5)
@@ -883,6 +894,7 @@ void npr_1s_protection(void)
         // 下限I水流量保护
         if(FlowRate < FltThr_OverLow_Flow1)
         {
+            AlarmWord_Map(10);
             if(FltCnt_OverLow_Flow1 > FltCntThr_OverLow_Flow1)
             {
                 FltCnt_OverLow_Flow1 = FltCntThr_OverLow_Flow1;
@@ -896,6 +908,7 @@ void npr_1s_protection(void)
         }
         else
         {
+            AlarmWord_Clear(10);
             if (FltCnt_OverLow_Flow1 > 0)
             {
                 FltCnt_OverLow_Flow1 --;
@@ -910,6 +923,7 @@ void npr_1s_protection(void)
         // 下限II水流量保护
         if (FlowRate < FltThr_OverLow_Flow2)
         {
+            AlarmWord_Map(13);
             if(FltCnt_OverLow_Flow2 > FltCntThr_OverLow_Flow2)
             {
                 FltCnt_OverLow_Flow2 = FltCntThr_OverLow_Flow2;
@@ -923,6 +937,7 @@ void npr_1s_protection(void)
         }
         else
         {
+            AlarmWord_Clear(13);
             if(FltCnt_OverLow_Flow2 > 0)
             {
                 FltCnt_OverLow_Flow2 --;

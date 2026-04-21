@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#define FAULT_RETRY_INTERVAL_MS  60000   // 故障重试间隔60秒
 // 电源运行状态
 typedef enum
 {
