@@ -1658,7 +1658,10 @@ Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context)
 static ExecuteResult_t
 Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
 {
+    static uint16_t u16TmpSingleCount = 0;
+    static uint16_t u16TmpParallelCount = 0;
     ExecuteResult_t res = RESULT_SUCCESS;
+    uint16_t tmp_reset_switch;
     // 读取复位反馈
     Context->switch_list.reset_switch = (SwitchState_t)Context->switch_feed(DI_ID_RESET);
     // 读取刀闸反馈
@@ -1686,48 +1689,77 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             Cabinet_SetCabinetReset(Context);
         }
     }
-
-    Context->switch_list.A3QR1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QR1);
-    if (Context->switch_last.A3QR1_switch != Context->switch_list.A3QR1_switch)
+    // 远端复位
+    if (Context->switch_list.manual_switch == SWITCH_ON)
     {
-        if ((Context->switch_list.A3QR1_switch == SWITCH_OFF) && (Context->switch_last.A3QR1_switch == SWITCH_ON))
+        tmp_reset_switch = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_RESET);
+        if (tmp_reset_switch == 1)
         {
-            if (Context->state == CABINET_STATE_SINGLE)
+            // TODO:急停
+            if ((Context->emergency_stop_status == true) | (NPR_FaultCode != 0))
             {
-                Context->switch_list.A3QF1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF1);
-                if ((Context->switch_list.A3QF1_switch == SWITCH_OFF) || (Context->switch_list.A3QR1_switch == SWITCH_OFF))
+                // 复位
+                Cabinet_SetCabinetReset(Context);
+            }
+        }
+    }
+
+    // 如果没有发生状态转换
+    if (!((Context->state != Context->target_state)  &&
+                (Context->target_state != CABINET_STATE_INVALID)))
+    {
+        if (Context->state == CABINET_STATE_SINGLE)
+        {
+            Context->switch_list.A3QF1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF1);
+            Context->switch_list.A3QR1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QR1);
+            if ((Context->switch_list.A3QF1_switch == SWITCH_OFF) || (Context->switch_list.A3QR1_switch == SWITCH_OFF))
+            {
+                if (u16TmpSingleCount > 1000)
                 {
+                    u16TmpSingleCount = 0;
                     NPR_FaultCode = 26;
                     Context->fault_recovery_ctx.fault_status = true;
                     FaultWord1.DataBit.Bit9 = 1;
                     Context->state = CABINET_STATE_STANDBY;
                     Context->target_state = CABINET_STATE_INVALID;
                 }
+                else
+                {
+                    u16TmpSingleCount ++;
+                }
+            }
+            else
+            {
+                u16TmpSingleCount = 0;
             }
         }
-        Context->switch_last.A3QR1_switch = Context->switch_list.A3QR1_switch;
-    }
-
-    Context->switch_list.A3QR2_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QR2);
-    if (Context->switch_last.A3QR2_switch != Context->switch_list.A3QR2_switch)
-    {
-        if ((Context->switch_list.A3QR2_switch == SWITCH_OFF) && (Context->switch_last.A3QR2_switch == SWITCH_ON))
+        if (Context->state == CABINET_STATE_PARALLEL)
         {
-            if (Context->state == CABINET_STATE_PARALLEL)
+            Context->switch_list.A3QF2_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF2);
+            Context->switch_list.A3QR2_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QR2);
+            if ((Context->switch_list.A3QF2_switch == SWITCH_OFF) || (Context->switch_list.A3QR2_switch == SWITCH_OFF))
             {
-                Context->switch_list.A3QF2_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF2);
-                if ((Context->switch_list.A3QF2_switch == SWITCH_OFF) || (Context->switch_list.A3QR2_switch == SWITCH_OFF))
+                if (u16TmpParallelCount > 1000)
                 {
+                    u16TmpParallelCount = 0;
                     NPR_FaultCode = 26;
                     Context->fault_recovery_ctx.fault_status = true;
                     FaultWord1.DataBit.Bit9 = 1;
                     Context->state = CABINET_STATE_STANDBY;
                     Context->target_state = CABINET_STATE_INVALID;
                 }
+                else
+                {
+                    u16TmpParallelCount ++;
+                }
+            }
+            else
+            {
+                u16TmpParallelCount = 0;
             }
         }
-        Context->switch_last.A3QR2_switch = Context->switch_list.A3QR2_switch;
     }
+
 
     // 消磁反馈控制K2
     Context->switch_list.A3QF3_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF3);
@@ -2245,7 +2277,7 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
         {
             Context->switch_last.short_switch = (SwitchState_t)
             ((Context->switch_feed(DI_ID_REM_SHORT_START)) ||
-             ((UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SINGLE)==1)?1:0));
+             ((UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SHORT)==1)?1:0));
             if (Context->switch_last.short_switch == SWITCH_ON)
             {
                 Context->panel_remote_degauss_flag = true;
