@@ -279,6 +279,7 @@ Cabinet_SetCabinetReset(CabinetContext_t* Context)
     Context->switch_feedback_current_value = 0;
 
     // 故障自恢复
+    gAutoRequestParallelCount = 0;
     Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
     Context->fault_timer_start = 0;
     Context->fault_timer_duration = 0;
@@ -1929,11 +1930,11 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                 // 恢复阶段
                 if (Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_SINGLE)
                 {
-                    Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_SINGLE_CIRCUIT_DEGAUSS;
+                    Context->fault_recovery_state = AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS;
                 }
                 else if (Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_PARALLEL)
                 {
-                    Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_PARALLEL_CIRCUIT_DEGAUSS;
+                    Context->fault_recovery_state = AUTO_RECOVERY_REQUEST_PARALLEL;
                 }
                 else
                 {
