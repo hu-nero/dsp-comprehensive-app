@@ -96,13 +96,22 @@ typedef enum
     AUTO_RECOVERY_SUB_INVALID
 } AutoRecoverySubState_t;
 
+typedef struct
+{
+    CabinetState_t state_before_fault;         // 故障前状态
+
+    uint16_t u16npr_old_code;                  // 上一周期的故障码
+    uint16_t last_fault_code;                  // 上一次发生的故障码
+    uint32_t last_fault_timestamp;             // 上一次故障发生的时间戳
+    bool fault_status;                         // 允不允许断回路
+} FaultAutoRecoveryContext_t;
+
 // 区段柜上下文结构体
 typedef struct
 {
     CabinetState_t state;                  // 当前状态
     CabinetState_t target_state;           // 保存的目标状态
     bool emergency_stop_status;            // 急停状态
-    bool fault_status;                     // 故障状态
     bool panel_remote_degauss_flag;        // 面板或者远端消磁标志
     AutoRecoverySubState_t degauss_10s_sub_state;  // 自复位消磁子状态
     AutoRecoverySubState_t flt_degauss_sub_state;  // 自复位消磁子状态
@@ -131,15 +140,8 @@ typedef struct
     uint32_t recovery_degauss_start_time;               // 自复位消磁开始时间
     uint16_t recovery_degauss_delay_ms;                 // 自复位消磁延时
 
-    // 故障急停自动恢复相关
-    CabinetState_t state_before_fault;                  // 故障前保存的状态
-    SwitchStateList_t switch_list_before_fault;         // 故障前保存的开关状态
-    uint32_t emergency_degauss_complete_time;           // 急停消磁完成时间戳
-    bool fault_auto_recovery_enabled;                   // 故障自动恢复使能标志
-    uint16_t u16npr_old_code;
-    uint16_t last_fault_code;                           // 上一次发生的故障码
-    uint32_t last_fault_timestamp;                      // 上一次故障发生的时间戳（ms）
-    bool fault_cleared_processed;                   // 故障自动恢复使能标志
+    // 故障自动恢复专用上下文
+    FaultAutoRecoveryContext_t fault_recovery_ctx;
 
     // 回调函数指针
     SwitchControlFunc_t switch_control;
