@@ -1760,6 +1760,25 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         }
     }
 
+    // 单机反馈控制K1
+    if ((Context->switch_list.A3QF1_switch == SWITCH_ON) && (Context->switch_list.A3QR1_switch == SWITCH_ON))
+    {
+        Context->switch_control(DO_ID_REMOTE_SINGLE_CTRL_FEED, SWITCH_ON);
+    }
+    else
+    {
+        Context->switch_control(DO_ID_REMOTE_SINGLE_CTRL_FEED, SWITCH_OFF);
+    }
+
+    // 并机反馈控制K5
+    if ((Context->switch_list.A3QF2_switch == SWITCH_ON) && (Context->switch_list.A3QR2_switch == SWITCH_ON))
+    {
+        Context->switch_control(DO_ID_REMOTE_PARALEL_CTRL_FEED, SWITCH_ON);
+    }
+    else
+    {
+        Context->switch_control(DO_ID_REMOTE_PARALEL_CTRL_FEED, SWITCH_OFF);
+    }
 
     // 消磁反馈控制K2
     Context->switch_list.A3QF3_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF3);
