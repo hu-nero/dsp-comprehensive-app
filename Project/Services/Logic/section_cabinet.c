@@ -251,7 +251,7 @@ Cabinet_SetCabinetReset(CabinetContext_t* Context)
 {
     CommSectionToSync_t tmp_sync_state;
     // 退过激
-    CAN_Adapter_SetAvoidOverdrive(1);
+    CAN_Adapter_SetAvoidOverdrive(0);
     // 清空单转并状态
     CAN_Adapter_ClearPowerStatus();
     // 清空同步柜请求状态
@@ -401,6 +401,8 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
         	uint16_t tmp_state = 0;
             CommSectionToSync_t tmp_sync_state;
 
+            // 取消退过激
+            CAN_Adapter_SetAvoidOverdrive(0);
             // 清空单转并状态
             CAN_Adapter_ClearPowerStatus();
             // 清空同步柜请求状态
@@ -1685,6 +1687,48 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         }
     }
 
+    Context->switch_list.A3QR1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QR1);
+    if (Context->switch_last.A3QR1_switch != Context->switch_list.A3QR1_switch)
+    {
+        if ((Context->switch_list.A3QR1_switch == SWITCH_OFF) && (Context->switch_last.A3QR1_switch == SWITCH_ON))
+        {
+            if (Context->state == CABINET_STATE_SINGLE)
+            {
+                Context->switch_list.A3QF1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF1);
+                if ((Context->switch_list.A3QF1_switch == SWITCH_OFF) || (Context->switch_list.A3QR1_switch == SWITCH_OFF))
+                {
+                    NPR_FaultCode = 26;
+                    Context->fault_recovery_ctx.fault_status = true;
+                    FaultWord1.DataBit.Bit9 = 1;
+                    Context->state = CABINET_STATE_STANDBY;
+                    Context->target_state = CABINET_STATE_INVALID;
+                }
+            }
+        }
+        Context->switch_last.A3QR1_switch = Context->switch_list.A3QR1_switch;
+    }
+
+    Context->switch_list.A3QR2_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QR2);
+    if (Context->switch_last.A3QR2_switch != Context->switch_list.A3QR2_switch)
+    {
+        if ((Context->switch_list.A3QR2_switch == SWITCH_OFF) && (Context->switch_last.A3QR2_switch == SWITCH_ON))
+        {
+            if (Context->state == CABINET_STATE_PARALLEL)
+            {
+                Context->switch_list.A3QF2_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF2);
+                if ((Context->switch_list.A3QF2_switch == SWITCH_OFF) || (Context->switch_list.A3QR2_switch == SWITCH_OFF))
+                {
+                    NPR_FaultCode = 26;
+                    Context->fault_recovery_ctx.fault_status = true;
+                    FaultWord1.DataBit.Bit9 = 1;
+                    Context->state = CABINET_STATE_STANDBY;
+                    Context->target_state = CABINET_STATE_INVALID;
+                }
+            }
+        }
+        Context->switch_last.A3QR2_switch = Context->switch_list.A3QR2_switch;
+    }
+
     // 消磁反馈控制K2
     Context->switch_list.A3QF3_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF3);
     if (Context->switch_last.A3QF3_switch != Context->switch_list.A3QF3_switch)
@@ -2141,7 +2185,9 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 				res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
 				if (res == RESULT_SUCCESS)
 				{
-					Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                    // 取消退过激
+                    CAN_Adapter_SetAvoidOverdrive(0);
+                    Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
 			        Context->emergency_stop_status = false;
 				}
 				else if (res == RESULT_WAIT)
