@@ -435,7 +435,19 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             // 清除急停和故障标志，使能状态转换流程
             Context->fault_recovery_ctx.state_before_fault = CABINET_STATE_INVALID;
             Context->fault_recovery_ctx.last_fault_code = 0;
-            Context->fault_recovery_ctx.fault_status = false;
+
+            FaultAutoRecoveryContext_t *fault_ctx = &Context->fault_recovery_ctx;
+            if (fault_ctx->u16npr_old_code != NPR_FaultCode)
+            {
+                // 故障发生
+                if (fault_ctx->u16npr_old_code == 0 && NPR_FaultCode != 0)
+                {
+                    // 新故障
+                    fault_ctx->fault_status = true;
+                }
+                // 更新旧故障码记录
+                fault_ctx->u16npr_old_code = NPR_FaultCode;
+            }
 
             // 读取旋钮状态
             single_switch = (SwitchState_t)Context->switch_feed(DI_ID_SINGLE);
@@ -1943,9 +1955,6 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                 Context->fault_timer_start = hal_timer_get_timestamp();
                 Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
             }
-            else
-            {
-            }
         }
 
         // 更新旧故障码记录
@@ -2105,9 +2114,16 @@ Cabinet_Execute10sDegaussProcedure(CabinetContext_t* Context)
 static ExecuteResult_t
 Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 {
+    static uint16_t fltCount = 0;
 	ExecuteResult_t res;
     if ((NPR_FaultCode != 0) && (Context->fault_recovery_ctx.fault_status == true))
     {
+        if (fltCount < 50)
+        {
+            fltCount ++;
+            return RESULT_WAIT;
+        }
+        fltCount = 0;
         // 进入消磁前保存故障前的状态
         Context->fault_recovery_ctx.state_before_fault = Context->state;
         // 设置急停状态
@@ -3099,13 +3115,25 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
 {
     ExecuteResult_t res;
     // 急停则退出
-    if (Context->emergency_stop_status)
+    if ((Context->emergency_stop_status) || (NPR_FaultCode != 0))
     {
         if (Context->fault_recovery_state != AUTO_RECOVERY_IDLE)
         {
             Cabinet_SetAlarm(Context, ALARM_NONE, "Auto recovery aborted by emergency");
+            gAutoRequestParallelCount = 0;
             Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
-            Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+            Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
+            Context->fault_timer_start = 0;
+            Context->fault_timer_duration = 0;
+            Context->parallel_request_sent = false;
+            Context->parallel_request_start = 0;
+            Context->recovery_degauss_start_time = 0;
+            Context->recovery_degauss_delay_ms = 0;
+            Cabinet_SetAlarm(Context, ALARM_NONE, "auto recovery failed");
+        }
+        if (NPR_FaultCode != 0)
+        {
+            Context->fault_recovery_ctx.fault_status = true;
         }
         return;
     }
@@ -3487,7 +3515,6 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 Context->recovery_degauss_start_time = 0;
                 Context->recovery_degauss_delay_ms = 0;
                 Cabinet_SetAlarm(Context, ALARM_NONE, "auto recovery failed");
-                Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
             }
             break;
         default:break;
@@ -3499,6 +3526,7 @@ static void
 Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
 {
     static uint16_t count = 0;
+    static uint16_t singleToParaCount = 0;
     ExecuteResult_t res;
     uint16_t status;
 
@@ -3542,6 +3570,12 @@ Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
 
         if (Context->state == CABINET_STATE_BACKUP)
         {
+            if (singleToParaCount < 500)
+            {
+                singleToParaCount ++;
+                return;
+            }
+            singleToParaCount = 0;
             // 断开单机回路
             res = Cabinet_DisconnectSingleCircuit(Context);
             if (res == RESULT_SUCCESS)
