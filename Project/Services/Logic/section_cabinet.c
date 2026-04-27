@@ -1727,7 +1727,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             Context->switch_list.A3QR1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QR1);
             if ((Context->switch_list.A3QF1_switch == SWITCH_OFF) || (Context->switch_list.A3QR1_switch == SWITCH_OFF))
             {
-                if (u16TmpSingleCount > 1000)
+                if (u16TmpSingleCount > 3000)
                 {
                     u16TmpSingleCount = 0;
                     NPR_FaultCode = 26;
@@ -1752,7 +1752,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             Context->switch_list.A3QR2_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QR2);
             if ((Context->switch_list.A3QF2_switch == SWITCH_OFF) || (Context->switch_list.A3QR2_switch == SWITCH_OFF))
             {
-                if (u16TmpParallelCount > 1000)
+                if (u16TmpParallelCount > 3000)
                 {
                     u16TmpParallelCount = 0;
                     NPR_FaultCode = 26;

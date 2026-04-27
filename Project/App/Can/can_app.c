@@ -632,7 +632,6 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
 static uint16_t
 Hardware_SwitchFeed(uint16_t SwitchId)
 {
-    IO_Scan();
     switch (SwitchId)
     {
         case DI_ID_LOCALREMOTE:

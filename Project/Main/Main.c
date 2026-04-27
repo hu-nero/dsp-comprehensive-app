@@ -884,10 +884,10 @@ void npr_1s_protection(void)
         AlmCnt_OverCurr_Work1 = 0;
         FltCnt_OverVolt_Work2 = 0;
         AlmCnt_OverVolt_Work2 = 0;
-FltCnt_UnderVolt_Work2 = 0;
+        FltCnt_UnderVolt_Work2 = 0;
         AlmCnt_UnderVolt_Work2 = 0;
         FltCnt_OverCurr_Work2 = 0;
-AlmCnt_OverCurr_Work2 = 0;
+        AlmCnt_OverCurr_Work2 = 0;
         AlmCnt_OverImba_Volt = 0;
         FltCnt_OverImba_Volt = 0;
         AlmCnt_OverImba_Curr = 0;
