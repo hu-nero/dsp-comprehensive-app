@@ -13,6 +13,7 @@
 #include "main\Variable.h"
 
 static uint16_t gAutoRequestParallelCount = 0;
+static union DataBit_Type Cap_Ctrl_Word_Old;
 
 static inline void Cabinet_SetCabinetReset(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ResetFromEmergency(CabinetContext_t* Context);
@@ -162,6 +163,9 @@ Cabinet_Init(CabinetContext_t* Context,
     Context->fault_recovery_ctx.last_fault_code = 0;
     Context->fault_recovery_ctx.last_fault_timestamp = 0;
     Context->fault_recovery_ctx.fault_status = true;
+
+    // 接收屏幕复位脉冲信号
+    Cap_Ctrl_Word_Old.DataInt = 0;
     return true;
 }
 
@@ -1774,6 +1778,20 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         }
     }
 
+    if(Cap_Ctrl_Word_Old.DataInt != Cap_Ctrl_Word.DataInt)
+    {
+        if ((Cap_Ctrl_Word.DataBit.Bit6 == 0) && (Cap_Ctrl_Word_Old.DataBit.Bit6 == 1))
+        {
+            // TODO:急停
+            if ((Context->emergency_stop_status == true) | (NPR_FaultCode != 0))
+            {
+                // 复位
+                Cabinet_SetCabinetReset(Context);
+            }
+        }
+        Cap_Ctrl_Word_Old.DataInt = Cap_Ctrl_Word.DataInt;
+    }
+
     // 如果没有发生状态转换
     if (!((Context->state != Context->target_state)  &&
                 (Context->target_state != CABINET_STATE_INVALID)))
@@ -3143,7 +3161,10 @@ Cabinet_DisconnectSingleCircuit(CabinetContext_t* Context)
     // 断开 A3QF1
     if (Context->switch_control)
     {
-        Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
+    	if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
+    	{
+            Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
+    	}
         // 等待开关反馈稳定3秒
         res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 5000, 3000, 50);
         if (res == RESULT_SUCCESS)
@@ -3182,7 +3203,10 @@ Cabinet_DisconnectParallelCircuit(CabinetContext_t* Context)
     // 断开 A3QF2
     if (Context->switch_control)
     {
-        Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
+    	if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
+    	{
+            Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
+    	}
         // 等待开关反馈稳定3秒
         res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 5000, 3000, 50);
         if (res == RESULT_SUCCESS)
