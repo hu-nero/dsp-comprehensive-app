@@ -302,6 +302,7 @@ void IOInputCtrlFlag(void)
                 bool_io_rst = false;
                 CtrlCnt_IORstRefFeed = 0;
                 Flag_IORstRef = 1;
+                Flag_HMIRstRef = 1;
             }
         }
 
@@ -328,6 +329,7 @@ void IOInputCtrlFlag(void)
                 bool_io_single = false;
                 CtrlCnt_IOSingCtrl = 0;
                 Flag_IOSingCtrl = 1;
+                Flag_HMISingCtrl = 1;
             }
         }
 
@@ -354,6 +356,7 @@ void IOInputCtrlFlag(void)
                 bool_io_parallel = false;
                 CtrlCnt_IOParaCtrl = 0;
                 Flag_IOParaCtrl = 1;
+                Flag_HMIParaCtrl = 1;
             }
         }
 
@@ -380,6 +383,7 @@ void IOInputCtrlFlag(void)
                 bool_io_degauss = false;
                 CtrlCnt_IODgssCtrl = 0;
                 Flag_IODgssCtrl = 1;
+                Flag_HMIDgssCtrl = 1;
             }
         }
     }

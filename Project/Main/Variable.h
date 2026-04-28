@@ -682,6 +682,10 @@ extern int Flag_EEPROMCheck;
 extern int Flag_RstCmdOld;
 extern int Flag_PwmModuMode;
 
+extern int Flag_HMISingCtrl;
+extern int Flag_HMIParaCtrl;
+extern int Flag_HMIDgssCtrl;
+extern int Flag_HMIRstRef;
 // Fault Alarm Remap Word
 extern union DataBit_Type FltRemapWord1;
 extern union DataBit_Type FltRemapWord2;

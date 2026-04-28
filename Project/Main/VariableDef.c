@@ -616,6 +616,11 @@ int Flag_EEPROMCheck=0;
 int Flag_RstCmdOld=0;
 int Flag_PwmModuMode=1;
 
+int Flag_HMISingCtrl=0;
+int Flag_HMIParaCtrl=0;
+int Flag_HMIDgssCtrl=0;
+int Flag_HMIRstRef=0;
+
 // Fault Alarm Remap Word
 union DataBit_Type FltRemapWord1;
 union DataBit_Type FltRemapWord2;

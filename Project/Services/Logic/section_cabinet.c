@@ -1603,6 +1603,10 @@ Cabinet_UpdateCommSectionToSyncStatus(CabinetContext_t* Context)
 static void
 Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context)
 {
+    static uint16_t hmiRstCount = 0;
+    static uint16_t hmiSingleCount = 0;
+    static uint16_t hmiParallelCount = 0;
+    static uint16_t hmiDgssCount = 0;
     AdapterStatus_t adapter_status;
     CommSectionToSync_t section_to_sync_status;
 
@@ -1633,7 +1637,6 @@ Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context)
 
     SwitchWord2.DataBit.DI_ID_LOCALREMOTE = IOInput1.DataBit.Bit0;
     SwitchWord2.DataBit.DI_ID_EMERGENCY_STOP = IOInput1.DataBit.Bit1;
-    SwitchWord2.DataBit.DI_ID_RESET = IOInput1.DataBit.Bit2;
     SwitchWord2.DataBit.DI_ID_A3QF1 = IOInput1.DataBit.Bit3;
     SwitchWord2.DataBit.DI_ID_A3QF2 = IOInput1.DataBit.Bit4;
     SwitchWord2.DataBit.DI_ID_A3QS1 = IOInput1.DataBit.Bit5;
@@ -1642,9 +1645,10 @@ Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context)
     SwitchWord2.DataBit.DI_ID_UPS = IOInput1.DataBit.Bit8;
     SwitchWord2.DataBit.DI_ID_MAINS_ELECT = IOInput1.DataBit.Bit9;
     SwitchWord2.DataBit.DI_ID_KM1 = IOInput1.DataBit.Bit10;
-    SwitchWord2.DataBit.DI_ID_PANEL_SINGLE = IOInput1.DataBit.Bit11;
-    SwitchWord2.DataBit.DI_ID_PANEL_PARALLEL = IOInput1.DataBit.Bit12;
-    SwitchWord2.DataBit.DI_ID_PANEL_SHORT = IOInput1.DataBit.Bit13;
+    SwitchWord2.DataBit.DI_ID_RESET = Flag_HMIRstRef;
+    SwitchWord2.DataBit.DI_ID_PANEL_SINGLE = Flag_HMISingCtrl;
+    SwitchWord2.DataBit.DI_ID_PANEL_PARALLEL = Flag_HMIParaCtrl;
+    SwitchWord2.DataBit.DI_ID_PANEL_SHORT = Flag_HMIDgssCtrl;
     SwitchWord2.DataBit.DI_ID_IMPACT_VEHICLE = IOInput1.DataBit.Bit14;
     SwitchWord2.DataBit.DI_ID_COMPENSATION_VEHICLE = IOInput1.DataBit.Bit15;
 
@@ -1666,6 +1670,59 @@ Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context)
     MainSta2Word.DataBit.ComPwr  = adapter_status.power_online_status;
     MainSta2Word.DataBit.ComSync = adapter_status.sync_online_status;
 
+    // 清除HMI面板按钮保持信号
+    if (Flag_HMIRstRef)
+    {
+        hmiRstCount ++;
+        if (hmiRstCount > 1000)
+        {
+            Flag_HMIRstRef=0;
+            hmiRstCount = 0;
+        }
+    }
+    else
+    {
+        hmiRstCount = 0;
+    }
+    if (Flag_HMISingCtrl)
+    {
+        hmiSingleCount ++;
+        if (hmiSingleCount > 1000)
+        {
+            Flag_HMISingCtrl=0;
+            hmiSingleCount = 0;
+        }
+    }
+    else
+    {
+        hmiSingleCount = 0;
+    }
+    if (Flag_HMIParaCtrl)
+    {
+        hmiParallelCount ++;
+        if (hmiParallelCount > 1000)
+        {
+            Flag_HMIParaCtrl=0;
+            hmiParallelCount = 0;
+        }
+    }
+    else
+    {
+        hmiParallelCount = 0;
+    }
+    if (Flag_HMIDgssCtrl)
+    {
+        hmiDgssCount ++;
+        if (hmiDgssCount > 1000)
+        {
+            Flag_HMIDgssCtrl=0;
+            hmiDgssCount = 0;
+        }
+    }
+    else
+    {
+        hmiDgssCount = 0;
+    }
 }
 
 static ExecuteResult_t
