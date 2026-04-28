@@ -1994,25 +1994,46 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                      ((cleared_fault >= 27) && (cleared_fault <= 29)) ||
                      (cleared_fault == 25)))
             {
-    			fault_ctx->last_fault_code = cleared_fault;
-                fault_ctx->last_fault_timestamp = hal_timer_get_timestamp();
-                // 恢复阶段
-                if (Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_SINGLE)
+                if (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
+                    ((cleared_fault >= 27) && (cleared_fault <= 28)))
                 {
-                    Context->fault_recovery_state = AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS;
+                    fault_ctx->last_fault_code = cleared_fault;
+                    fault_ctx->last_fault_timestamp = hal_timer_get_timestamp();
+                    // 恢复阶段
+                    if (Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_SINGLE)
+                    {
+                        Context->fault_recovery_state = AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS;
+                    }
+                    else if (Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_PARALLEL)
+                    {
+                        Context->fault_recovery_state = AUTO_RECOVERY_REQUEST_PARALLEL;
+                        // 只有故障前是并机，才执行第二次恢复
+                        allow_convert_single = true;
+                    }
+                    else
+                    {
+                        Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
+                    }
+                    Context->fault_timer_start = hal_timer_get_timestamp();
+                    Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
                 }
-                else if (Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_PARALLEL)
+                else if ((cleared_fault == 25) || (cleared_fault == 29))
                 {
-                    Context->fault_recovery_state = AUTO_RECOVERY_REQUEST_PARALLEL;
-                    // 只有故障前是并机，才执行第二次恢复
-                    allow_convert_single = true;
+                    fault_ctx->last_fault_code = cleared_fault;
+                    fault_ctx->last_fault_timestamp = hal_timer_get_timestamp();
+                    // 恢复阶段
+                    if ((Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_SINGLE) ||
+                        (Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_PARALLEL))
+                    {
+                        Context->fault_recovery_state = AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS;
+                    }
+                    else
+                    {
+                        Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
+                    }
+                    Context->fault_timer_start = hal_timer_get_timestamp();
+                    Context->fault_timer_duration = 60000;
                 }
-                else
-                {
-                    Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
-                }
-                Context->fault_timer_start = hal_timer_get_timestamp();
-                Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
             }
             // 第二次恢复，转单机
             else if ((!allow_recovery) && (allow_convert_single) &&
@@ -2025,7 +2046,7 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                 // 恢复单机阶段
                 Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_SINGLE_CIRCUIT_DEGAUSS;
                 Context->fault_timer_start = hal_timer_get_timestamp();
-                Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
+                Context->fault_timer_duration = 60000;
             }
         }
 
@@ -3202,10 +3223,6 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
             Context->recovery_degauss_start_time = 0;
             Context->recovery_degauss_delay_ms = 0;
             Cabinet_SetAlarm(Context, ALARM_NONE, "auto recovery failed");
-        }
-        if (NPR_FaultCode != 0)
-        {
-            Context->fault_recovery_ctx.fault_status = true;
         }
         return;
     }
