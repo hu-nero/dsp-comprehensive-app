@@ -1942,6 +1942,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
 static void
 Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
 {
+    static bool allow_convert_single = false;
     FaultAutoRecoveryContext_t *fault_ctx = &Context->fault_recovery_ctx;
 
     if (fault_ctx->u16npr_old_code != NPR_FaultCode)
@@ -1993,7 +1994,6 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                      ((cleared_fault >= 27) && (cleared_fault <= 29)) ||
                      (cleared_fault == 25)))
             {
-
     			fault_ctx->last_fault_code = cleared_fault;
                 fault_ctx->last_fault_timestamp = hal_timer_get_timestamp();
                 // 恢复阶段
@@ -2004,11 +2004,26 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                 else if (Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_PARALLEL)
                 {
                     Context->fault_recovery_state = AUTO_RECOVERY_REQUEST_PARALLEL;
+                    // 只有故障前是并机，才执行第二次恢复
+                    allow_convert_single = true;
                 }
                 else
                 {
                     Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
                 }
+                Context->fault_timer_start = hal_timer_get_timestamp();
+                Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
+            }
+            // 第二次恢复，转单机
+            else if ((!allow_recovery) && (allow_convert_single) &&
+                     (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
+                     ((cleared_fault >= 27) && (cleared_fault <= 28))))
+            {
+                allow_convert_single = false;
+    			fault_ctx->last_fault_code = cleared_fault;
+                fault_ctx->last_fault_timestamp = hal_timer_get_timestamp();
+                // 恢复单机阶段
+                Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_SINGLE_CIRCUIT_DEGAUSS;
                 Context->fault_timer_start = hal_timer_get_timestamp();
                 Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
             }
