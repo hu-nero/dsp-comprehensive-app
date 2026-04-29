@@ -63,6 +63,7 @@ static bool Cabinet_IsSatisfyPowerParallel(CabinetContext_t* Context);
 // 故障恢复函数
 static void Cabinet_ProcessFaultReset(CabinetContext_t* Context);
 static void Cabinet_ProcessAutoParallel(CabinetContext_t* Context);
+static ExecuteResult_t Cabinet_OneclickDisconnect(CabinetContext_t* Context);
 static uint32_t GetFaultTimerDuration(uint8_t fault_code);
 static void Cabinet_SendParallelRequest(CabinetContext_t* Context);
 
@@ -1778,6 +1779,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         }
     }
 
+    // 屏幕复位
     if(Cap_Ctrl_Word_Old.DataInt != Cap_Ctrl_Word.DataInt)
     {
         if ((Cap_Ctrl_Word.DataBit.Bit6 == 0) && (Cap_Ctrl_Word_Old.DataBit.Bit6 == 1))
@@ -1790,6 +1792,15 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             }
         }
         Cap_Ctrl_Word_Old.DataInt = Cap_Ctrl_Word.DataInt;
+    }
+
+    // 使用自动重启时间判断
+    if (Auto_Restarttime_Flow == 501)
+    {
+        if (Cabinet_OneclickDisconnect(Context) == RESULT_SUCCESS)
+        {
+            Auto_Restarttime_Flow = 300;
+        }
     }
 
     // 如果没有发生状态转换
@@ -3702,6 +3713,8 @@ Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
                 CAN_Adapter_ClearPowerStatus();
                 // 取消退过激
                 CAN_Adapter_SetAvoidOverdrive(0);
+                // 清空
+                count = 0;
             }
             else if (res == RESULT_WAIT)
             {
@@ -3719,6 +3732,77 @@ Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
         count = 0;
         CAN_Adapter_ClearPowerStatus();
     }
+}
+
+// 解列
+static ExecuteResult_t
+Cabinet_OneclickDisconnect(CabinetContext_t* Context)
+{
+    static uint16_t ParaToSingleCount = 0;
+    ExecuteResult_t res;
+
+    // 读取电源柜状态
+    Context->power_status = CAN_Adapter_GetPowerStatus();
+    // 判断电源是否单机/并机
+    if (!((Context->power_status.run_state == POWER_SINGLE_RUNNING) ||
+                (Context->power_status.run_state == POWER_PARALLEL_RUNNING)))
+    {
+        Cabinet_SetAlarm(Context, ALARM_FAULT, "power status abnormal,one-click disconnect failed");
+        return RESULT_INVALID_STATE;
+    }
+
+    if (Context->state == CABINET_STATE_PARALLEL)
+    {
+        // 闭合单机回路
+        res = Cabinet_ConnectSingleCircuit(Context);
+        if (res == RESULT_SUCCESS)
+        {
+            // 设置旋钮状态
+            Context->switch_list.single_switch = SWITCH_ON;
+            Context->switch_list.bus1_switch = SWITCH_ON;
+            // 设置区段柜状态
+            Context->state = CABINET_STATE_BACKUP;
+        }
+        else if (res == RESULT_WAIT)
+        {
+            return RESULT_WAIT;
+        }
+        else
+        {
+            Cabinet_SetAlarm(Context, ALARM_NONE, "The single operation circuit connection failed");
+            return RESULT_FAILED;
+        }
+    }
+
+    if (Context->state == CABINET_STATE_BACKUP)
+    {
+        if (ParaToSingleCount < 500)
+        {
+            ParaToSingleCount ++;
+            return RESULT_WAIT;
+        }
+        ParaToSingleCount = 0;
+        // 断开并机回路
+        res = Cabinet_DisconnectParallelCircuit(Context);
+        if (res == RESULT_SUCCESS)
+        {
+            // 设置旋钮状态
+            Context->switch_list.single_switch = SWITCH_ON;
+            Context->switch_list.bus1_switch = SWITCH_OFF;
+            // 设置区段柜状态
+            Context->state = CABINET_STATE_SINGLE;
+        }
+        else if (res == RESULT_WAIT)
+        {
+            return RESULT_WAIT;
+        }
+        else
+        {
+            Cabinet_SetAlarm(Context, ALARM_NONE, "The parallel operation circuit connection failed");
+            return RESULT_FAILED;
+        }
+    }
+    return res;
 }
 
 
