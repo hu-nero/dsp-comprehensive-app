@@ -1115,9 +1115,9 @@ void GetVIRms(void)
 		UbcSl_rms = UbcSl_sum*0.05*1.127;
 		UcaSl_rms = UcaSl_sum*0.05*1.127;
 
-		UabPar_rms = UabPar_sum*0.05*1.127;
-		UbcPar_rms = UbcPar_sum*0.05*1.127;
-		UcaPar_rms = UcaPar_sum*0.05*1.127;
+		UabPar_rms = UabPar_sum*0.05*1.147;
+		UbcPar_rms = UbcPar_sum*0.05*1.147;
+		UcaPar_rms = UcaPar_sum*0.05*1.147;
 
         IaPar_rms = sqrtf((float)IaPar_sum*0.05);
         IbPar_rms = sqrtf((float)IbPar_sum*0.05);
