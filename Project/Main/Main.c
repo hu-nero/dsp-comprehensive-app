@@ -953,6 +953,10 @@ void npr_1s_protection(void)
     {
         FltCnt_OverLow_Flow1 = 0;
         FltCnt_OverLow_Flow2 = 0;
+        AlarmWord_Clear(10);
+        AlarmWord_Clear(13);
+        FaultWord_Clear(25);
+        FaultWord_Clear(29);
     }
 
     // 可控硅关断

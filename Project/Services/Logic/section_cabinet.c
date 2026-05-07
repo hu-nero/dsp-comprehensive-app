@@ -2061,7 +2061,7 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                         Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
                     }
                     Context->fault_timer_start = hal_timer_get_timestamp();
-                    Context->fault_timer_duration = 60000;
+                    Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
                 }
             }
             // 第二次恢复，转单机
@@ -2075,7 +2075,7 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                 // 恢复单机阶段
                 Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_SINGLE_CIRCUIT_DEGAUSS;
                 Context->fault_timer_start = hal_timer_get_timestamp();
-                Context->fault_timer_duration = 60000;
+                    Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
             }
         }
 
