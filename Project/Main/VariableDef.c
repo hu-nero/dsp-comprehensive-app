@@ -51,13 +51,15 @@ float P_Ovh=0, Q_Ovh=0, S_Ovh=0, PF_Ovh=0;
 float P_Sys=0, Q_Sys=0, S_Sys=0, PF_Sys=0;
 
 int Flag_RmsBufFull=0;
-float UabSl_HalfMemory[20], UbcSl_HalfMemory[20], UcaSl_HalfMemory[20];
-float UabPar_HalfMemory[20], UbcPar_HalfMemory[20], UcaPar_HalfMemory[20];
-float IaPar_HalfMemory[20], IbPar_HalfMemory[20], IcPar_HalfMemory[20];
-float IaOvh_HalfMemory[20], IbOvh_HalfMemory[20], IcOvh_HalfMemory[20];
-float UaOut_HalfMemory[20], UbOut_HalfMemory[20], UcOut_HalfMemory[20];
-float UabOut_HalfMemory[20], UbcOut_HalfMemory[20], UcaOut_HalfMemory[20];
-float work1[20], work2[20], work3[20], work4[20];
+float UabSl_HalfMemory[20]={0}, UbcSl_HalfMemory[20]={0}, UcaSl_HalfMemory[20]={0};
+float UabPar_HalfMemory[20]={0}, UbcPar_HalfMemory[20]={0}, UcaPar_HalfMemory[20]={0};
+float IaPar_HalfMemory[20]={0}, IbPar_HalfMemory[20]={0}, IcPar_HalfMemory[20]={0};
+float IaOvh_HalfMemory[20]={0}, IbOvh_HalfMemory[20]={0}, IcOvh_HalfMemory[20]={0};
+float UaOut_HalfMemory[20]={0}, UbOut_HalfMemory[20]={0}, UcOut_HalfMemory[20]={0};
+float UabOut_HalfMemory[20]={0}, UbcOut_HalfMemory[20]={0}, UcaOut_HalfMemory[20]={0};
+float work1[20]={0}, work2[20]={0}, work3[20]={0}, work4[20]={0};
+
+unsigned int flag_EPWM1_INT_Underflow=0;
 
 unsigned int AlmCnt_UnderVolt_Phase;
 unsigned int AlmCntThr_UnderVolt_Phase;

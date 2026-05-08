@@ -233,19 +233,7 @@ CAN_App_MainLoop(void)
 void
 CAN_App_Switch_Init(void)
 {
-//    uint32_t delay=0x5FFFFF;
-    // switch enable test
-//    Hardware_SwitchControl(DO_ID_A3QF1,SWITCH_ON);
-//    Hardware_SwitchControl(DO_ID_A3QF2,SWITCH_ON);
-//    Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_ON);
-//    Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_ON);
-//    Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_ON);
-//    Hardware_SwitchControl(DO_ID_RUNACK,SWITCH_ON);
-//    Hardware_SwitchControl(DO_ID_DEGAUSS,SWITCH_ON);
-//    Hardware_SwitchControl(DO_ID_RUNLED,SWITCH_ON);
-//    Hardware_SwitchControl(DO_ID_FLTLED,SWITCH_ON);
     IO_Scan();
-//    for (;delay>0;delay--);
     Hardware_SwitchControl(DO_ID_A3QF1,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QF2,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_OFF);

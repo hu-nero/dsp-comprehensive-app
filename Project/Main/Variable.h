@@ -152,6 +152,8 @@ extern float IaOvh_HalfMemory[20], IbOvh_HalfMemory[20], IcOvh_HalfMemory[20];
 extern float UaOut_HalfMemory[20], UbOut_HalfMemory[20], UcOut_HalfMemory[20];
 extern float UabOut_HalfMemory[20], UbcOut_HalfMemory[20], UcaOut_HalfMemory[20];
 extern float work1[20], work2[20], work3[20], work4[20];
+
+extern unsigned int flag_EPWM1_INT_Underflow;
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////

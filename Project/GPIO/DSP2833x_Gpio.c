@@ -338,7 +338,7 @@ void GPIO_init(void)
 
 	IOOutFpga2.DataInt = 0;
 	IOOutFpga2Old.DataInt = 0xFFFF;
-	IOOutput2.DataInt = 0;
+	IOOutput2.DataInt = 0xFF;
 
 	IOOut1CtrlWord.DataInt = 0xFFFF;
 	IOOut2CtrlWord.DataInt = 0xFFFF;

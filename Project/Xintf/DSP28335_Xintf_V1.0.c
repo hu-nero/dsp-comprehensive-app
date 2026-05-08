@@ -200,61 +200,10 @@ void Palarell_Extern_ADCScan(void)
 /**********************************************************************/
 void IOInMapLogic(void)
 {
-	IOInput1.DataBit.Bit0 = (((!IOInput1En.DataBit.Bit0) & IOInput1DisValue.DataBit.Bit0)
-	                           |(IOInput1En.DataBit.Bit0 & ((IOInput1Fpga.DataBit.Bit0^IOInput1Logic.DataBit.Bit0)^1)));
-	IOInput1.DataBit.Bit1 = (((!IOInput1En.DataBit.Bit1) & IOInput1DisValue.DataBit.Bit1)
-	                           |(IOInput1En.DataBit.Bit1 & ((IOInput1Fpga.DataBit.Bit1^IOInput1Logic.DataBit.Bit1)^1)));
-	IOInput1.DataBit.Bit2 = (((!IOInput1En.DataBit.Bit2) & IOInput1DisValue.DataBit.Bit2)
-	                           |(IOInput1En.DataBit.Bit2 & ((IOInput1Fpga.DataBit.Bit2^IOInput1Logic.DataBit.Bit2)^1)));
-	IOInput1.DataBit.Bit3 = (((!IOInput1En.DataBit.Bit3) & IOInput1DisValue.DataBit.Bit3)
-	                           |(IOInput1En.DataBit.Bit3 & ((IOInput1Fpga.DataBit.Bit3^IOInput1Logic.DataBit.Bit3)^1)));
-	IOInput1.DataBit.Bit4 = (((!IOInput1En.DataBit.Bit4) & IOInput1DisValue.DataBit.Bit4)
-	                           |(IOInput1En.DataBit.Bit4 & ((IOInput1Fpga.DataBit.Bit4^IOInput1Logic.DataBit.Bit4)^1)));
-	IOInput1.DataBit.Bit5 = (((!IOInput1En.DataBit.Bit5) & IOInput1DisValue.DataBit.Bit5)
-	                           |(IOInput1En.DataBit.Bit5 & ((IOInput1Fpga.DataBit.Bit5^IOInput1Logic.DataBit.Bit5)^1)));
-	IOInput1.DataBit.Bit6 = (((!IOInput1En.DataBit.Bit6) & IOInput1DisValue.DataBit.Bit6)
-	                           |(IOInput1En.DataBit.Bit6 & ((IOInput1Fpga.DataBit.Bit6^IOInput1Logic.DataBit.Bit6)^1)));
-	IOInput1.DataBit.Bit7 = (((!IOInput1En.DataBit.Bit7) & IOInput1DisValue.DataBit.Bit7)
-	                           |(IOInput1En.DataBit.Bit7 & ((IOInput1Fpga.DataBit.Bit7^IOInput1Logic.DataBit.Bit7)^1)));
-	IOInput1.DataBit.Bit8 = (((!IOInput1En.DataBit.Bit8) & IOInput1DisValue.DataBit.Bit8)
-	                           |(IOInput1En.DataBit.Bit8 & ((IOInput1Fpga.DataBit.Bit8^IOInput1Logic.DataBit.Bit8)^1)));
-	IOInput1.DataBit.Bit9 = (((!IOInput1En.DataBit.Bit9) & IOInput1DisValue.DataBit.Bit9)
-	                           |(IOInput1En.DataBit.Bit9 & ((IOInput1Fpga.DataBit.Bit9^IOInput1Logic.DataBit.Bit9)^1)));
-	IOInput1.DataBit.Bit10 = (((!IOInput1En.DataBit.Bit10) & IOInput1DisValue.DataBit.Bit10)
-	                           |(IOInput1En.DataBit.Bit10 & ((IOInput1Fpga.DataBit.Bit10^IOInput1Logic.DataBit.Bit10)^1)));
-	IOInput1.DataBit.Bit11 = (((!IOInput1En.DataBit.Bit11) & IOInput1DisValue.DataBit.Bit11)
-	                           |(IOInput1En.DataBit.Bit11 & ((IOInput1Fpga.DataBit.Bit11^IOInput1Logic.DataBit.Bit11)^1)));
-	IOInput1.DataBit.Bit12 = (((!IOInput1En.DataBit.Bit12) & IOInput1DisValue.DataBit.Bit12)
-	                           |(IOInput1En.DataBit.Bit12 & ((IOInput1Fpga.DataBit.Bit12^IOInput1Logic.DataBit.Bit12)^1)));
-	IOInput1.DataBit.Bit13 = (((!IOInput1En.DataBit.Bit13) & IOInput1DisValue.DataBit.Bit13)
-	                           |(IOInput1En.DataBit.Bit13 & ((IOInput1Fpga.DataBit.Bit13^IOInput1Logic.DataBit.Bit13)^1)));
-	IOInput1.DataBit.Bit14 = (((!IOInput1En.DataBit.Bit14) & IOInput1DisValue.DataBit.Bit14)
-	                           |(IOInput1En.DataBit.Bit14 & ((IOInput1Fpga.DataBit.Bit14^IOInput1Logic.DataBit.Bit14)^1)));
-	IOInput1.DataBit.Bit15 = (((!IOInput1En.DataBit.Bit15) & IOInput1DisValue.DataBit.Bit15)
-	                           |(IOInput1En.DataBit.Bit15 & ((IOInput1Fpga.DataBit.Bit15^IOInput1Logic.DataBit.Bit15)^1)));
-	////////////////////////////////////////////////////////////////////////////////
-	IOInput2.DataBit.Bit0 = (((!IOInput2En.DataBit.Bit0) & IOInput2DisValue.DataBit.Bit0)
-	                           |(IOInput2En.DataBit.Bit0 & ((IOInput2Fpga.DataBit.Bit0^IOInput2Logic.DataBit.Bit0)^1)));
-	IOInput2.DataBit.Bit1 = (((!IOInput2En.DataBit.Bit1) & IOInput2DisValue.DataBit.Bit1)
-	                           |(IOInput2En.DataBit.Bit1 & ((IOInput2Fpga.DataBit.Bit1^IOInput2Logic.DataBit.Bit1)^1)));
-	IOInput2.DataBit.Bit2 = (((!IOInput2En.DataBit.Bit2) & IOInput2DisValue.DataBit.Bit2)
-	                           |(IOInput2En.DataBit.Bit2 & ((IOInput2Fpga.DataBit.Bit2^IOInput2Logic.DataBit.Bit2)^1)));
-	IOInput2.DataBit.Bit3 = (((!IOInput2En.DataBit.Bit3) & IOInput2DisValue.DataBit.Bit3)
-	                           |(IOInput2En.DataBit.Bit3 & ((IOInput2Fpga.DataBit.Bit3^IOInput2Logic.DataBit.Bit3)^1)));
-	IOInput2.DataBit.Bit4 = (((!IOInput2En.DataBit.Bit4) & IOInput2DisValue.DataBit.Bit4)
-	                           |(IOInput2En.DataBit.Bit4 & ((IOInput2Fpga.DataBit.Bit4^IOInput2Logic.DataBit.Bit4)^1)));
-	IOInput2.DataBit.Bit5 = (((!IOInput2En.DataBit.Bit5) & IOInput2DisValue.DataBit.Bit5)
-	                           |(IOInput2En.DataBit.Bit5 & ((IOInput2Fpga.DataBit.Bit5^IOInput2Logic.DataBit.Bit5)^1)));
-	IOInput2.DataBit.Bit6 = (((!IOInput2En.DataBit.Bit6) & IOInput2DisValue.DataBit.Bit6)
-	                           |(IOInput2En.DataBit.Bit6 & ((IOInput2Fpga.DataBit.Bit6^IOInput2Logic.DataBit.Bit6)^1)));
-	IOInput2.DataBit.Bit7 = (((!IOInput2En.DataBit.Bit7) & IOInput2DisValue.DataBit.Bit7)
-	                           |(IOInput2En.DataBit.Bit7 & ((IOInput2Fpga.DataBit.Bit7^IOInput2Logic.DataBit.Bit7)^1)));
-	IOInput2.DataBit.Bit8 = (((!IOInput2En.DataBit.Bit8) & IOInput2DisValue.DataBit.Bit8)
-	                           |(IOInput2En.DataBit.Bit8 & ((IOInput2Fpga.DataBit.Bit8^IOInput2Logic.DataBit.Bit8)^1)));
-	IOInput2.DataBit.Bit9 = (((!IOInput2En.DataBit.Bit9) & IOInput2DisValue.DataBit.Bit9)
-	                           |(IOInput2En.DataBit.Bit9 & ((IOInput2Fpga.DataBit.Bit9^IOInput2Logic.DataBit.Bit9)^1)));
-	IOInput2.DataBit.Bit10 = (((!IOInput2En.DataBit.Bit10) & IOInput2DisValue.DataBit.Bit10)
-	                           |(IOInput2En.DataBit.Bit10 & ((IOInput2Fpga.DataBit.Bit10^IOInput2Logic.DataBit.Bit10)^1)));
+    IOInput1.DataInt = ((~IOInput1En.DataInt) & IOInput1DisValue.DataInt)
+        |(IOInput1En.DataInt & (~(IOInput1Fpga.DataInt^IOInput1Logic.DataInt)));
+    IOInput2.DataInt = ((~IOInput2En.DataInt) & IOInput2DisValue.DataInt)
+        |(IOInput2En.DataInt & (~(IOInput2Fpga.DataInt^IOInput2Logic.DataInt)));
 }
 void IOInputCtrlFlag(void)
 {
