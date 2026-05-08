@@ -51,13 +51,13 @@ float P_Ovh=0, Q_Ovh=0, S_Ovh=0, PF_Ovh=0;
 float P_Sys=0, Q_Sys=0, S_Sys=0, PF_Sys=0;
 
 int Flag_RmsBufFull=0;
-float UabSl_HalfMemory[20]={0}, UbcSl_HalfMemory[20]={0}, UcaSl_HalfMemory[20]={0};
-float UabPar_HalfMemory[20]={0}, UbcPar_HalfMemory[20]={0}, UcaPar_HalfMemory[20]={0};
-float IaPar_HalfMemory[20]={0}, IbPar_HalfMemory[20]={0}, IcPar_HalfMemory[20]={0};
-float IaOvh_HalfMemory[20]={0}, IbOvh_HalfMemory[20]={0}, IcOvh_HalfMemory[20]={0};
-float UaOut_HalfMemory[20]={0}, UbOut_HalfMemory[20]={0}, UcOut_HalfMemory[20]={0};
-float UabOut_HalfMemory[20]={0}, UbcOut_HalfMemory[20]={0}, UcaOut_HalfMemory[20]={0};
-float work1[20]={0}, work2[20]={0}, work3[20]={0}, work4[20]={0};
+float UabSl_HalfMemory[20], UbcSl_HalfMemory[20], UcaSl_HalfMemory[20];
+float UabPar_HalfMemory[20], UbcPar_HalfMemory[20], UcaPar_HalfMemory[20];
+float IaPar_HalfMemory[20], IbPar_HalfMemory[20], IcPar_HalfMemory[20];
+float IaOvh_HalfMemory[20], IbOvh_HalfMemory[20], IcOvh_HalfMemory[20];
+float UaOut_HalfMemory[20], UbOut_HalfMemory[20], UcOut_HalfMemory[20];
+float UabOut_HalfMemory[20], UbcOut_HalfMemory[20]={0}, UcaOut_HalfMemory[20];
+float work1[20], work2[20], work3[20], work4[20];
 
 unsigned int flag_EPWM1_INT_Underflow=0;
 
@@ -741,6 +741,30 @@ void variable_init(void)
 	memset(&DcsInputSum, 0, sizeof(RemoteInput_t));
 	RemHoldSum.CtrlWord.all = 0;
 	DcsHoldSum.CtrlWord.all = 0;
+
+    memset(UabSl_HalfMemory, 0, sizeof(float)*20);
+    memset(UbcSl_HalfMemory, 0, sizeof(float)*20);
+    memset(UcaSl_HalfMemory, 0, sizeof(float)*20);
+    memset(UabPar_HalfMemory, 0, sizeof(float)*20);
+    memset(UbcPar_HalfMemory, 0, sizeof(float)*20);
+    memset(UcaPar_HalfMemory, 0, sizeof(float)*20);
+    memset(IaPar_HalfMemory, 0, sizeof(float)*20);
+    memset(IbPar_HalfMemory, 0, sizeof(float)*20);
+    memset(IcPar_HalfMemory, 0, sizeof(float)*20);
+    memset(IaOvh_HalfMemory, 0, sizeof(float)*20);
+    memset(IbOvh_HalfMemory, 0, sizeof(float)*20);
+    memset(IcOvh_HalfMemory, 0, sizeof(float)*20);
+    memset(UaOut_HalfMemory, 0, sizeof(float)*20);
+    memset(UbOut_HalfMemory, 0, sizeof(float)*20);
+    memset(UcOut_HalfMemory, 0, sizeof(float)*20);
+    memset(UabOut_HalfMemory, 0, sizeof(float)*20);
+    memset(UbcOut_HalfMemory, 0, sizeof(float)*20);
+    memset(UcaOut_HalfMemory, 0, sizeof(float)*20);
+    memset(work1, 0, sizeof(float)*20);
+    memset(work2, 0, sizeof(float)*20);
+    memset(work3, 0, sizeof(float)*20);
+    memset(work4, 0, sizeof(float)*20);
+
 }
 /*******************************************************************************************/
 void variable_algorithm_init(void)
