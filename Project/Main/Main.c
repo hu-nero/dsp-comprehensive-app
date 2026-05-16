@@ -1402,7 +1402,7 @@ void CalImbalance(void)
 
 	if(MainSta2Word.DataBit.WorkLpQS1)
 	{
-		Uout_Imbalance = (vLine_max - vLine_min) / vLine_avg;
+		Uout_Imbalance = (vLine_max - vLine_avg) / vLine_avg;
 	}
 	else
 	{
@@ -1444,7 +1444,7 @@ void CalImbalance(void)
 
 	if( MainSta2Word.DataBit.WorkLpQS1 | MainSta2Word.DataBit.CheckLpQS1 )
 	{
-		Iout_Imbalance = (Iphase_max - Iphase_min) / Iphase_avg;
+		Iout_Imbalance = (Iphase_max - Iphase_avg) / Iphase_avg;
 	}
 	else
 	{
