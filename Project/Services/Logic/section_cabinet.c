@@ -146,6 +146,8 @@ Cabinet_Init(CabinetContext_t* Context,
     Context->switch_feedback_id = 0;
     Context->switch_feedback_target_state = SWITCH_OFF;
     Context->switch_feedback_current_value = 0;
+    Context->switch_feedback_check_count = 0;
+    Context->switch_feedback_check_start_time = 0;
 
     // 故障自恢复
     Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
@@ -282,6 +284,8 @@ Cabinet_SetCabinetReset(CabinetContext_t* Context)
     Context->switch_feedback_id = 0;
     Context->switch_feedback_target_state = SWITCH_OFF;
     Context->switch_feedback_current_value = 0;
+    Context->switch_feedback_check_count = 0;
+    Context->switch_feedback_check_start_time = 0;
 
     // 故障自恢复
     gAutoRequestParallelCount = 0;
@@ -1123,7 +1127,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                     // 等待开关反馈稳定3秒
-                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
+                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 3000, 1500, 500);
                     if (demag_result == RESULT_SUCCESS)
                     {
                         ;
@@ -1200,7 +1204,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                     // 等待开关反馈稳定3秒
-                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
+                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 3000, 1500, 500);
                     if (demag_result == RESULT_SUCCESS)
                     {
                         ;
@@ -1256,7 +1260,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                     // 等待开关反馈稳定3秒
-                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
+                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 3000, 1500, 500);
                     if (demag_result == RESULT_SUCCESS)
                     {
                         // 设置旋钮状态
@@ -1294,7 +1298,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     // 断开消磁
                     Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                     // 等待开关反馈稳定3秒
-                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
+                    demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 3000, 1500, 500);
                     if (demag_result == RESULT_SUCCESS)
                     {
                         if (CAN_Adapter_GetAvoidOverdrive())
@@ -2104,7 +2108,7 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
             Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
             // 等待开关反馈稳定3秒
-            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 5000, 3000, 50);
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 3000, 1500, 500);
             // 防止急停后，再面板消磁 switch_feedback_wait_state状态干扰
             Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
             if (res == RESULT_SUCCESS)
@@ -2127,7 +2131,7 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
             Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
             // 等待开关反馈稳定3秒
-            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 5000, 3000, 50);
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 3000, 1500, 500);
             // 防止急停后，再面板消磁 switch_feedback_wait_state状态干扰
             Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
             if (res == RESULT_SUCCESS)
@@ -2199,7 +2203,7 @@ Cabinet_Execute10sDegaussProcedure(CabinetContext_t* Context)
                 // 断开消磁
                 Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                 // 等待开关反馈稳定3秒
-                res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
+                res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 3000, 1500, 500);
                 if (res == RESULT_SUCCESS)
                 {
                     Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
@@ -2258,7 +2262,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
             Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
             // 等待开关反馈稳定3秒
-            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 5000, 3000, 50);
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 3000, 1500, 500);
             // 防止急停后，再面板消磁 switch_feedback_wait_state状态干扰
             Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
             if (res == RESULT_SUCCESS)
@@ -2286,7 +2290,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                 CAN_Adapter_SetAvoidOverdrive(1);
             }
             // 等待开关反馈稳定3秒
-            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 5000, 3000, 50);
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 3000, 1500, 500);
             // 防止急停后，再面板消磁 switch_feedback_wait_state状态干扰
             Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
             if (res == RESULT_SUCCESS)
@@ -2356,7 +2360,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 				// 断开消磁
 				Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
 				// 等待开关反馈稳定3秒
-				res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
+				res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 3000, 1500, 500);
 				if (res == RESULT_SUCCESS)
 				{
                     // 取消退过激
@@ -2484,7 +2488,7 @@ Cabinet_ExecuteRecoveryDegaussProcedure(CabinetContext_t* Context, uint16_t Dela
     {
         Context->switch_control(DO_ID_A3QR3, SWITCH_ON);
         // 等待开关反馈稳定 5 秒
-        demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_ON, 5000, 3000, 1500);
+        demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_ON, 3000, 1500, 500);
         if (demag_result == RESULT_SUCCESS)
         {
             Context->recovery_degauss_delay_ms = DelayMs;
@@ -2520,7 +2524,7 @@ Cabinet_ExecuteAutoDegaussProcedure(CabinetContext_t* Context, uint16_t DelayMs)
     {
         Context->switch_control(DO_ID_A3QR3, SWITCH_ON);
         // 等待开关反馈稳定3秒
-        demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_ON, 5000, 3000, 1500);
+        demag_result = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_ON, 3000, 1500, 500);
         if (demag_result == RESULT_SUCCESS)
         {
             // 消磁命令执行成功，开始等待
@@ -2581,7 +2585,7 @@ Cabinet_ExecuteStandbyProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
             // 等待开关反馈稳定3秒
-            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 5000, 3000, 50);
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 3000, 1500, 500);
             if (res == RESULT_SUCCESS)
             {
                 ;
@@ -2617,7 +2621,7 @@ Cabinet_ExecuteStandbyProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
             // 等待开关反馈稳定3秒
-            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 5000, 3000, 50);
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 3000, 1500, 500);
             if (res == RESULT_SUCCESS)
             {
                 ;
@@ -2651,7 +2655,7 @@ Cabinet_ExecuteSingleProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QF1, SWITCH_ON);
             // 等待开关反馈稳定3秒
-            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_ON, 5000, 3000, 50);
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_ON, 3000, 1500, 500);
             if (res == RESULT_SUCCESS)
             {
                 ;
@@ -2701,7 +2705,7 @@ Cabinet_ExecuteSingleProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
             // 等待开关反馈稳定3秒
-            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 5000, 3000, 50);
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 3000, 1500, 500);
             if (res == RESULT_SUCCESS)
             {
                 ;
@@ -2736,7 +2740,7 @@ Cabinet_ExecuteParallelProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QF2, SWITCH_ON);
             // 等待开关反馈稳定3秒
-            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_ON, 5000, 3000, 50);
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_ON, 3000, 1500, 500);
             if (res == RESULT_SUCCESS)
             {
                 ;
@@ -2787,7 +2791,7 @@ Cabinet_ExecuteParallelProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
             // 等待开关反馈稳定3秒
-            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 5000, 3000, 50);
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 3000, 1500, 500);
             if (res == RESULT_SUCCESS)
             {
                 ;
@@ -2821,7 +2825,7 @@ Cabinet_ExecuteBackupProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QF2, SWITCH_ON);
             // 等待开关反馈稳定3秒
-            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_ON, 5000, 3000, 50);
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_ON, 3000, 1500, 500);
             if (res == RESULT_SUCCESS)
             {
                 ;
@@ -2866,7 +2870,7 @@ Cabinet_ExecuteBackupProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QF1, SWITCH_ON);
             // 等待开关反馈稳定3秒
-            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_ON, 5000, 3000, 50);
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_ON, 3000, 1500, 500);
             if (res == RESULT_SUCCESS)
             {
                 ;
@@ -2942,12 +2946,11 @@ Cabinet_IsSatisfyPowerParallel(CabinetContext_t* Context)
 static ExecuteResult_t
 Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, SwitchState_t TargetState, uint32_t TimeoutMs, uint32_t StableTime, uint32_t DelayMs)
 {
-    static uint16_t check_count = 0;
     uint32_t current_time = hal_timer_get_timestamp();
     uint16_t current_feedback = 0;
 
     // 是否等待不同的开关
-    if ((Context->switch_feedback_wait_state != SWITCH_FEEDBACK_IDLE) && 
+    if ((Context->switch_feedback_wait_state != SWITCH_FEEDBACK_IDLE) &&
         (Context->switch_feedback_id != SwitchId))
     {
         // 立即返回等待状态
@@ -2958,7 +2961,7 @@ Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, Swit
     // 空闲
     if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
     {
-        check_count = 0;
+        Context->switch_feedback_check_count = 0;
         Context->switch_feedback_id = SwitchId;
         Context->switch_feedback_target_state = TargetState;
         Context->switch_feedback_start_time = current_time;
@@ -2966,7 +2969,7 @@ Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, Swit
         Context->switch_feedback_current_value = Context->switch_feed(SwitchId);
         return RESULT_WAIT;
     }
-    // 等待
+    // 等待传播延迟
     else if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_WAITING)
     {
         // 传播延迟
@@ -2975,29 +2978,33 @@ Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, Swit
             return RESULT_WAIT;
         }
         Context->switch_feedback_wait_state = SWITCH_FEEDBACK_CHECKING;
-        Context->switch_feedback_start_time = current_time;
+        Context->switch_feedback_check_start_time = current_time;  // 记录检查阶段开始时间
         return RESULT_WAIT;
     }
-    // 检查
+    // 检查反馈
     else if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_CHECKING)
     {
+        uint32_t check_elapsed = current_time - Context->switch_feedback_check_start_time;
+
         // 是否超时
-        if ((current_time - Context->switch_feedback_start_time) >= TimeoutMs)
+        if (check_elapsed >= TimeoutMs)
         {
-            check_count = 0;
+            Context->switch_feedback_check_count = 0;
             Context->switch_feedback_wait_state = SWITCH_FEEDBACK_TIMEOUT;
             return RESULT_FAILED;
         }
+
         // 检查反馈
         current_feedback = Context->switch_feed(SwitchId);
         if ((SwitchState_t)current_feedback == TargetState)
         {
             // 是否稳定
-            if ((current_time - Context->switch_feedback_start_time) >= StableTime)
+            if (check_elapsed >= StableTime)
             {
-                check_count = 0;
+                Context->switch_feedback_check_count = 0;
                 Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
                 Context->switch_feedback_start_time = 0;
+                Context->switch_feedback_check_start_time = 0;
                 Context->switch_feedback_id = 0;
                 Context->switch_feedback_target_state = SWITCH_OFF;
                 Context->switch_feedback_current_value = 0;
@@ -3005,17 +3012,19 @@ Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, Swit
             }
             else
             {
+                // 反馈正确但尚未稳定，继续等待
                 return RESULT_WAIT;
             }
         }
         else
         {
-            if (check_count < 3)
+            // 反馈不匹配
+            if (Context->switch_feedback_check_count < 5)
             {
-                check_count ++;
+                Context->switch_feedback_check_count++;
                 return RESULT_WAIT;
             }
-            check_count = 0;
+            Context->switch_feedback_check_count = 0;
             Context->switch_feedback_wait_state = SWITCH_FEEDBACK_TIMEOUT;
             return RESULT_FAILED;
         }
@@ -3023,9 +3032,10 @@ Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, Swit
     else if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_TIMEOUT)
     {
         // 重置等待状态
-        check_count = 0;
+        Context->switch_feedback_check_count = 0;
         Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
         Context->switch_feedback_start_time = 0;
+        Context->switch_feedback_check_start_time = 0;
         Context->switch_feedback_id = 0;
         Context->switch_feedback_target_state = SWITCH_OFF;
         Context->switch_feedback_current_value = 0;
@@ -3033,10 +3043,9 @@ Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, Swit
     }
 
     // 失败
-    check_count = 0;
+    Context->switch_feedback_check_count = 0;
     Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
     return RESULT_FAILED;
-
 }
 
 // 根据故障码获取计时时长（ms）
@@ -3071,7 +3080,7 @@ Cabinet_ConnectSingleCircuit(CabinetContext_t* Context)
     {
         Context->switch_control(DO_ID_A3QF1, SWITCH_ON);
         // 等待开关反馈稳定3秒
-        res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_ON, 5000, 3000, 50);
+        res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_ON, 3000, 1500, 500);
         if (res == RESULT_SUCCESS)
         {
             ;
@@ -3119,7 +3128,7 @@ Cabinet_ConnectParallelCircuit(CabinetContext_t* Context)
     {
         Context->switch_control(DO_ID_A3QF2, SWITCH_ON);
         // 等待开关反馈稳定3秒
-        res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_ON, 5000, 3000, 50);
+        res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_ON, 3000, 1500, 500);
         if (res == RESULT_SUCCESS)
         {
             ;
@@ -3182,7 +3191,7 @@ Cabinet_DisconnectSingleCircuit(CabinetContext_t* Context)
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
     	}
         // 等待开关反馈稳定3秒
-        res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 5000, 3000, 50);
+        res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 3000, 1500, 500);
         if (res == RESULT_SUCCESS)
         {
             ;
@@ -3224,7 +3233,7 @@ Cabinet_DisconnectParallelCircuit(CabinetContext_t* Context)
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
     	}
         // 等待开关反馈稳定3秒
-        res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 5000, 3000, 50);
+        res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 3000, 1500, 500);
         if (res == RESULT_SUCCESS)
         {
             ;
@@ -3414,7 +3423,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                             // 断开消磁
                             Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                             // 等待开关反馈稳定3秒
-                            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
+                            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 3000, 1500, 500);
                             if (res == RESULT_SUCCESS)
                             {
                                 // 取消退过激
@@ -3552,7 +3561,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                             // 断开消磁
                             Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
                             // 等待开关反馈稳定3秒
-                            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 5000, 3000, 1500);
+                            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF3, SWITCH_OFF, 3000, 1500, 500);
                             if (res == RESULT_SUCCESS)
                             {
                                 ;
