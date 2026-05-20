@@ -210,12 +210,36 @@ Cabinet_Process(CabinetContext_t* Context)
         {
             case DEMAGNETIZE_IDLE:
                 {
-                    // 自复位
+                    // 远控
                     if (Context->switch_list.manual_switch == SWITCH_ON)
                     {
+                        // 自复位
                         Cabinet_ExecuteFaultAutoReset(Context);
                         Cabinet_ProcessFaultReset(Context);
                         Cabinet_ProcessAutoParallel(Context);
+                    }
+                    // 就地
+                    else
+                    {
+                        if (NPR_FaultCode != 0)
+                        {
+                            // 刀闸状态检查处理
+                            Cabinet_ExecuteKnifeSwitchProcedure(Context);
+                            FaultAutoRecoveryContext_t *fault_ctx = &Context->fault_recovery_ctx;
+                            if (fault_ctx->u16npr_old_code != NPR_FaultCode)
+                            {
+                                // 故障发生
+                                if (fault_ctx->u16npr_old_code == 0 && NPR_FaultCode != 0)
+                                {
+                                    // 新故障
+                                    fault_ctx->fault_status = true;
+                                }
+                                // 更新旧故障码记录
+                                fault_ctx->u16npr_old_code = NPR_FaultCode;
+                            }
+
+                            return;
+                        }
                     }
                     // 根据当前状态处理状态转换
                     Cabinet_UpdateCabinetState(Context);
@@ -444,19 +468,6 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             // 清除急停和故障标志，使能状态转换流程
             Context->fault_recovery_ctx.state_before_fault = CABINET_STATE_INVALID;
             Context->fault_recovery_ctx.last_fault_code = 0;
-
-            FaultAutoRecoveryContext_t *fault_ctx = &Context->fault_recovery_ctx;
-            if (fault_ctx->u16npr_old_code != NPR_FaultCode)
-            {
-                // 故障发生
-                if (fault_ctx->u16npr_old_code == 0 && NPR_FaultCode != 0)
-                {
-                    // 新故障
-                    fault_ctx->fault_status = true;
-                }
-                // 更新旧故障码记录
-                fault_ctx->u16npr_old_code = NPR_FaultCode;
-            }
 
             // 读取旋钮状态
             single_switch = (SwitchState_t)Context->switch_feed(DI_ID_SINGLE);
