@@ -2308,6 +2308,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
             }
         }
 
+        Cabinet_ExecuteFaultAutoReset(Context);
         // 清空状态
         Context->switch_list.single_switch = SWITCH_OFF;
         Context->switch_list.bus1_switch = SWITCH_OFF;
@@ -2367,11 +2368,9 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                     CAN_Adapter_SetAvoidOverdrive(0);
                     Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
 			        Context->emergency_stop_status = false;
-
                     // 远控时才允许复位
                     if (Context->switch_list.manual_switch == SWITCH_ON)
                     {
-                        Cabinet_ExecuteFaultAutoReset(Context);
                         if (((NPR_FaultCode >= 17) && (NPR_FaultCode <= 22)) ||
                                 ((NPR_FaultCode >= 27) && (NPR_FaultCode <= 28)))
                         {
