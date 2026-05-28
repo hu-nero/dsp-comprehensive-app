@@ -507,9 +507,11 @@ union Main_Control_Word_Type MainCtrlWord;
 union Main_Control_Word_Type MainCtrlWord_CAN;
 union Main_Control_Word_Type MainCtrlWord_PC;
 union NPR_Status_Word_Type MainStusWord,MainStusWordOld;
-union NPR_Status_Word2_Type MainSta2Word;
+union NPR_Status_Word2_Type MainSta2Word,MainSta2WordCtrl;
 union Control_Mode_Word_Type CtrlModeWord;
 int UnloadCtrl_PC=0;
+
+u16 FltCnt_OverTime_QR1,FltCnt_OverTime_QF1,FltCnt_OverTime_QF2,FltCnt_OverTime_QR2,FltCnt_OverTime_QR3;
 // PowerRef
 float KVARRef_Sys=0, KWRefRef_Sys=0;
 float KVARRef_CAN=0, KWRefRef_CAN=0;
@@ -647,6 +649,13 @@ void variable_init(void)
 	MainStusWord.DataInt=0;
 	MainStusWordOld.DataInt=0;
 	MainSta2Word.DataInt=0;
+	MainSta2WordCtrl.DataInt=0;
+
+    FltCnt_OverTime_QF1 = 0;
+    FltCnt_OverTime_QF2 = 0;
+    FltCnt_OverTime_QR1 = 0;
+    FltCnt_OverTime_QR2 = 0;
+    FltCnt_OverTime_QR3 = 0;
 
 	FaultWord1.DataInt=0;
 	FaultWord2.DataInt=0;

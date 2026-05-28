@@ -575,9 +575,11 @@ extern union Main_Control_Word_Type MainCtrlWord;
 extern union Main_Control_Word_Type MainCtrlWord_CAN;
 extern union Main_Control_Word_Type MainCtrlWord_PC;
 extern union NPR_Status_Word_Type MainStusWord,MainStusWordOld;
-extern union NPR_Status_Word2_Type MainSta2Word;
+extern union NPR_Status_Word2_Type MainSta2Word,MainSta2WordCtrl;
 extern union Control_Mode_Word_Type CtrlModeWord;
 extern int UnloadCtrl_PC;
+
+extern u16 FltCnt_OverTime_QR1,FltCnt_OverTime_QF1,FltCnt_OverTime_QF2,FltCnt_OverTime_QR2,FltCnt_OverTime_QR3;
 // PowerRef
 extern float KVARRef_Sys, KWRefRef_Sys;
 extern float KVARRef_CAN, KWRefRef_CAN;

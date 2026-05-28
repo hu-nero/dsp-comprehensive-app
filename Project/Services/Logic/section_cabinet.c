@@ -198,10 +198,10 @@ Cabinet_Process(CabinetContext_t* Context)
         Cabinet_ExecutePanelDegaussProcedure(Context);
         // 刀闸状态检查处理
         Cabinet_ExecuteKnifeSwitchProcedure(Context);
+        // 读取面板、柜体开关状态
+        Cabinet_ReadAllSwitchStatus(Context);
         return;
     }
-    // 读取手动/自动旋钮状态
-    Context->switch_list.manual_switch = (SwitchState_t)Context->switch_feed(DI_ID_LOCALREMOTE);
 
     // 面板和远控的急停未触发（0128互斥添加）
     if (Context->panel_remote_degauss_flag == false)
@@ -275,6 +275,9 @@ Cabinet_Process(CabinetContext_t* Context)
     Cabinet_ExecutePanelDegaussProcedure(Context);
     // 刀闸状态检查处理
     Cabinet_ExecuteKnifeSwitchProcedure(Context);
+
+    // 读取面板、柜体开关状态
+    Cabinet_ReadAllSwitchStatus(Context);
 }
 
 static inline void
@@ -428,7 +431,6 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
 
     if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
     {
-        Context->switch_list.manual_switch = (SwitchState_t)Context->switch_feed(DI_ID_LOCALREMOTE);
         // 手动模式
         if (Context->switch_list.manual_switch == SWITCH_OFF)
         {
@@ -1364,8 +1366,6 @@ Cabinet_ResetFromEmergency(CabinetContext_t* Context)
         (void)Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_RESET, SWITCH_ON);
-        // 调用IO_Scan()
-        (void)Context->switch_feed(0);
     }
 
     // 系统状态设置为待机
@@ -1409,8 +1409,6 @@ Cabinet_BackToStandby(CabinetContext_t* Context)
         (void)Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
-        // 调用IO_Scan()
-        (void)Context->switch_feed(0);
     }
 
     Context->state = CABINET_STATE_STANDBY;
@@ -1430,8 +1428,6 @@ Cabinet_BackToSingle(CabinetContext_t* Context)
         (void)Context->switch_control(DO_ID_A3QR1, SWITCH_ON);
         (void)Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
-        // 调用IO_Scan()
-        (void)Context->switch_feed(0);
     }
 
     Context->state = CABINET_STATE_SINGLE;
@@ -1451,8 +1447,6 @@ Cabinet_BackToParallel(CabinetContext_t* Context)
         (void)Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_A3QF2, SWITCH_ON);
         (void)Context->switch_control(DO_ID_A3QR2, SWITCH_ON);
-        // 调用IO_Scan()
-        (void)Context->switch_feed(0);
     }
 
     Context->state = CABINET_STATE_PARALLEL;
@@ -1472,8 +1466,6 @@ Cabinet_BackToBackup(CabinetContext_t* Context)
         (void)Context->switch_control(DO_ID_A3QR1, SWITCH_ON);
         (void)Context->switch_control(DO_ID_A3QF2, SWITCH_ON);
         (void)Context->switch_control(DO_ID_A3QR2, SWITCH_ON);
-        // 调用IO_Scan()
-        (void)Context->switch_feed(0);
     }
 
     Context->state = CABINET_STATE_BACKUP;
@@ -1586,7 +1578,6 @@ Cabinet_UpdateCommSectionToSyncStatus(CabinetContext_t* Context)
     CommSectionToSync_t status;
     status = CAN_Adapter_GetCommSectionToSync();
 
-    Cabinet_ReadAllSwitchStatus(Context);
     if ((Context->switch_list.A3QF1_switch == SWITCH_ON) &&
         (Context->switch_list.A3QR1_switch == SWITCH_ON))
     {
@@ -1752,14 +1743,6 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     static uint16_t u16TmpParallelCount = 0;
     ExecuteResult_t res = RESULT_SUCCESS;
     uint16_t tmp_reset_switch;
-    // 读取复位反馈
-    Context->switch_list.reset_switch = (SwitchState_t)Context->switch_feed(DI_ID_RESET);
-    // 读取刀闸反馈
-    Context->switch_list.A3QS1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QS1);
-    Context->switch_list.A3K17_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3K17);
-    Context->switch_list.A3QS2_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QS2);
-    Context->switch_list.A3QS3_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QS3);
-
 
     // 如果发生状态转换
     if ((Context->state != Context->target_state)  &&
@@ -1770,6 +1753,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         (void)Context->switch_feed(DI_ID_BUS1);
     }
     // 复位
+    Context->switch_list.reset_switch = (SwitchState_t)Context->switch_feed(DI_ID_RESET);
     if (Context->switch_list.reset_switch == SWITCH_ON)
     {
         // TODO:急停
@@ -1824,11 +1808,9 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     {
         if (Context->state == CABINET_STATE_SINGLE)
         {
-            Context->switch_list.A3QF1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF1);
-            Context->switch_list.A3QR1_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QR1);
             if ((Context->switch_list.A3QF1_switch == SWITCH_OFF) || (Context->switch_list.A3QR1_switch == SWITCH_OFF))
             {
-                if (u16TmpSingleCount > 3000)
+                if (u16TmpSingleCount > 3500)
                 {
                     u16TmpSingleCount = 0;
                     NPR_FaultCode = 26;
@@ -1849,11 +1831,9 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         }
         if (Context->state == CABINET_STATE_PARALLEL)
         {
-            Context->switch_list.A3QF2_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF2);
-            Context->switch_list.A3QR2_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QR2);
             if ((Context->switch_list.A3QF2_switch == SWITCH_OFF) || (Context->switch_list.A3QR2_switch == SWITCH_OFF))
             {
-                if (u16TmpParallelCount > 3000)
+                if (u16TmpParallelCount > 3500)
                 {
                     u16TmpParallelCount = 0;
                     NPR_FaultCode = 26;
@@ -1895,7 +1875,6 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     }
 
     // 消磁反馈控制K2
-    Context->switch_list.A3QF3_switch = (SwitchState_t)Context->switch_feed(DI_ID_A3QF3);
     if (Context->switch_last.A3QF3_switch != Context->switch_list.A3QF3_switch)
     {
         if (Context->switch_list.A3QF3_switch == SWITCH_ON)
@@ -1910,7 +1889,6 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     }
 
     // HMI控制投切电容
-    Context->switch_list.manual_switch = (SwitchState_t)Context->switch_feed(DI_ID_LOCALREMOTE);
     if (Context->switch_list.manual_switch == SWITCH_OFF)
     {
         if (Cap_Ctrl_Word.DataBit.Bit0 == 1)
@@ -2114,7 +2092,7 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
         Context->target_state = CABINET_STATE_INVALID;
 
         // 判断单机回路
-        if (Context->switch_feed(DI_ID_A3QF1))
+        if ((Context->switch_list.A3QF1_switch == SWITCH_ON) || (Context->switch_list.A3QR1_switch == SWITCH_ON))
         {
             Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
@@ -2137,7 +2115,7 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
             }
         }
         // 判断并机回路状态
-        if (Context->switch_feed(DI_ID_A3QF2))
+        if ((Context->switch_list.A3QF2_switch == SWITCH_ON) || (Context->switch_list.A3QR2_switch == SWITCH_ON))
         {
             Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
@@ -2268,7 +2246,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
         Context->target_state = CABINET_STATE_INVALID;
 
         // 判断单机回路
-        if (Context->switch_feed(DI_ID_A3QF1))
+        if ((Context->switch_list.A3QF1_switch == SWITCH_ON) || (Context->switch_list.A3QR1_switch == SWITCH_ON))
         {
             Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
@@ -2291,7 +2269,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
             }
         }
         // 判断并机回路状态
-        if (Context->switch_feed(DI_ID_A3QF2))
+        if ((Context->switch_list.A3QF2_switch == SWITCH_ON) || (Context->switch_list.A3QR2_switch == SWITCH_ON))
         {
             Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
@@ -2323,8 +2301,6 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
         // 清空状态
         Context->switch_list.single_switch = SWITCH_OFF;
         Context->switch_list.bus1_switch = SWITCH_OFF;
-        // 读取面板、柜体开关状态
-        Cabinet_ReadAllSwitchStatus(Context);
 
         Context->state = CABINET_STATE_STANDBY;
         Context->target_state = CABINET_STATE_INVALID;
@@ -2433,8 +2409,6 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
 {
     ExecuteResult_t demag_result;
 
-    // 手动/自动
-    Context->switch_list.manual_switch = (SwitchState_t)Context->switch_feed(DI_ID_LOCALREMOTE);
     // 手动模式
     if (Context->switch_list.manual_switch == SWITCH_OFF)
     {
@@ -2924,7 +2898,9 @@ Cabinet_HasCycle(CabinetContext_t* Context)
 {
     uint16_t res = 0;
     res = Context->switch_feed(DI_ID_A3QF1);
+    res |= Context->switch_feed(DI_ID_A3QR1);
     res |= Context->switch_feed(DI_ID_A3QF2);
+    res |= Context->switch_feed(DI_ID_A3QR2);
     // 无回路
     if (res == 0)
     {

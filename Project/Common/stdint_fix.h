@@ -12,6 +12,9 @@
 #define ENTER_CRITICAL() asm(" setc INTM")  // 关中断
 #define EXIT_CRITICAL()  asm(" clrc INTM")  // 开中断
 
+// Max宏
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 typedef unsigned char		uint8_t;
 typedef char				int8_t;
 

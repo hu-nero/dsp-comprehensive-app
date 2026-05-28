@@ -419,11 +419,13 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                 if (State == SWITCH_ON)
                 {
                     CAN_App_TurnOnA3QF1();
+                    MainSta2WordCtrl.DataBit.SingQF1 = 1;
                     /*IO_QF1SingOn_En;*/
                 }
                 else if (State == SWITCH_OFF)
                 {
                     CAN_App_TurnOffA3QF1();
+                    MainSta2WordCtrl.DataBit.SingQF1 = 0;
                     /*IO_QF1SingOn_Dis;*/
                 }
             }
@@ -433,11 +435,13 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                 if (State == SWITCH_ON)
                 {
                     CAN_App_TurnOnA3QF2();
+                    MainSta2WordCtrl.DataBit.ParaQF2 = 1;
                     /*IO_QF2ParaOn_En;*/
                 }
                 else if (State == SWITCH_OFF)
                 {
                     CAN_App_TurnOffA3QF2();
+                    MainSta2WordCtrl.DataBit.ParaQF2 = 0;
                     /*IO_QF2ParaOn_Dis;*/
                 }
             }
@@ -451,10 +455,12 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                 if (State == SWITCH_ON)
                 {
                     IO_QR3Dgss_ON;
+                    MainSta2WordCtrl.DataBit.DgssKM1 = 1;
                 }
                 else if (State == SWITCH_OFF)
                 {
                     IO_QR3Dgss_OFF;
+                    MainSta2WordCtrl.DataBit.DgssKM1 = 0;
                 }
             }
             break;
@@ -539,11 +545,13 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                 if (State == SWITCH_ON)
                 {
                     IO_QR1Sing_ON;
+                    MainSta2WordCtrl.DataBit.SingQR1 = 1;
                     /*IO_A3QR1_En;*/
                 }
                 else if (State == SWITCH_OFF)
                 {
                     IO_QR1Sing_OFF;
+                    MainSta2WordCtrl.DataBit.SingQR1 = 0;
                     /*IO_A3QR1_Dis;*/
                 }
             }
@@ -553,11 +561,13 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                 if (State == SWITCH_ON)
                 {
                     IO_QR2Para_ON;
+                    MainSta2WordCtrl.DataBit.ParaQR2 = 1;
                     /*IO_A3QR2_En;*/
                 }
                 else if (State == SWITCH_OFF)
                 {
                     IO_QR2Para_OFF;
+                    MainSta2WordCtrl.DataBit.ParaQR2 = 0;
                     /*IO_A3QR2_Dis;*/
                 }
             }

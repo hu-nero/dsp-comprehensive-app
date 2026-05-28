@@ -30,6 +30,7 @@
 
 #include "Hal.h"
 #include "App.h"
+#include "stdint_fix.h"
 
 //#define DEBUG
 #define Release
@@ -177,8 +178,8 @@ void main(void)
         if(SysCnt_1s != SysCnt_1sOld)
         {
             SysCnt_1sOld = SysCnt_1s;
-            npr_1s_protection();
 			FunStatusUpdate();
+            npr_1s_protection();
             MainStusWord.DataBit.Toggle ^= 1;
         }
 		//////////////////////////////////////////////////////////////////////////////
@@ -1011,6 +1012,142 @@ void npr_1s_protection(void)
 		}
     }
 
+    // DO开关控制与反馈状态匹配(QR1、QR2、QR3、QF1、QF2)
+    if (MainSta2WordCtrl.DataBit.SingQF1 != MainSta2Word.DataBit.SingQF1)
+    {
+        if (FltCnt_OverTime_QF1 < 3)
+        {
+        	FltCnt_OverTime_QF1++;
+        }
+        else
+        {
+            /*if (!NPR_FaultCode)*/
+            /*{*/
+                /*NPR_FaultCode = 1;*/
+            /*}*/
+            /*FaultWord_Map(1);*/
+            AlarmWord_Map(18);
+        }
+    }
+    else
+    {
+        if (FltCnt_OverTime_QF1 > 0)
+        {
+        	FltCnt_OverTime_QF1--;
+            if (FltCnt_OverTime_QF1 == 0)
+            {
+                AlarmWord_Clear(18);
+            }
+        }
+    }
+    if (MainSta2WordCtrl.DataBit.ParaQF2 != MainSta2Word.DataBit.ParaQF2)
+    {
+        if (FltCnt_OverTime_QF2 < 3)
+        {
+        	FltCnt_OverTime_QF2++;
+        }
+        else
+        {
+            /*if (!NPR_FaultCode)*/
+            /*{*/
+                /*NPR_FaultCode = 3;*/
+            /*}*/
+            /*FaultWord_Map(3);*/
+            AlarmWord_Map(19);
+        }
+    }
+    else
+    {
+        if (FltCnt_OverTime_QF2 > 0)
+        {
+        	FltCnt_OverTime_QF2--;
+            if (FltCnt_OverTime_QF2 == 0)
+            {
+                AlarmWord_Clear(19);
+            }
+        }
+    }
+    if (MainSta2WordCtrl.DataBit.SingQR1 != MainSta2Word.DataBit.SingQR1)
+    {
+        if (FltCnt_OverTime_QR1 < 3)
+        {
+        	FltCnt_OverTime_QR1++;
+        }
+        else
+        {
+            /*if (!NPR_FaultCode)*/
+            /*{*/
+                /*NPR_FaultCode = 2;*/
+            /*}*/
+            /*FaultWord_Map(2);*/
+            AlarmWord_Map(20);
+        }
+    }
+    else
+    {
+        if (FltCnt_OverTime_QR1 > 0)
+        {
+        	FltCnt_OverTime_QR1--;
+            if (FltCnt_OverTime_QR1 == 0)
+            {
+                AlarmWord_Clear(20);
+            }
+        }
+    }
+    if (MainSta2WordCtrl.DataBit.ParaQR2 != MainSta2Word.DataBit.ParaQR2)
+    {
+        if (FltCnt_OverTime_QR2 < 3)
+        {
+        	FltCnt_OverTime_QR2++;
+        }
+        else
+        {
+            /*if (!NPR_FaultCode)*/
+            /*{*/
+                /*NPR_FaultCode = 4;*/
+            /*}*/
+            /*FaultWord_Map(4);*/
+            AlarmWord_Map(21);
+        }
+    }
+    else
+    {
+        if (FltCnt_OverTime_QR2 > 0)
+        {
+        	FltCnt_OverTime_QR2--;
+            if (FltCnt_OverTime_QR2 == 0)
+            {
+                AlarmWord_Clear(21);
+            }
+        }
+    }
+    if (MainSta2WordCtrl.DataBit.DgssKM1 != MainSta2Word.DataBit.DgssKM1)
+    {
+        if (FltCnt_OverTime_QR3 < 3)
+        {
+        	FltCnt_OverTime_QR3++;
+        }
+        else
+        {
+            /*if (!NPR_FaultCode)*/
+            /*{*/
+                /*NPR_FaultCode = 5;*/
+            /*}*/
+            /*FaultWord_Map(5);*/
+            AlarmWord_Map(22);
+        }
+    }
+    else
+    {
+        if (FltCnt_OverTime_QR3 > 0)
+        {
+        	FltCnt_OverTime_QR3--;
+            if (FltCnt_OverTime_QR3 == 0)
+            {
+                AlarmWord_Clear(22);
+            }
+        }
+    }
 
     //////////////////////////////////////////////////////////
     if(MainStusWord.DataBit.PwrGrid)
@@ -1402,7 +1539,7 @@ void CalImbalance(void)
 
 	if(MainSta2Word.DataBit.WorkLpQS1)
 	{
-		Uout_Imbalance = (vLine_max - vLine_avg) / vLine_avg;
+		Uout_Imbalance = MAX((vLine_avg - vLine_min), (vLine_max - vLine_avg)) / vLine_avg;
 	}
 	else
 	{
@@ -1444,7 +1581,7 @@ void CalImbalance(void)
 
 	if( MainSta2Word.DataBit.WorkLpQS1 | MainSta2Word.DataBit.CheckLpQS1 )
 	{
-		Iout_Imbalance = (Iphase_max - Iphase_avg) / Iphase_avg;
+		Iout_Imbalance = MAX((Iphase_avg - Iphase_min), (Iphase_max - Iphase_avg)) / Iphase_avg;
 	}
 	else
 	{

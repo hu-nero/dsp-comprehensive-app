@@ -96,8 +96,8 @@ const struct RTMType sParaData_Group6[]=
 /* Line - 31 */ 31,0x4043,(void*)&FltCntThr_OverLow_Flow2,
 /* Line - 32 */ 32,0x40A3,(void*)&FltThr_OverLow_Flow2,
 /* Line - 32 */ 33,0x40A3,(void*)&Auto_Restarttime_Flow,
-/* Line - 33 */ 34,0x40A3,(void*)&Cap_Ctrl_Word,
-/* Line - 33 */ 35,0x40A3,(void*)&Can_External_Addr,
+/* Line - 33 */ 34,0x4043,(void*)&Cap_Ctrl_Word,
+/* Line - 33 */ 35,0x4043,(void*)&Can_External_Addr,
 /* Line - 33 */ 36,0x40A3,(void*)&FltThr_UnderCurr_Silicon,
 /* Line - 33 */ 37,0x40A3,(void*)&FltThr_OverCurr_Silicon,
 
