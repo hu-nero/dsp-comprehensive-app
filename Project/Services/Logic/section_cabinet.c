@@ -330,8 +330,10 @@ Cabinet_SetCabinetReset(CabinetContext_t* Context)
     NPR_FaultCode = 0;
     AlarmWord1.DataInt = 0;
     AlarmWord2.DataInt = 0;
+    AlarmWord3.DataInt = 0;
     FaultWord1.DataInt = 0;
     FaultWord2.DataInt = 0;
+    FaultWord3.DataInt = 0;
 
     // 清除急停和故障标志，使能状态转换流程
     Context->fault_recovery_ctx.state_before_fault = CABINET_STATE_INVALID;
