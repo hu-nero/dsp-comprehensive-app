@@ -62,12 +62,18 @@ typedef enum
 // 报警类型
 typedef enum
 {
-    ALARM_NONE = 0,
-    ALARM_STATE_ROLLBACK,      // 状态回退
-    ALARM_POWER_START_FAILED,  // 电源启动失败
-    ALARM_CAN_COMM_ERROR,      // CAN通信错误
-    ALARM_NOT_MANUAL_MODE,     // 非手动模式
-    ALARM_FAULT,               // 故障
+    ALARM_NONE = 0,           // 提示
+    ALARM_QSx_STATE_ERR,      // 刀闸QSx状态异常
+    ALARM_QF1_STATE_ERR,      // QF1状态异常
+    ALARM_QF2_STATE_ERR,      // QF2状态异常
+    ALARM_QR1_STATE_ERR,      // QR1状态异常
+    ALARM_QR2_STATE_ERR,      // QR2状态异常
+    ALARM_QR3_STATE_ERR,      // 消磁QR3状态异常
+    ALARM_CABINET_SWITCH_MISMATCH,  // 柜体和开关不匹配
+    ALARM_PWR_STATE_MISMATCH,       // 电源状态不匹配
+    ALARM_HASCYCLE,                 // 柜体有回路
+    ALARM_PARA_FACTOR_MISMATHC,     // 并机系数不匹配
+    ALARM_FAULT,                    // 状态转换异常
     ALARM_MAX
 } AlarmType_t;
 

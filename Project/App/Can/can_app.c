@@ -849,11 +849,68 @@ Hardware_CurrentRead(CurrentReadType_t CurrentPhaseType)
 static void
 Hardware_AlarmCallback(AlarmType_t AlarmType, const char* Message)
 {
-    /* 实际应用中报警 */
-//           alarm_type == ALARM_STATE_ROLLBACK ? "State Rollback" :
-//           alarm_type == ALARM_POWER_START_FAILED ? "Power Start Failed" :
-//           alarm_type == ALARM_CAN_COMM_ERROR ? "CAN Comm Error" :
-//           alarm_type == ALARM_NOT_MANUAL_MODE ? "Not Manual Mode" : "Unknown",
-//           message);
+    switch(AlarmType)
+    {
+        case ALARM_NONE:
+            {
+            }
+            break;
+        case ALARM_QSx_STATE_ERR:
+            {
+                AlarmWord2.DataBit.Bit0 = 1;
+            }
+            break;
+        case ALARM_QF1_STATE_ERR:
+            {
+                AlarmWord2.DataBit.Bit1 = 1;
+            }
+            break;
+        case ALARM_QF2_STATE_ERR:
+            {
+                AlarmWord2.DataBit.Bit2 = 1;
+            }
+            break;
+        case ALARM_QR1_STATE_ERR:
+            {
+                AlarmWord2.DataBit.Bit3 = 1;
+            }
+            break;
+        case ALARM_QR2_STATE_ERR:
+            {
+                AlarmWord2.DataBit.Bit4 = 1;
+            }
+            break;
+        case ALARM_QR3_STATE_ERR:
+            {
+                AlarmWord2.DataBit.Bit5 = 1;
+            }
+            break;
+        case ALARM_CABINET_SWITCH_MISMATCH:
+            {
+                AlarmWord2.DataBit.Bit6 = 1;
+            }
+            break;
+        case ALARM_PWR_STATE_MISMATCH:
+            {
+                AlarmWord2.DataBit.Bit7 = 1;
+            }
+            break;
+        case ALARM_HASCYCLE:
+            {
+                AlarmWord2.DataBit.Bit8 = 1;
+            }
+            break;
+        case ALARM_PARA_FACTOR_MISMATHC:
+            {
+                AlarmWord2.DataBit.Bit9 = 1;
+            }
+            break;
+        case ALARM_FAULT:
+            {
+//                AlarmWord2.DataBit.Bit10 = 1;
+            }
+            break;
+        default:break;
+    }
 }
 

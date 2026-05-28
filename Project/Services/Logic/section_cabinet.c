@@ -261,7 +261,7 @@ Cabinet_Process(CabinetContext_t* Context)
             case DEMAGNETIZE_FAILED:
                 {
                     // 发出警告，消磁失败，拨回开关
-                    Cabinet_SetAlarm(Context, ALARM_NONE, "Demagnetize failed");
+                    Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "Demagnetize failed");
                     // 根据状态进行回调
                     Cabinet_ErrBranch(Context);
                     // 消磁状态回到未触发
@@ -732,7 +732,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         if (!Cabinet_SwitchIsMatchMode(Context))
                         {
                             // 发出警告
-                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
                             // 根据状态进行回调
                             Cabinet_ErrBranch(Context);
                             return;
@@ -744,7 +744,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                                 (Context->power_status.run_state == POWER_PARALLEL_RUNNING)))
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "power status abnormal");
+                        Cabinet_SetAlarm(Context, ALARM_PWR_STATE_MISMATCH, "power status abnormal");
                         // 根据状态进行回调
                         Cabinet_ErrBranch(Context);
                         return;
@@ -752,7 +752,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     if (Cabinet_HasCycle(Context))
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet has cycle");
+                        Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
                         // 根据状态进行回调
                         Cabinet_ErrBranch(Context);
                         return;
@@ -771,7 +771,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         if (!Cabinet_SwitchIsMatchMode(Context))
                         {
                             // 发出警告
-                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
                             // 根据状态进行回调
                             Cabinet_ErrBranch(Context);
                             return;
@@ -781,7 +781,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     if (!Cabinet_IsSatisfyPowerParallel(Context))
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "Not meeting the parallel operation coefficient");
+                        Cabinet_SetAlarm(Context, ALARM_PARA_FACTOR_MISMATHC, "Not meeting the parallel operation coefficient");
                         // 根据状态进行回调
                         Cabinet_ErrBranch(Context);
                         return;
@@ -790,7 +790,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     if (Cabinet_HasCycle(Context))
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet has cycle");
+                        Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
                         // 根据状态进行回调
                         Cabinet_ErrBranch(Context);
                         return;
@@ -820,7 +820,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         if (!Cabinet_SwitchIsMatchMode(Context))
                         {
                             // 发出警告
-                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
                             // 根据状态进行回调
                             Cabinet_ErrBranch(Context);
                             return;
@@ -833,7 +833,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         if (Cabinet_HasCycle(Context))
                         {
                             // 发出警告
-                            Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet has cycle");
+                            Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
                             // 根据状态进行回调
                             Cabinet_ErrBranch(Context);
                             return;
@@ -847,7 +847,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     else
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "exectue failed");
+                        Cabinet_SetAlarm(Context, ALARM_FAULT, "exectue failed");
                         // 根据状态进行回调
                         Cabinet_ErrBranch(Context);
                     }
@@ -865,7 +865,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         if (!Cabinet_SwitchIsMatchMode(Context))
                         {
                             // 发出警告
-                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
                             // 根据状态进行回调
                             Cabinet_ErrBranch(Context);
                             return;
@@ -876,7 +876,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     if (Context->power_status.run_state != POWER_PARALLEL_RUNNING)
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "power status abnormal");
+                        Cabinet_SetAlarm(Context, ALARM_PWR_STATE_MISMATCH, "power status abnormal");
                         // 根据状态进行回调
                         Cabinet_ErrBranch(Context);
                         return;
@@ -885,7 +885,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     if (!Cabinet_IsSatisfyPowerParallel(Context))
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "Not meeting the parallel operation coefficient");
+                        Cabinet_SetAlarm(Context, ALARM_PARA_FACTOR_MISMATHC, "Not meeting the parallel operation coefficient");
                         // 根据状态进行回调
                         Cabinet_ErrBranch(Context);
                         return;
@@ -907,7 +907,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     else
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "start power failed");
+                        Cabinet_SetAlarm(Context, ALARM_FAULT, "start power failed");
                         // 根据状态进行回调
                         Cabinet_ErrBranch(Context);
                         // 清空目标状态
@@ -935,7 +935,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         if (!Cabinet_SwitchIsMatchMode(Context))
                         {
                             // 发出警告
-                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
                             // 根据状态进行回调
                             Cabinet_ErrBranch(Context);
                             return;
@@ -954,7 +954,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     else
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "exectue failed");
+                        Cabinet_SetAlarm(Context, ALARM_FAULT, "exectue failed");
                         // 根据状态进行回调
                         Cabinet_ErrBranch(Context);
                     }
@@ -972,7 +972,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         if (!Cabinet_SwitchIsMatchMode(Context))
                         {
                             // 发出警告
-                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
                             // 根据状态进行回调
                             Cabinet_ErrBranch(Context);
                             return;
@@ -983,7 +983,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     if (!(Context->power_status.run_state == POWER_PARALLEL_RUNNING))
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "power status abnormal");
+                        Cabinet_SetAlarm(Context, ALARM_PWR_STATE_MISMATCH, "power status abnormal");
                         // 根据状态进行回调
                         Cabinet_ErrBranch(Context);
                         return;
@@ -1005,7 +1005,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     else
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "exectue failed");
+                        Cabinet_SetAlarm(Context, ALARM_FAULT, "exectue failed");
                         // 根据状态进行回调
                         Cabinet_ErrBranch(Context);
                         // 清空目标状态
@@ -1033,7 +1033,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         if (!Cabinet_SwitchIsMatchMode(Context))
                         {
                             // 发出警告
-                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
                             // 根据状态进行回调
                             Cabinet_ErrBranch(Context);
                             return;
@@ -1056,7 +1056,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     else
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "exectue failed");
+                        Cabinet_SetAlarm(Context, ALARM_FAULT, "exectue failed");
                         // 根据状态进行回调
                         Cabinet_ErrBranch(Context);
                         // 清空目标状态
@@ -1076,7 +1076,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         if (!Cabinet_SwitchIsMatchMode(Context))
                         {
                             // 发出警告
-                            Cabinet_SetAlarm(Context, ALARM_NONE, "all switch status abnormal");
+                            Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
                             // 根据状态进行回调
                             Cabinet_ErrBranch(Context);
                             return;
@@ -1099,7 +1099,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     else
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "exectue failed");
+                        Cabinet_SetAlarm(Context, ALARM_FAULT, "exectue failed");
                         // 根据状态进行回调
                         Cabinet_ErrBranch(Context);
                         // 清空目标状态
@@ -1172,7 +1172,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                         }
                         else
                         {
-                            Cabinet_SetAlarm(Context, ALARM_NONE, "Not satisfied parallel factor");
+                            Cabinet_SetAlarm(Context, ALARM_PARA_FACTOR_MISMATHC, "Not satisfied parallel factor");
                             Context->target_state = CABINET_STATE_INVALID;
                             Context->demagnetize_state = DEMAGNETIZE_FAILED;
                             // 根据状态进行回调
@@ -1182,7 +1182,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     }
                     else
                     {
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "The power is not running");
+                        Cabinet_SetAlarm(Context, ALARM_PWR_STATE_MISMATCH, "The power is not running");
                         Context->target_state = CABINET_STATE_INVALID;
                         Context->demagnetize_state = DEMAGNETIZE_FAILED;
                         return;
@@ -1205,7 +1205,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     }
                     else
                     {
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "Single procedure failed");
+                        Cabinet_SetAlarm(Context, ALARM_FAULT, "Single procedure failed");
                         // 重置
                         Context->target_state = CABINET_STATE_INVALID;
                         Context->demagnetize_state = DEMAGNETIZE_FAILED;
@@ -1254,7 +1254,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     }
                     else
                     {
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close the parallel circuit");
+                        Cabinet_SetAlarm(Context, ALARM_FAULT, "Failed to close the parallel circuit");
                         Context->target_state = CABINET_STATE_INVALID;
                         Context->demagnetize_state = DEMAGNETIZE_FAILED;
                     }
@@ -1808,8 +1808,14 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     {
         if (Context->state == CABINET_STATE_SINGLE)
         {
-            if ((Context->switch_list.A3QF1_switch == SWITCH_OFF) || (Context->switch_list.A3QR1_switch == SWITCH_OFF))
+            if ((Context->switch_list.A3QF1_switch == SWITCH_OFF) ||
+                (Context->switch_list.A3QR1_switch == SWITCH_OFF) ||
+                (Context->switch_list.A3QS1_switch == SWITCH_OFF))
             {
+                if (Context->switch_list.A3QS1_switch == SWITCH_OFF)
+                {
+                    Cabinet_SetAlarm(Context, ALARM_QSx_STATE_ERR, "A3QS1 switch state error");
+                }
                 if (u16TmpSingleCount > 3500)
                 {
                     u16TmpSingleCount = 0;
@@ -1831,8 +1837,14 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         }
         if (Context->state == CABINET_STATE_PARALLEL)
         {
-            if ((Context->switch_list.A3QF2_switch == SWITCH_OFF) || (Context->switch_list.A3QR2_switch == SWITCH_OFF))
+            if ((Context->switch_list.A3QF2_switch == SWITCH_OFF) ||
+                (Context->switch_list.A3QR2_switch == SWITCH_OFF) ||
+                (Context->switch_list.A3QS1_switch == SWITCH_OFF))
             {
+                if (Context->switch_list.A3QS1_switch == SWITCH_OFF)
+                {
+                    Cabinet_SetAlarm(Context, ALARM_QSx_STATE_ERR, "A3QS1 switch state error");
+                }
                 if (u16TmpParallelCount > 3500)
                 {
                     u16TmpParallelCount = 0;
@@ -2005,13 +2017,12 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                     else
                     {
                         allow_recovery = false;
-                        Cabinet_SetAlarm(Context, ALARM_NONE, "Same fault occurred within 60s, auto recovery disabled");
                     }
                 }
             }
 
             // 检查故障码是否在允许自动恢复的范围内
-            if (allow_recovery &&
+            if ((allow_recovery) && (!allow_convert_single) &&
                     (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
                      ((cleared_fault >= 27) && (cleared_fault <= 29)) ||
                      (cleared_fault == 25)))
@@ -2025,6 +2036,7 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                     if (Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_SINGLE)
                     {
                         Context->fault_recovery_state = AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS;
+                        allow_convert_single = false;
                     }
                     else if (Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_PARALLEL)
                     {
@@ -2035,12 +2047,14 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                     else
                     {
                         Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
+                        allow_convert_single = false;
                     }
                     Context->fault_timer_start = hal_timer_get_timestamp();
                     Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
                 }
                 else if ((cleared_fault == 25) || (cleared_fault == 29))
                 {
+                    allow_convert_single = false;
                     fault_ctx->last_fault_code = cleared_fault;
                     fault_ctx->last_fault_timestamp = hal_timer_get_timestamp();
                     // 恢复阶段
@@ -2110,7 +2124,7 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to disconnect A3QF1");
+                Cabinet_SetAlarm(Context, ALARM_QF1_STATE_ERR, "Failed to disconnect A3QF1");
                 return RESULT_FAILED;
             }
         }
@@ -2133,7 +2147,7 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to disconnect A3QF2");
+                Cabinet_SetAlarm(Context, ALARM_QF2_STATE_ERR, "Failed to disconnect A3QF2");
                 return RESULT_FAILED;
             }
         }
@@ -2160,7 +2174,7 @@ Cabinet_Execute10sDegaussProcedure(CabinetContext_t* Context)
                 if (Cabinet_HasCycle(Context))
                 {
                     // 发出警告
-                    Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet has cycle");
+                    Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
                     Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
                     return RESULT_FAILED;
                 }
@@ -2316,7 +2330,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 				if (Cabinet_HasCycle(Context))
 				{
 					// 发出警告
-					Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet has cycle");
+					Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
 					Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
 					return RESULT_FAILED;
 				}
@@ -2441,7 +2455,7 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
 		 (Context->target_state != CABINET_STATE_INVALID)) ||
 		 (Context->state != CABINET_STATE_STANDBY))
     {
-        Cabinet_SetAlarm(Context, ALARM_NONE, "Execution of panel demagnetization failed");
+        Cabinet_SetAlarm(Context, ALARM_FAULT, "Execution of panel demagnetization failed");
         // 清空面板消磁的状态
         Context->switch_control(DO_ID_SHORT_SET, SWITCH_OFF);
         Context->panel_remote_degauss_flag = false;
@@ -2486,14 +2500,14 @@ Cabinet_ExecuteRecoveryDegaussProcedure(CabinetContext_t* Context, uint16_t Dela
         else
         {
             // 消磁命令执行失败
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Recovery degauss command failed");
+            Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "Recovery degauss command failed");
             return RESULT_FAILED;
         }
     }
     else
     {
         // 消磁命令执行失败
-        Cabinet_SetAlarm(Context, ALARM_NONE, "Recovery degauss command failed");
+        Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "Recovery degauss command failed");
         return RESULT_FAILED;
     }
 }
@@ -2525,7 +2539,7 @@ Cabinet_ExecuteAutoDegaussProcedure(CabinetContext_t* Context, uint16_t DelayMs)
         {
             // 消磁命令执行失败
             Context->demagnetize_state = DEMAGNETIZE_FAILED;
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Demagnetize command failed");
+            Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "Demagnetize command failed");
             // 根据状态进行回调
             Cabinet_ErrBranch(Context);
             return RESULT_FAILED;
@@ -2535,7 +2549,7 @@ Cabinet_ExecuteAutoDegaussProcedure(CabinetContext_t* Context, uint16_t DelayMs)
     {
         // 消磁命令执行失败
         Context->demagnetize_state = DEMAGNETIZE_FAILED;
-        Cabinet_SetAlarm(Context, ALARM_NONE, "Demagnetize command failed");
+        Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "Demagnetize command failed");
         // 根据状态进行回调
         Cabinet_ErrBranch(Context);
         return RESULT_FAILED;
@@ -2580,7 +2594,7 @@ Cabinet_ExecuteStandbyProcedure(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF1");
+                Cabinet_SetAlarm(Context, ALARM_QF1_STATE_ERR, "Failed to close A3QF1");
                 return RESULT_FAILED;
             }
         }
@@ -2616,7 +2630,7 @@ Cabinet_ExecuteStandbyProcedure(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
+                Cabinet_SetAlarm(Context, ALARM_QF2_STATE_ERR, "Failed to close A3QF2");
                 return RESULT_FAILED;
             }
         }
@@ -2650,7 +2664,7 @@ Cabinet_ExecuteSingleProcedure(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to connect A3QF1");
+                Cabinet_SetAlarm(Context, ALARM_QF1_STATE_ERR, "Failed to connect A3QF1");
                 return RESULT_FAILED;
             }
         }
@@ -2700,7 +2714,7 @@ Cabinet_ExecuteSingleProcedure(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
+                Cabinet_SetAlarm(Context, ALARM_QF2_STATE_ERR, "Failed to close A3QF2");
                 return RESULT_FAILED;
             }
         }
@@ -2735,7 +2749,7 @@ Cabinet_ExecuteParallelProcedure(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
+                Cabinet_SetAlarm(Context, ALARM_QF2_STATE_ERR, "Failed to close A3QF2");
                 return RESULT_FAILED;
             }
         }
@@ -2786,7 +2800,7 @@ Cabinet_ExecuteParallelProcedure(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF1");
+                Cabinet_SetAlarm(Context, ALARM_QF1_STATE_ERR, "Failed to close A3QF1");
                 return RESULT_FAILED;
             }
         }
@@ -2820,7 +2834,7 @@ Cabinet_ExecuteBackupProcedure(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
+                Cabinet_SetAlarm(Context, ALARM_QF2_STATE_ERR, "Failed to close A3QF2");
                 return RESULT_FAILED;
             }
         }
@@ -2865,7 +2879,7 @@ Cabinet_ExecuteBackupProcedure(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF1");
+                Cabinet_SetAlarm(Context, ALARM_QF1_STATE_ERR, "Failed to close A3QF1");
                 return RESULT_FAILED;
             }
         }
@@ -3077,7 +3091,7 @@ Cabinet_ConnectSingleCircuit(CabinetContext_t* Context)
         }
         else
         {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to connect A3QF1");
+            Cabinet_SetAlarm(Context, ALARM_QF1_STATE_ERR, "Failed to connect A3QF1");
             return RESULT_FAILED;
         }
     }
@@ -3125,7 +3139,7 @@ Cabinet_ConnectParallelCircuit(CabinetContext_t* Context)
         }
         else
         {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
+            Cabinet_SetAlarm(Context, ALARM_QF2_STATE_ERR, "Failed to close A3QF2");
             return RESULT_FAILED;
         }
     }
@@ -3188,7 +3202,7 @@ Cabinet_DisconnectSingleCircuit(CabinetContext_t* Context)
         }
         else
         {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF1");
+            Cabinet_SetAlarm(Context, ALARM_QF1_STATE_ERR, "Failed to close A3QF1");
             return RESULT_FAILED;
         }
     }
@@ -3230,7 +3244,7 @@ Cabinet_DisconnectParallelCircuit(CabinetContext_t* Context)
         }
         else
         {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close A3QF2");
+            Cabinet_SetAlarm(Context, ALARM_QF2_STATE_ERR, "Failed to close A3QF2");
             return RESULT_FAILED;
         }
     }
@@ -3247,7 +3261,6 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
     {
         if (Context->fault_recovery_state != AUTO_RECOVERY_IDLE)
         {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "Auto recovery aborted by emergency");
             gAutoRequestParallelCount = 0;
             Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
             Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
@@ -3257,7 +3270,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
             Context->parallel_request_start = 0;
             Context->recovery_degauss_start_time = 0;
             Context->recovery_degauss_delay_ms = 0;
-            Cabinet_SetAlarm(Context, ALARM_NONE, "auto recovery failed");
+            Cabinet_SetAlarm(Context, ALARM_NONE, "Auto recovery aborted by emergency");
         }
         return;
     }
@@ -3377,7 +3390,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                             if (Cabinet_HasCycle(Context))
                             {
                                 // 发出警告
-                                Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet has cycle");
+                                Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
                                 Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
                                 return;
                             }
@@ -3515,7 +3528,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                             if (Cabinet_HasCycle(Context))
                             {
                                 // 发出警告
-                                Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet has cycle");
+                                Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
                                 Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
                                 return;
                             }
@@ -3687,7 +3700,7 @@ Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_NONE, "The parallel operation circuit connection failed");
+                Cabinet_SetAlarm(Context, ALARM_FAULT, "The parallel operation circuit connection failed");
                 return;
             }
         }
@@ -3722,7 +3735,7 @@ Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_NONE, "The parallel operation circuit connection failed");
+                Cabinet_SetAlarm(Context, ALARM_FAULT, "The parallel operation circuit connection failed");
                 return;
             }
         }
@@ -3747,7 +3760,7 @@ Cabinet_OneclickDisconnect(CabinetContext_t* Context)
     if (!((Context->power_status.run_state == POWER_SINGLE_RUNNING) ||
                 (Context->power_status.run_state == POWER_PARALLEL_RUNNING)))
     {
-        Cabinet_SetAlarm(Context, ALARM_FAULT, "power status abnormal,one-click disconnect failed");
+        Cabinet_SetAlarm(Context, ALARM_PWR_STATE_MISMATCH, "power status abnormal,one-click disconnect failed");
         return RESULT_INVALID_STATE;
     }
 
@@ -3769,7 +3782,7 @@ Cabinet_OneclickDisconnect(CabinetContext_t* Context)
         }
         else
         {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "The single operation circuit connection failed");
+            Cabinet_SetAlarm(Context, ALARM_FAULT, "The single operation circuit connection failed");
             return RESULT_FAILED;
         }
     }
@@ -3798,7 +3811,7 @@ Cabinet_OneclickDisconnect(CabinetContext_t* Context)
         }
         else
         {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "The parallel operation circuit connection failed");
+            Cabinet_SetAlarm(Context, ALARM_FAULT, "The parallel operation circuit connection failed");
             return RESULT_FAILED;
         }
     }
