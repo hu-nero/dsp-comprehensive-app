@@ -14,6 +14,7 @@
 
 static uint16_t gAutoRequestParallelCount = 0;
 static union DataBit_Type Cap_Ctrl_Word_Old;
+static uint32_t g_cabinet_period;
 
 static inline void Cabinet_SetCabinetReset(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ResetFromEmergency(CabinetContext_t* Context);
@@ -169,6 +170,8 @@ Cabinet_Init(CabinetContext_t* Context,
 
     // 接收屏幕复位脉冲信号
     Cap_Ctrl_Word_Old.DataInt = 0;
+    // 周期计时
+    g_cabinet_period = 5000;
     return true;
 }
 
@@ -276,6 +279,19 @@ Cabinet_Process(CabinetContext_t* Context)
     // 刀闸状态检查处理
     Cabinet_ExecuteKnifeSwitchProcedure(Context);
 
+    // 清除报警清报警字
+    if ((AlarmWord2.DataBit.Bit0 == 1) ||
+        ((AlarmWord2.DataInt>>6)&0x1F))
+    {
+        // 计时周期
+        g_cabinet_period --;
+        if (g_cabinet_period == 0)
+        {
+            AlarmWord2.DataBit.Bit0 = 0;
+            AlarmWord2.DataInt &= ~(0x1F << 6);
+            g_cabinet_period = 5000;
+        }
+    }
     // 读取面板、柜体开关状态
     Cabinet_ReadAllSwitchStatus(Context);
 }
@@ -2452,22 +2468,22 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
         }
     }
 
-    // 判断是否发生状态转换
-    if (((Context->state != Context->target_state)  &&
-		 (Context->target_state != CABINET_STATE_INVALID)) ||
-		 (Context->state != CABINET_STATE_STANDBY))
-    {
-        Cabinet_SetAlarm(Context, ALARM_FAULT, "Execution of panel demagnetization failed");
-        // 清空面板消磁的状态
-        Context->switch_control(DO_ID_SHORT_SET, SWITCH_OFF);
-        Context->panel_remote_degauss_flag = false;
-        Context->switch_last.short_switch = SWITCH_OFF;
-        Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
-        return RESULT_FAILED;
-    }
-
     if (Context->panel_remote_degauss_flag == true)
     {
+        // 判断是否发生状态转换
+        if (((Context->state != Context->target_state)  &&
+    		 (Context->target_state != CABINET_STATE_INVALID)) ||
+    		 (Context->state != CABINET_STATE_STANDBY))
+        {
+            Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "has cycle,execution of panel demagnetization failed");
+            // 清空面板消磁的状态
+            Context->switch_control(DO_ID_SHORT_SET, SWITCH_OFF);
+            Context->panel_remote_degauss_flag = false;
+            Context->switch_last.short_switch = SWITCH_OFF;
+            Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
+            return RESULT_FAILED;
+        }
+
         demag_result = Cabinet_Execute10sDegaussProcedure(Context);
         if ((demag_result == RESULT_SUCCESS) || (demag_result == RESULT_FAILED))
         {

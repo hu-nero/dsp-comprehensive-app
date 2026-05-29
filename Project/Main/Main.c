@@ -1021,11 +1021,6 @@ void npr_1s_protection(void)
         }
         else
         {
-            /*if (!NPR_FaultCode)*/
-            /*{*/
-                /*NPR_FaultCode = 1;*/
-            /*}*/
-            /*FaultWord_Map(1);*/
             AlarmWord_Map(18);
         }
     }
@@ -1048,11 +1043,6 @@ void npr_1s_protection(void)
         }
         else
         {
-            /*if (!NPR_FaultCode)*/
-            /*{*/
-                /*NPR_FaultCode = 3;*/
-            /*}*/
-            /*FaultWord_Map(3);*/
             AlarmWord_Map(19);
         }
     }
@@ -1075,11 +1065,6 @@ void npr_1s_protection(void)
         }
         else
         {
-            /*if (!NPR_FaultCode)*/
-            /*{*/
-                /*NPR_FaultCode = 2;*/
-            /*}*/
-            /*FaultWord_Map(2);*/
             AlarmWord_Map(20);
         }
     }
@@ -1102,11 +1087,6 @@ void npr_1s_protection(void)
         }
         else
         {
-            /*if (!NPR_FaultCode)*/
-            /*{*/
-                /*NPR_FaultCode = 4;*/
-            /*}*/
-            /*FaultWord_Map(4);*/
             AlarmWord_Map(21);
         }
     }
@@ -1129,11 +1109,6 @@ void npr_1s_protection(void)
         }
         else
         {
-            /*if (!NPR_FaultCode)*/
-            /*{*/
-                /*NPR_FaultCode = 5;*/
-            /*}*/
-            /*FaultWord_Map(5);*/
             AlarmWord_Map(22);
         }
     }
