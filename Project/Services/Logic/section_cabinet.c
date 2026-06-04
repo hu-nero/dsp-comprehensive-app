@@ -65,7 +65,7 @@ static bool Cabinet_IsSatisfyPowerParallel(CabinetContext_t* Context);
 static void Cabinet_ProcessFaultReset(CabinetContext_t* Context);
 static void Cabinet_ProcessAutoParallel(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_OneclickDisconnect(CabinetContext_t* Context);
-static uint32_t GetFaultTimerDuration(uint8_t fault_code);
+//static uint32_t GetFaultTimerDuration(uint8_t fault_code);
 static void Cabinet_SendParallelRequest(CabinetContext_t* Context);
 
 uint16_t
@@ -2068,7 +2068,7 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                         allow_convert_single = false;
                     }
                     Context->fault_timer_start = hal_timer_get_timestamp();
-                    Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
+                    Context->fault_timer_duration = Auto_Restarttime_Self * 1000;
                 }
                 else if ((cleared_fault == 25) || (cleared_fault == 29))
                 {
@@ -2100,7 +2100,7 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                 // 恢复单机阶段
                 Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_SINGLE_CIRCUIT_DEGAUSS;
                 Context->fault_timer_start = hal_timer_get_timestamp();
-                    Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
+                Context->fault_timer_duration = Auto_Restarttime_Self * 1000;
             }
         }
 
@@ -2470,6 +2470,18 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
 
     if (Context->panel_remote_degauss_flag == true)
     {
+        if (!Cabinet_SwitchIsMatchMode(Context))
+        {
+            // 发出警告
+            Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
+            // 根据状态进行回调
+            Cabinet_ErrBranch(Context);
+            Context->switch_control(DO_ID_SHORT_SET, SWITCH_OFF);
+            Context->panel_remote_degauss_flag = false;
+            Context->switch_last.short_switch = SWITCH_OFF;
+            Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
+            return RESULT_FAILED;
+        }
         // 判断是否发生状态转换
         if (((Context->state != Context->target_state)  &&
     		 (Context->target_state != CABINET_STATE_INVALID)) ||
@@ -3067,18 +3079,18 @@ Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, Swit
 }
 
 // 根据故障码获取计时时长（ms）
-static uint32_t
-GetFaultTimerDuration(uint8_t fault_code)
-{
-    switch (fault_code)
-    {
-        case 0x01: return 60000;   // 重启失败 -> 60s
-        case 0x02: return 120000;  // 停电 -> 120s
-        case 0x03: return 60000;   // 非停水停电 -> 60s
-        case 0x04: return 1800000; // 停水 -> 30min
-        default:   return 60000;
-    }
-}
+//static uint32_t
+//GetFaultTimerDuration(uint8_t fault_code)
+//{
+//    switch (fault_code)
+//    {
+//        case 0x01: return 60000;   // 重启失败 -> 60s
+//        case 0x02: return 120000;  // 停电 -> 120s
+//        case 0x03: return 60000;   // 非停水停电 -> 60s
+//        case 0x04: return 1800000; // 停水 -> 30min
+//        default:   return 60000;
+//    }
+//}
 
 // 发送并网请求（需实现CAN发送）
 static void
@@ -3328,8 +3340,8 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
         case AUTO_RECOVERY_FAULTCODE_PROCESS:
             {
                 Context->fault_timer_start = hal_timer_get_timestamp();
-                // TODO: 根据通信协议进行故障解析
-                Context->fault_timer_duration = GetFaultTimerDuration(0x2);
+                // 目前计时2分钟
+                Context->fault_timer_duration = 120000;
 
                 if (Context->state == CABINET_STATE_SINGLE)
                 {
@@ -3510,7 +3522,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 Cabinet_SendParallelRequest(Context);
                 grid_state = CAN_Adapter_GetCommSyncToSectionStatus();
 
-                if (gAutoRequestParallelCount < 60000)
+                if (gAutoRequestParallelCount < Auto_Restarttime_Para_Request)
                 {
                     if (grid_state.sync_status.bit.section_grid_feedback != (Can_External_Addr-1))
                     {

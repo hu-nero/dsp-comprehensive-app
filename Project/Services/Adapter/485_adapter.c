@@ -250,6 +250,13 @@ UART485_Adapter_MainLoop(void)
         RemHoldSum.CtrlWord.all = gRemHoldSum.CtrlWord.all;
     }
 
+    // 远端授时
+    if ((SysTimeser_back==1)&&(SysTimeser_backold!=1))
+    {
+        SysTimeser_cmd = 0;
+    }
+    SysTimeser_backold=SysTimeser_back;
+
     if(gDcsHoldSum.CtrlWord.all != DcsHoldSum.CtrlWord.all)
     {
         // 判断命令是否非法

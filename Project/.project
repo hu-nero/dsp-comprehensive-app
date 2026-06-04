@@ -38,7 +38,7 @@
 		<link>
 			<name>System/IQmath_fpu32.lib</name>
 			<type>1</type>
-			<location>D:/workspaces/work/section_cabinet/f_Grid_Ctrl500/DSP2833x_common/lib/IQmath_fpu32.lib</location>
+			<locationURI>PARENT-2-PROJECT_LOC/DSP2833x_common/lib/IQmath_fpu32.lib</locationURI>
 		</link>
 	</linkedResources>
 	<variableList>

@@ -9,6 +9,8 @@
 ////////////////////////////////////////////////////////////////////
 RemoteInput_t RemInputSum, DcsInputSum;
 RemoteHold_t RemHoldSum, DcsHoldSum;
+UINT SysTimeser_cmd;
+UINT SysTimeser_back,SysTimeser_backold;
 ////////////////////////////////////////////////////////////////////
 float Iout_Imbalance=0, Uout_Imbalance=0;
 
@@ -132,6 +134,8 @@ union DataBit_Type Cap_Ctrl_Word;
 unsigned int Can_External_Addr;
 float FltThr_UnderCurr_Silicon;
 float FltThr_OverCurr_Silicon;
+float Auto_Restarttime_Self;
+float Auto_Restarttime_Para_Request;
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
@@ -746,6 +750,9 @@ void variable_init(void)
 	Can_External_Addr = 0x02;
 	FltThr_UnderCurr_Silicon = 0;
 	FltThr_UnderCurr_Silicon = 0;
+	Auto_Restarttime_Self = 0;
+	Auto_Restarttime_Para_Request = 0;
+
 	memset(&RemInputSum, 0, sizeof(RemoteInput_t));
 	memset(&DcsInputSum, 0, sizeof(RemoteInput_t));
 	RemHoldSum.CtrlWord.all = 0;
@@ -848,6 +855,11 @@ void variable_algorithm_init(void)
 	CtrlCnt_IgbtFanOn = 0;
 	////////////////////////////////////////////
 	Status_NPRRun = 0;
+
+	////////////////////////////////////////////
+	SysTimeser_cmd = 0;
+	SysTimeser_back = 0;
+	SysTimeser_backold = 0;
 }
 /********************variable_init end*****************************/
 void Flash_Fault_ResetVarieble(void)

@@ -27,9 +27,12 @@ extern RemoteInput_t RemInputSum, DcsInputSum;
 typedef struct
 {
 	union Remote_Ctrl_Word_Type CtrlWord;
+	u16 year,month,day,hour,minute,second;
 }	RemoteHold_t;
 
 extern RemoteHold_t RemHoldSum, DcsHoldSum;
+extern UINT SysTimeser_cmd;
+extern UINT SysTimeser_back,SysTimeser_backold;
 ////////////////////////////////////////////////////////////////////
 extern float Iout_Imbalance, Uout_Imbalance;
 
@@ -144,6 +147,8 @@ extern union DataBit_Type Cap_Ctrl_Word;
 extern unsigned int Can_External_Addr;
 extern float FltThr_UnderCurr_Silicon;
 extern float FltThr_OverCurr_Silicon;
+extern float Auto_Restarttime_Self;
+extern float Auto_Restarttime_Para_Request;
 
 extern float UabSl_HalfMemory[20], UbcSl_HalfMemory[20], UcaSl_HalfMemory[20];
 extern float UabPar_HalfMemory[20], UbcPar_HalfMemory[20], UcaPar_HalfMemory[20];

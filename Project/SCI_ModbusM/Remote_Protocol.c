@@ -63,7 +63,7 @@ void Remote_InputReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 		}
 
 		ucTempCnt = usReadLen*2;
-		pTxBuffer[0] = RemDeviceAddr;
+		pTxBuffer[0] = RemoteDeviceAddr;
 		pTxBuffer[1] = Code04_RInputReg;
 		pTxBuffer[2] = ucTempCnt; //*2
 		CRC_Check_Romote(pTxBuffer, (ucTempCnt+3), pTxBuffer+ucTempCnt+3, pTxBuffer+ucTempCnt+4);
@@ -77,6 +77,8 @@ void Remote_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 	u8 i, j, ucTempCnt;
 	u16 usStartAddr, usReadLen;
 	u16 usTempData;
+	u16 usTempDataLen;
+
 
 	usStartAddr = ((u16)pMesBuf[2]<<8 ) | pMesBuf[3];
 	usReadLen = ((u16)pMesBuf[4]<<8 ) | pMesBuf[5];
@@ -101,7 +103,7 @@ void Remote_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 		}
 
 		ucTempCnt = usReadLen*2;
-		pTxBuffer[0] = RemDeviceAddr;		// SavleAddr(1byte)
+		pTxBuffer[0] = RemoteDeviceAddr;	// SavleAddr(1byte)
 		pTxBuffer[1] = Code03_RHoldReg;  	// FunsCode(1byte)
 		pTxBuffer[2] = ucTempCnt;       	// ByteNum(1byte)
 		CRC_Check_Romote(pTxBuffer, (ucTempCnt+3), pTxBuffer+ucTempCnt+3, pTxBuffer+ucTempCnt+4);
@@ -121,7 +123,7 @@ void Remote_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 			}
 		}
 		// Slave begin ack
-		pTxBuffer[0] = RemDeviceAddr;
+		pTxBuffer[0] = RemoteDeviceAddr;
 		pTxBuffer[1] = Code06_WHoldReg;
 		pTxBuffer[2] = pMesBuf[2];
 		pTxBuffer[3] = pMesBuf[3];
@@ -133,7 +135,34 @@ void Remote_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 	}
 	else if(FuncCode == Code10_WHoldRegs)
 	{
+//////////////////////////////////time service  add by lhy 2026.5.6////////////////////////////////////////
+		usTempDataLen = ((pMesBuf[4] << 8) & 0xFF00)  | (pMesBuf[5] & 0x00FF);
 
+		for(j=1; j<(RemHoldReg_Group[0].RegAddrNum + 1); j++)
+		{
+			if( usStartAddr == (RemHoldReg_Group[j].RegAddrNum) )
+			{
+				for(i=0;i<usTempDataLen;i++)
+				{
+					usTempData = ((pMesBuf[7+2*i] << 8) & 0xFF00)  | (pMesBuf[8+2*i] & 0x00FF);
+					*(u16 *)RemHoldReg_Group[j+i].RegObj = usTempData;
+				}
+				break;
+			}
+		}
+		// Slave begin ack
+		pTxBuffer[0] = RemoteDeviceAddr;
+		pTxBuffer[1] = Code10_WHoldRegs;
+		pTxBuffer[2] = pMesBuf[2];
+		pTxBuffer[3] = pMesBuf[3];
+		pTxBuffer[4] = pMesBuf[4];
+		pTxBuffer[5] = pMesBuf[5];
+		SysTimeser_cmd=1;
+
+		CRC_Check_Romote(pTxBuffer, 6, pTxBuffer+6, pTxBuffer+7);
+
+		Sci_Remote_SendArray(&ScicRegs, pTxBuffer, 8);
+///////////////////////////////////////////////////////////////////////////////////////////
 	}
 }
 

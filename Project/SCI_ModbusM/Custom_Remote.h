@@ -8,7 +8,7 @@
 extern int RemInputRegBuf[64];
 extern int RemHoldRegBuf[64];
 
-#define RemDeviceAddr   0x01
+#define RemoteDeviceAddr   0x01
 
 #include "SCI_ModbusS\Custom_ModbusRTU.H"
 //////////////////////////////////////////////////////////////////////////

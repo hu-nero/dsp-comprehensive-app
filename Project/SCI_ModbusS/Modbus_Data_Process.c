@@ -23,9 +23,6 @@ void Modbus_Send_To_HMI(void)
 	InputRegBuf[12] = IaOut_rmsf *10;
 	InputRegBuf[13] = IbOut_rmsf *10;
 	InputRegBuf[14] = IcOut_rmsf *10;
-//		InputRegBuf[12] = IaPar_rms *10;
-//		InputRegBuf[13] = IbPar_rms *10;
-//		InputRegBuf[14] = IcPar_rms *10;
 	InputRegBuf[15] = P_Sys *10;
 	InputRegBuf[16] = Q_Sys *10;
 	InputRegBuf[17] = S_Sys *10;
@@ -41,6 +38,13 @@ void Modbus_Send_To_HMI(void)
 	memcpy(&InputRegBuf[27], &SwitchWord3.DataInt, 2);
 	InputRegBuf[28]   = FlowRate*10;
 	InputRegBuf[29]   = FpgaMotorFreq*10;
+	InputRegBuf[30]   = SysTime_Year;
+	InputRegBuf[31]   = SysTime_Month;
+	InputRegBuf[32]   = SysTime_Day;
+	InputRegBuf[33]   = SysTime_Hour;
+	InputRegBuf[34]   = SysTime_Minute;
+	InputRegBuf[35]   = SysTime_Second;
+	InputRegBuf[36]   = SysTimeser_cmd;
 
 	if(ParaDownloadCtrlWord == 0)
 	{
@@ -81,6 +85,9 @@ void Modbus_Send_To_HMI(void)
 		HoldRegBuf[34] = Can_External_Addr;
 		HoldRegBuf[35] = FltThr_UnderCurr_Silicon;
 		HoldRegBuf[36] = FltThr_OverCurr_Silicon;
+		HoldRegBuf[37] = Auto_Restarttime_Self;
+		HoldRegBuf[38] = Auto_Restarttime_Para_Request;
+		HoldRegBuf[39] = SysTimeser_back;
 	}
 }
 
@@ -125,6 +132,9 @@ void Modbus_Recv_For_HMI(void)
 		Can_External_Addr = HoldRegBuf[34];
 		FltThr_UnderCurr_Silicon = HoldRegBuf[35];
 		FltThr_OverCurr_Silicon = HoldRegBuf[36];
+		Auto_Restarttime_Self = HoldRegBuf[37];
+		Auto_Restarttime_Para_Request = HoldRegBuf[38];
+		SysTimeser_back = HoldRegBuf[39];
 
 
 		ParaSaveFlag = Cap_Ctrl_Word.DataBit.Bit4;
