@@ -2094,6 +2094,8 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                      (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
                      ((cleared_fault >= 27) && (cleared_fault <= 28))))
             {
+                // 清空单转并状态
+                CAN_Adapter_ClearPowerStatus();
                 allow_convert_single = false;
     			fault_ctx->last_fault_code = cleared_fault;
                 fault_ctx->last_fault_timestamp = hal_timer_get_timestamp();

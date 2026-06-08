@@ -17,6 +17,7 @@ static CommSyncToSection_t gCommSyncToSectionStatus;
 static CommSectionToSync_t gCommSectionToSyncStatus;
 static CommSectionToPower_t gCommSectionToPowerStatus;
 static CommPowerToSection_t gCommPowerToSectionParam;
+static uint32_t gSingleToParaCount;
 uint8_t byteData[8] = {0};
 
 // 回调
@@ -61,6 +62,7 @@ CAN_Adapter_GetPowerStatus(void)
             if (tmp_single_to_parallel_flag == 1)
             {
                 gPowerStatus.single_to_parallel_flag = true;
+                gSingleToParaCount = hal_timer_get_timestamp();
             }
             tmp_single_to_parallel_flag = 2;
 		}
@@ -186,6 +188,8 @@ CAN_Adapter_Init(void)
     CAN_Agent_Set_SendStatus_Callback(eCanPort_1, CAN_Adapter_SendStatus_Callback);
     CAN_Agent_Set_MainLoop_Callback(eCanPort_0, CAN_Adapter_MainLoop_Callback);
     CAN_Agent_Set_MainLoop_Callback(eCanPort_1, CAN_Adapter_MainLoop_Callback);
+    // 单转并计时
+    gSingleToParaCount = 0;
 
 }
 
@@ -409,6 +413,14 @@ CAN_Adapter_MainLoop_Callback(TeCanPort Port)
         {
             gAdapterStatus.sync_online_status = false;
         } 
+    }
+    // 单转并计时清空
+    if (gPowerStatus.single_to_parallel_flag == true)
+    {
+        if (now - gSingleToParaCount > 120000)
+        {
+            gPowerStatus.single_to_parallel_flag = false;
+        }
     }
 }
 

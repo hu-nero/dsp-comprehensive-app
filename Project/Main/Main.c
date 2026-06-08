@@ -1492,12 +1492,6 @@ void RmsFillter(void)
 void CalImbalance(void)
 {
 	///////////////////////////
-	vphase_min = UaOut_rmsf;
-	if(vphase_min > UbOut_rmsf)
-		vphase_min = UbOut_rmsf;
-	if(vphase_min > UcOut_rmsf)
-		vphase_min = UcOut_rmsf;
-	///////////////////////////
 	vLine_avg = (UabOut_rmsf + UbcOut_rmsf + UcaOut_rmsf)*0.333333;
 
 	vLine_min = UabOut_rmsf;
@@ -1512,22 +1506,22 @@ void CalImbalance(void)
 	if(vLine_max < UcaOut_rmsf)
 		vLine_max = UcaOut_rmsf;
 
-	if(MainSta2Word.DataBit.WorkLpQS1)
+	if(MainSta2Word.DataBit.WorkLpQS1  && vLine_avg > 0.5f)
 	{
-		Uout_Imbalance = MAX((vLine_avg - vLine_min), (vLine_max - vLine_avg)) / vLine_avg;
+        Uout_Imbalance = (vLine_max - vLine_min) / vLine_avg;
 	}
 	else
 	{
 		Uout_Imbalance = 0;
 	}
 	///////////////////////////////////////////////
-	if( MainSta2Word.DataBit.WorkLpQS1 & (!MainSta2Word.DataBit.CheckLpQS1) )
+	if( MainSta2Word.DataBit.WorkLpQS1 && (!MainSta2Word.DataBit.CheckLpQS1) )
 	{
 		IaOut_rmsf = IaPar_rmsf;
 		IbOut_rmsf = IbPar_rmsf;
 		IcOut_rmsf = IcPar_rmsf;
 	}
-	else if( (!MainSta2Word.DataBit.WorkLpQS1) & (MainSta2Word.DataBit.CheckLpQS1) )
+	else if( (!MainSta2Word.DataBit.WorkLpQS1) && (MainSta2Word.DataBit.CheckLpQS1) )
 	{
 		IaOut_rmsf = IaOvh_rmsf;
 		IbOut_rmsf = IbOvh_rmsf;
@@ -1554,9 +1548,9 @@ void CalImbalance(void)
 	if(Iphase_max < IcOut_rmsf)
 		Iphase_max = IcOut_rmsf;
 
-	if( MainSta2Word.DataBit.WorkLpQS1 | MainSta2Word.DataBit.CheckLpQS1 )
+	if (( MainSta2Word.DataBit.WorkLpQS1 || MainSta2Word.DataBit.CheckLpQS1 ) && (Iphase_avg > 0.5f))
 	{
-		Iout_Imbalance = MAX((Iphase_avg - Iphase_min), (Iphase_max - Iphase_avg)) / Iphase_avg;
+		Iout_Imbalance = (Iphase_max - Iphase_min) / Iphase_avg;
 	}
 	else
 	{

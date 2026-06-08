@@ -14,6 +14,7 @@
 
 // Maxºê
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 typedef unsigned char		uint8_t;
 typedef char				int8_t;
