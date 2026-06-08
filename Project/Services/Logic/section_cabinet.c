@@ -304,6 +304,8 @@ Cabinet_SetCabinetReset(CabinetContext_t* Context)
     CAN_Adapter_SetAvoidOverdrive(0);
     // 清空单转并状态
     CAN_Adapter_ClearPowerStatus();
+    // 清空检修有电转无电信号
+    CAN_Adapter_SetMaintenStatus(0);
     // 清空同步柜请求状态
     tmp_sync_state = CAN_Adapter_GetCommSectionToSync();
     tmp_sync_state.section_status.bit.grid_connection_request = 0;
@@ -1884,6 +1886,26 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         }
     }
 
+    // 检修消磁
+    if (Context->switch_list.A3K17_switch == SWITCH_ON)
+    {
+        CommSyncToSection_t status = CAN_Adapter_GetCommSyncToSectionStatus();
+        u16 tmp_mainten_status = CAN_Adapter_GetMaintenStatus();
+        if ((status.sync_status.bit.mainten_has_power == 0) &&
+            (tmp_mainten_status == 1) &&
+            ((IaOut_rmsf < 20) && (IbOut_rmsf < 20) && (IcOut_rmsf < 20)))
+        {
+            Context->panel_remote_degauss_flag = true;
+            res = Cabinet_Execute10sDegaussProcedure(Context);
+            if ((res == RESULT_SUCCESS) || (res == RESULT_FAILED))
+            {
+                Context->panel_remote_degauss_flag = false;
+                CAN_Adapter_SetMaintenStatus(0);
+                Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
+            }
+        }
+    }
+
     // 单机反馈控制K1
     if ((Context->switch_list.A3QF1_switch == SWITCH_ON) && (Context->switch_list.A3QR1_switch == SWITCH_ON))
     {
@@ -3329,7 +3351,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                     {
                         // 计时
                         Context->fault_timer_start = hal_timer_get_timestamp();
-                        Context->fault_timer_duration = 60000;
+                        Context->fault_timer_duration = 120000;
                         Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_PARALLEL_CIRCUIT;
                     }
                     else
@@ -3501,6 +3523,14 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                     {
                         Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_SINGLE_CIRCUIT_DEGAUSS;
                     }
+                    else if (Context->power_status.run_state == POWER_PARALLEL_RUNNING)
+                    {
+                        if (Context->fault_recovery_ctx.state_before_fault == POWER_SINGLE_RUNNING)
+                        {
+                            Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_SINGLE_CIRCUIT_DEGAUSS;
+                        }
+                    }
+
                 }
                 else
                 {

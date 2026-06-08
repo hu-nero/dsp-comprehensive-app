@@ -12,12 +12,13 @@
 
 static AdapterStatus_t gAdapterStatus;
 static PowerStatus_t gPowerStatus;
+static u16 gSyncToSection_PwrToPwrless;
 static GridConnectionStatus_t gGridConnectionStatus;
 static CommSyncToSection_t gCommSyncToSectionStatus;
 static CommSectionToSync_t gCommSectionToSyncStatus;
 static CommSectionToPower_t gCommSectionToPowerStatus;
 static CommPowerToSection_t gCommPowerToSectionParam;
-static uint32_t gSingleToParaCount;
+static uint32_t gSingleToParaCount,gPwrToPwrlessCount;
 uint8_t byteData[8] = {0};
 
 // 回调
@@ -162,6 +163,17 @@ CAN_Adapter_GetAdapterStatus(void)
     return gAdapterStatus;
 }
 
+u16
+CAN_Adapter_SetMaintenStatus(u16 Status)
+{
+    gSyncToSection_PwrToPwrless = Status;
+}
+
+u16
+CAN_Adapter_GetMaintenStatus(void)
+{
+    return gSyncToSection_PwrToPwrless;
+}
 // 适配器初始化
 void
 CAN_Adapter_Init(void)
@@ -190,6 +202,10 @@ CAN_Adapter_Init(void)
     CAN_Agent_Set_MainLoop_Callback(eCanPort_1, CAN_Adapter_MainLoop_Callback);
     // 单转并计时
     gSingleToParaCount = 0;
+
+    // 同步柜 检修有电转无电
+    gSyncToSection_PwrToPwrless = 0;
+    gPwrToPwrlessCount = 0;
 
 }
 
@@ -387,12 +403,34 @@ CAN_Adapter_ParsePowerParam(uint16_t *Data, uint16_t Dlc)
 static void
 CAN_Adapter_ParseSyncCabinetStatus(uint16_t *Data, uint16_t Dlc)
 {
+    static uint16_t tmp_pwr_to_pwrless_flag = 0;
     if ((!Data) || (Dlc < 1))
     {
         return;
     }
 
     gCommSyncToSectionStatus.sync_status.all = CombineBytes(Data[0], Data[1]);
+    switch(gCommSyncToSectionStatus.sync_status.bit.mainten_has_power)
+    {
+        case 0:
+            {
+                // 检修无电了
+                if (tmp_pwr_to_pwrless_flag == 1)
+                {
+                    tmp_pwr_to_pwrless_flag = 0;
+                    gSyncToSection_PwrToPwrless = 1;
+                    gPwrToPwrlessCount = hal_timer_get_timestamp();
+                }
+            }
+            break;
+        case 1:
+            {
+                // 检修有电
+                tmp_pwr_to_pwrless_flag = 1;
+            }
+            break;
+        default:break;
+    }
 }
 
 // 主循环回调
@@ -422,6 +460,14 @@ CAN_Adapter_MainLoop_Callback(TeCanPort Port)
             gPowerStatus.single_to_parallel_flag = false;
         }
     }
+    // 检修有电转无电 计时清空
+    if (gSyncToSection_PwrToPwrless == 1)
+    {
+        if (now - gPwrToPwrlessCount > 120000)
+        {
+            gSyncToSection_PwrToPwrless = 0;
+        }
+    }
 }
 
 // 接收回调
@@ -437,7 +483,7 @@ CAN_Adapter_RxHandler(TeCanPort Port, uint16_t *Data, uint16_t Dlc)
     else if (Port == eCanPort_0)
     {
         // tmp variable
-        static CommSyncToSection_t state;
+        CommSyncToSection_t state;
         state.sync_status.all = CombineBytes(Data[0], Data[1]);
         if (state.sync_status.bit.sync_is_master == 1)
         {
