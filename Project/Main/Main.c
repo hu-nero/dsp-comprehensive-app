@@ -1512,7 +1512,7 @@ void CalImbalance(void)
 	if(vLine_max < UcaOut_rmsf)
 		vLine_max = UcaOut_rmsf;
 
-	if(MainSta2Word.DataBit.WorkLpQS1  && vLine_avg > 0.5f)
+	if ((MainSta2Word.DataBit.WorkLpQS1)  && (vLine_avg != 0))
 	{
         Uout_Imbalance = (vLine_max - vLine_min) / vLine_avg;
 	}
@@ -1554,7 +1554,7 @@ void CalImbalance(void)
 	if(Iphase_max < IcOut_rmsf)
 		Iphase_max = IcOut_rmsf;
 
-	if (( MainSta2Word.DataBit.WorkLpQS1 || MainSta2Word.DataBit.CheckLpQS1 ) && (Iphase_avg > 0.5f))
+	if (( MainSta2Word.DataBit.WorkLpQS1 || MainSta2Word.DataBit.CheckLpQS1 ) && (Iphase_avg != 0))
 	{
 		Iout_Imbalance = (Iphase_max - Iphase_min) / Iphase_avg;
 	}
