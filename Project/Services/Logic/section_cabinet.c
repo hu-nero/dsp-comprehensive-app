@@ -15,6 +15,7 @@
 static uint16_t gAutoRequestParallelCount = 0;
 static union DataBit_Type Cap_Ctrl_Word_Old;
 static uint32_t g_cabinet_period;
+static uint16_t g_cabinet_grid;
 
 static inline void Cabinet_SetCabinetReset(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ResetFromEmergency(CabinetContext_t* Context);
@@ -58,6 +59,7 @@ static ExecuteResult_t Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, 
 // 开关、回路检测
 static inline void Cabinet_ReadAllSwitchStatus(CabinetContext_t* Context);
 static inline bool Cabinet_SwitchIsMatchMode(CabinetContext_t* Context);
+static inline bool Cabinet_SwitchIsMatchShortMode(CabinetContext_t* Context);
 static bool Cabinet_HasCycle(CabinetContext_t* Context);
 static bool Cabinet_IsSatisfyPowerParallel(CabinetContext_t* Context);
 
@@ -172,6 +174,8 @@ Cabinet_Init(CabinetContext_t* Context,
     Cap_Ctrl_Word_Old.DataInt = 0;
     // 周期计时
     g_cabinet_period = 5000;
+    // 485的一键解列标志
+    g_cabinet_grid = 0;
     return true;
 }
 
@@ -432,6 +436,31 @@ Cabinet_SwitchIsMatchMode(CabinetContext_t* Context)
         default:break;
     }
     return false;
+}
+
+static inline bool
+Cabinet_SwitchIsMatchShortMode(CabinetContext_t* Context)
+{
+    // QS1刀闸
+    bool a3qs1_on = (Context->switch_list.A3QS1_switch == SWITCH_ON);
+    bool a3k17_on = (Context->switch_list.A3K17_switch == SWITCH_ON);
+
+    if ((a3qs1_on && a3k17_on) || (!a3qs1_on && !a3k17_on)) {
+        return false;
+    }
+
+    // A3QS2和A3QS3必须闭合
+    if (Context->switch_list.A3QS2_switch != SWITCH_ON ||
+        Context->switch_list.A3QS3_switch != SWITCH_ON) {
+        return false;
+    }
+
+    // 面板：必须在待机状态
+    if (Context->state != CABINET_STATE_STANDBY) {
+        return false;
+    }
+
+    return true;
 }
 
 // 获取当前状态
@@ -1814,11 +1843,15 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     }
 
     // 使用自动重启时间判断
-    if (Auto_Restarttime_Flow == 501)
+    if (g_cabinet_grid != 1)
+    {
+        g_cabinet_grid = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_GRID);
+    } 
+    if (g_cabinet_grid == 1)
     {
         if (Cabinet_OneclickDisconnect(Context) == RESULT_SUCCESS)
         {
-            Auto_Restarttime_Flow = 300;
+            g_cabinet_grid = 0;
         }
     }
 
@@ -1896,13 +1929,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             ((IaOut_rmsf < 20) && (IbOut_rmsf < 20) && (IcOut_rmsf < 20)))
         {
             Context->panel_remote_degauss_flag = true;
-            res = Cabinet_Execute10sDegaussProcedure(Context);
-            if ((res == RESULT_SUCCESS) || (res == RESULT_FAILED))
-            {
-                Context->panel_remote_degauss_flag = false;
-                CAN_Adapter_SetMaintenStatus(0);
-                Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
-            }
+            CAN_Adapter_SetMaintenStatus(0);
         }
     }
 
@@ -1993,13 +2020,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     {
         // TODO:运行灯亮
     }
-    // 连接检修母线电路
-    if ((Context->switch_list.A3QS1_switch == SWITCH_OFF) &&
-        (Context->switch_list.A3K17_switch == SWITCH_ON))
-    {
-        // TODO:检修灯亮
-        Cabinet_ResetFromEmergency(Context);
-    }
+
     // 连接电容电路
     if (Context->switch_list.A3QS2_switch == SWITCH_OFF)
     {
@@ -2062,7 +2083,7 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
             }
 
             // 检查故障码是否在允许自动恢复的范围内
-            if ((allow_recovery) && (!allow_convert_single) &&
+            if ((allow_recovery) &&
                     (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
                      ((cleared_fault >= 27) && (cleared_fault <= 29)) ||
                      (cleared_fault == 25)))
@@ -2112,7 +2133,7 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                 }
             }
             // 第二次恢复，转单机
-            else if ((!allow_recovery) && (allow_convert_single) &&
+            else if ((allow_convert_single) &&
                      (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
                      ((cleared_fault >= 27) && (cleared_fault <= 28))))
             {
@@ -2494,7 +2515,7 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
 
     if (Context->panel_remote_degauss_flag == true)
     {
-        if (!Cabinet_SwitchIsMatchMode(Context))
+        if (!Cabinet_SwitchIsMatchShortMode(Context))
         {
             // 发出警告
             Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
@@ -3523,14 +3544,6 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                     {
                         Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_SINGLE_CIRCUIT_DEGAUSS;
                     }
-                    else if (Context->power_status.run_state == POWER_PARALLEL_RUNNING)
-                    {
-                        if (Context->fault_recovery_ctx.state_before_fault == POWER_SINGLE_RUNNING)
-                        {
-                            Context->fault_recovery_state = AUTO_RECOVERY_CONNECT_SINGLE_CIRCUIT_DEGAUSS;
-                        }
-                    }
-
                 }
                 else
                 {
@@ -3554,7 +3567,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 Cabinet_SendParallelRequest(Context);
                 grid_state = CAN_Adapter_GetCommSyncToSectionStatus();
 
-                if (gAutoRequestParallelCount < Auto_Restarttime_Para_Request)
+                if (gAutoRequestParallelCount < (Auto_Restarttime_Para_Request*1000))
                 {
                     if (grid_state.sync_status.bit.section_grid_feedback != (Can_External_Addr-1))
                     {

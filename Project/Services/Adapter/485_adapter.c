@@ -89,6 +89,19 @@ UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_Adapter_SwitchType_t Type)
                 gRemSwitchCtrlWord.CtrlWord.bit.Reset = 0;
             }
             break;
+        case UART485_ID_GRID:
+            {
+                if (gRemSwitchCtrlWord.CtrlWord.bit.ComCut == 0x02)
+                {
+                    state = 1;
+                }
+                else
+                {
+                    state = 2;
+                }
+                gRemSwitchCtrlWord.CtrlWord.bit.ComCut = 0;
+            }
+            break;
         default:return 0;
     }
     return state;
@@ -245,6 +258,15 @@ UART485_Adapter_MainLoop(void)
         else if (RemHoldSum.CtrlWord.bit.Reset == 0)
         {
             gRemSwitchCtrlWord.CtrlWord.bit.Reset = 0;
+        }
+
+        if (RemHoldSum.CtrlWord.bit.ComCut == 0x02)
+        {
+            gRemSwitchCtrlWord.CtrlWord.bit.ComCut = 0x02;
+        }
+        else
+        {
+            gRemSwitchCtrlWord.CtrlWord.bit.ComCut = RemHoldSum.CtrlWord.bit.ComCut;
         }
 
         RemHoldSum.CtrlWord.all = gRemHoldSum.CtrlWord.all;
