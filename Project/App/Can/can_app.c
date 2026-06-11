@@ -830,16 +830,16 @@ Hardware_CurrentRead(CurrentReadType_t CurrentPhaseType)
             }
         case CURRENT_I6_PHASE_A:
             {
+                return IaOvh_rmsf;
             }
-            break;
         case CURRENT_I6_PHASE_B:
             {
+                return IbOvh_rmsf;
             }
-            break;
         case CURRENT_I6_PHASE_C:
             {
+                return IcOvh_rmsf;
             }
-            break;
         default:break; 
     }
     return 0;

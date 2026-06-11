@@ -12,10 +12,12 @@
 #include <string.h>
 #include "main\Variable.h"
 
-static uint16_t gAutoRequestParallelCount = 0;
+static uint32_t gAutoRequestParallelCount = 0;
 static union DataBit_Type Cap_Ctrl_Word_Old;
 static uint32_t g_cabinet_period;
-static uint16_t g_cabinet_grid;
+static uint32_t g_cabinet_grid;
+static uint32_t g_cabinet_auto_second_reboot_count;
+static bool allow_convert_single; //故障自重启中第二次重启标志
 
 static inline void Cabinet_SetCabinetReset(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ResetFromEmergency(CabinetContext_t* Context);
@@ -176,6 +178,10 @@ Cabinet_Init(CabinetContext_t* Context,
     g_cabinet_period = 5000;
     // 485的一键解列标志
     g_cabinet_grid = 0;
+    // 自动第二次重启成功与否计时
+    g_cabinet_auto_second_reboot_count = 0;
+    // 清空故障自启中的二次重启标志
+    allow_convert_single = false;
     return true;
 }
 
@@ -310,6 +316,10 @@ Cabinet_SetCabinetReset(CabinetContext_t* Context)
     CAN_Adapter_ClearPowerStatus();
     // 清空检修有电转无电信号
     CAN_Adapter_SetMaintenStatus(0);
+    // 清空故障自启中的二次重启标志
+    allow_convert_single = false;
+    // 自动第二次重启成功与否计时
+    g_cabinet_auto_second_reboot_count = 0;
     // 清空同步柜请求状态
     tmp_sync_state = CAN_Adapter_GetCommSectionToSync();
     tmp_sync_state.section_status.bit.grid_connection_request = 0;
@@ -2037,7 +2047,6 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
 static void
 Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
 {
-    static bool allow_convert_single = false;
     FaultAutoRecoveryContext_t *fault_ctx = &Context->fault_recovery_ctx;
 
     if (fault_ctx->u16npr_old_code != NPR_FaultCode)
@@ -2083,7 +2092,7 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
             }
 
             // 检查故障码是否在允许自动恢复的范围内
-            if ((allow_recovery) &&
+            if ((allow_recovery) && (!allow_convert_single) &&
                     (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
                      ((cleared_fault >= 27) && (cleared_fault <= 29)) ||
                      (cleared_fault == 25)))
@@ -2151,6 +2160,32 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
 
         // 更新旧故障码记录
         fault_ctx->u16npr_old_code = NPR_FaultCode;
+    }
+    // 故障自启的第二次重启标志 计时
+    if (allow_convert_single)
+    {
+        if ((Context->state == CABINET_STATE_SINGLE) ||
+            (Context->state == CABINET_STATE_PARALLEL))
+        {
+            // 并机状态超过60s后，清空故障自启的第二次重启标志
+            if (g_cabinet_auto_second_reboot_count > (Auto_Restarttime_Self * 1000))
+            {
+                g_cabinet_auto_second_reboot_count = 0;
+                allow_convert_single = false;
+            }
+            else
+            {
+                g_cabinet_auto_second_reboot_count ++;
+            }
+        }
+        else
+        {
+            g_cabinet_auto_second_reboot_count = 0;
+        }
+    }
+    else
+    {
+        g_cabinet_auto_second_reboot_count = 0;
     }
 }
 
@@ -2515,6 +2550,41 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
 
     if (Context->panel_remote_degauss_flag == true)
     {
+        // 检修回路
+        if ((Context->switch_list.A3QS1_switch == SWITCH_OFF) &&
+            (Context->switch_list.A3K17_switch == SWITCH_ON))
+        {
+            // 检修电流判断
+            if (!((Context->current_read(CURRENT_I6_PHASE_A) < 20) &&
+                 (Context->current_read(CURRENT_I6_PHASE_B) < 20) &&
+                 (Context->current_read(CURRENT_I6_PHASE_C) < 20)))
+            {
+                // 发出警告
+                Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "Current is on");
+                // 根据状态进行回调
+                Cabinet_ErrBranch(Context);
+                Context->switch_control(DO_ID_SHORT_SET, SWITCH_OFF);
+                Context->panel_remote_degauss_flag = false;
+                Context->switch_last.short_switch = SWITCH_OFF;
+                Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                return RESULT_FAILED;
+            }
+            // 同步柜判断有电则退出
+            CommSyncToSection_t status = CAN_Adapter_GetCommSyncToSectionStatus();
+            if (status.sync_status.bit.mainten_has_power != 0)
+            {
+                // 发出警告
+                Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "Current is on");
+                // 根据状态进行回调
+                Cabinet_ErrBranch(Context);
+                Context->switch_control(DO_ID_SHORT_SET, SWITCH_OFF);
+                Context->panel_remote_degauss_flag = false;
+                Context->switch_last.short_switch = SWITCH_OFF;
+                Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                return RESULT_FAILED;
+            }
+        }
+
         if (!Cabinet_SwitchIsMatchShortMode(Context))
         {
             // 发出警告
@@ -3716,6 +3786,8 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
             break;
         case AUTO_RECOVERY_FAILED:
             {
+                // 清空故障自启中的二次重启标志
+                allow_convert_single = false;
                 // 清空自动控制流程状态
                 gAutoRequestParallelCount = 0;
                 Context->fault_recovery_state = AUTO_RECOVERY_IDLE;

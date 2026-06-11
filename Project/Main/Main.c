@@ -1497,6 +1497,12 @@ void RmsFillter(void)
 
 void CalImbalance(void)
 {
+    ///////////////////////////
+    vphase_min = UaOut_rmsf;
+    if(vphase_min > UbOut_rmsf)
+        vphase_min = UbOut_rmsf;
+    if(vphase_min > UcOut_rmsf)
+        vphase_min = UcOut_rmsf;
 	///////////////////////////
 	vLine_avg = (UabOut_rmsf + UbcOut_rmsf + UcaOut_rmsf)*0.333333;
 
