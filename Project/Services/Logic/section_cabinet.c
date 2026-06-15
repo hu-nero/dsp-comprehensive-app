@@ -151,9 +151,7 @@ Cabinet_Init(CabinetContext_t* Context,
     Context->switch_feedback_start_time = 0;
     Context->switch_feedback_id = 0;
     Context->switch_feedback_target_state = SWITCH_OFF;
-    Context->switch_feedback_current_value = 0;
-    Context->switch_feedback_check_count = 0;
-    Context->switch_feedback_check_start_time = 0;
+    Context->switch_feedback_stable_count = 0;
 
     // 故障自恢复
     Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
@@ -347,9 +345,7 @@ Cabinet_SetCabinetReset(CabinetContext_t* Context)
     Context->switch_feedback_start_time = 0;
     Context->switch_feedback_id = 0;
     Context->switch_feedback_target_state = SWITCH_OFF;
-    Context->switch_feedback_current_value = 0;
-    Context->switch_feedback_check_count = 0;
-    Context->switch_feedback_check_start_time = 0;
+    Context->switch_feedback_stable_count = 0;
 
     // 故障自恢复
     gAutoRequestParallelCount = 0;
@@ -3114,31 +3110,31 @@ Cabinet_IsSatisfyPowerParallel(CabinetContext_t* Context)
 static ExecuteResult_t
 Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, SwitchState_t TargetState, uint32_t TimeoutMs, uint32_t StableTime, uint32_t DelayMs)
 {
-    uint32_t current_time = hal_timer_get_timestamp();
+    uint32_t current_time;
     uint16_t current_feedback = 0;
+    uint32_t check_elapsed = 0;
 
+    // 获取当前时间
+    current_time = hal_timer_get_timestamp();
     // 是否等待不同的开关
     if ((Context->switch_feedback_wait_state != SWITCH_FEEDBACK_IDLE) &&
         (Context->switch_feedback_id != SwitchId))
     {
-        // 立即返回等待状态
-        Context->switch_feedback_current_value = Context->switch_feed(SwitchId);
         return RESULT_SUCCESS;
     }
 
     // 空闲
     if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
     {
-        Context->switch_feedback_check_count = 0;
         Context->switch_feedback_id = SwitchId;
         Context->switch_feedback_target_state = TargetState;
         Context->switch_feedback_start_time = current_time;
+        Context->switch_feedback_stable_count = 0;
         Context->switch_feedback_wait_state = SWITCH_FEEDBACK_WAITING;
-        Context->switch_feedback_current_value = Context->switch_feed(SwitchId);
         return RESULT_WAIT;
     }
     // 等待传播延迟
-    else if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_WAITING)
+    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_WAITING)
     {
         // 传播延迟
         if ((current_time - Context->switch_feedback_start_time) < DelayMs)
@@ -3146,19 +3142,23 @@ Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, Swit
             return RESULT_WAIT;
         }
         Context->switch_feedback_wait_state = SWITCH_FEEDBACK_CHECKING;
-        Context->switch_feedback_check_start_time = current_time;  // 记录检查阶段开始时间
         return RESULT_WAIT;
     }
     // 检查反馈
-    else if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_CHECKING)
+    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_CHECKING)
     {
-        uint32_t check_elapsed = current_time - Context->switch_feedback_check_start_time;
+        // 计算已检查时间（从延迟结束后开始算）
+        check_elapsed = current_time - (Context->switch_feedback_start_time + DelayMs);
 
         // 是否超时
         if (check_elapsed >= TimeoutMs)
         {
-            Context->switch_feedback_check_count = 0;
+            // 超时失败
             Context->switch_feedback_wait_state = SWITCH_FEEDBACK_TIMEOUT;
+            Context->switch_feedback_start_time = 0;
+            Context->switch_feedback_stable_count = 0;
+            Context->switch_feedback_id = 0;
+            Context->switch_feedback_target_state = SWITCH_OFF;
             return RESULT_FAILED;
         }
 
@@ -3166,53 +3166,49 @@ Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, Swit
         current_feedback = Context->switch_feed(SwitchId);
         if ((SwitchState_t)current_feedback == TargetState)
         {
-            // 是否稳定
-            if (check_elapsed >= StableTime)
+            // 反馈正确，计数增加
+            if (Context->switch_feedback_stable_count < StableTime)
             {
-                Context->switch_feedback_check_count = 0;
+                Context->switch_feedback_stable_count++;
+            }
+
+            // 是否已达到稳定计数
+            if (Context->switch_feedback_stable_count >= StableTime)
+            {
+                // 稳定成功
                 Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
                 Context->switch_feedback_start_time = 0;
-                Context->switch_feedback_check_start_time = 0;
+                Context->switch_feedback_stable_count = 0;
                 Context->switch_feedback_id = 0;
                 Context->switch_feedback_target_state = SWITCH_OFF;
-                Context->switch_feedback_current_value = 0;
                 return RESULT_SUCCESS;
             }
-            else
-            {
-                // 反馈正确但尚未稳定，继续等待
-                return RESULT_WAIT;
-            }
+            return RESULT_WAIT;
         }
         else
         {
-            // 反馈不匹配
-            if (Context->switch_feedback_check_count < 5)
+            // 反馈不正确，计数减少
+            if (Context->switch_feedback_stable_count > 0)
             {
-                Context->switch_feedback_check_count++;
-                return RESULT_WAIT;
+                Context->switch_feedback_stable_count--;
             }
-            Context->switch_feedback_check_count = 0;
-            Context->switch_feedback_wait_state = SWITCH_FEEDBACK_TIMEOUT;
-            return RESULT_FAILED;
+            return RESULT_WAIT;
         }
     }
-    else if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_TIMEOUT)
+    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_TIMEOUT)
     {
         // 重置等待状态
-        Context->switch_feedback_check_count = 0;
         Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
         Context->switch_feedback_start_time = 0;
-        Context->switch_feedback_check_start_time = 0;
         Context->switch_feedback_id = 0;
         Context->switch_feedback_target_state = SWITCH_OFF;
-        Context->switch_feedback_current_value = 0;
+        Context->switch_feedback_stable_count = 0;
         return RESULT_FAILED;
     }
 
-    // 失败
-    Context->switch_feedback_check_count = 0;
+    // 默认失败
     Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
+    Context->switch_feedback_stable_count = 0;
     return RESULT_FAILED;
 }
 
@@ -3443,6 +3439,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
         return;
     }
 
+    FltSelfRecvWord.DataInt = Context->fault_recovery_state;
     // 故障恢复状态机
     switch (Context->fault_recovery_state)
     {
@@ -3854,6 +3851,7 @@ Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
                 ((status>>9)&1 == 1) &&
                 (grid_status.sync_status.bit.off_grid_all == 0))
         {
+            singleToParaCount = 0;
             // 闭合并机回路
             res = Cabinet_ConnectParallelCircuit(Context);
             if (res == RESULT_SUCCESS)
@@ -3882,7 +3880,6 @@ Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
                 singleToParaCount ++;
                 return;
             }
-            singleToParaCount = 0;
             // 断开单机回路
             res = Cabinet_DisconnectSingleCircuit(Context);
             if (res == RESULT_SUCCESS)

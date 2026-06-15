@@ -124,12 +124,10 @@ typedef struct
 
     // 开关反馈等待相关状态
     SwitchFeedbackWaitState_t switch_feedback_wait_state;    // 反馈等待状态
-    uint32_t switch_feedback_start_time;                     // 反馈检测开始时间
+    uint32_t switch_feedback_start_time;                     // 等待开始时间
     uint16_t switch_feedback_id;                             // 反馈的开关ID
     SwitchState_t switch_feedback_target_state;              // 反馈需要的目标状态
-    uint16_t switch_feedback_current_value;                  // 当前反馈值
-    uint16_t switch_feedback_check_count;                    // 反馈检查失败计数
-    uint32_t switch_feedback_check_start_time;               // 检查阶段开始时间
+    uint32_t switch_feedback_stable_count;                   // 状态稳定计数
 
     // 故障恢复
     AutoRecoveryState_t fault_recovery_state;           // 故障恢复状态

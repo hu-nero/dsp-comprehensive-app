@@ -45,6 +45,7 @@ void Modbus_Send_To_HMI(void)
 	InputRegBuf[34]   = SysTime_Minute;
 	InputRegBuf[35]   = SysTime_Second;
 	InputRegBuf[36]   = SysTimeser_cmd;
+	memcpy(&InputRegBuf[37], &FltSelfRecvWord.DataInt, 2);
 
 	if(ParaDownloadCtrlWord == 0)
 	{

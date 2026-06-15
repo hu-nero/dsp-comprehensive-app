@@ -518,6 +518,7 @@ extern union DataBit_Type FltMapWord3;
 extern union Com_Modbus_To_HMI_Word1_Type SwitchWord1;
 extern union Com_Modbus_To_HMI_Word2_Type SwitchWord2;
 extern union Com_Modbus_To_HMI_Word3_Type SwitchWord3;
+extern union DataBit_Type FltSelfRecvWord;
 ////////////////////////////////////////////////////////////////////
 ////////////////////// Alarm Protection  ///////////////////////////
 ////////////////////////////////////////////////////////////////////
