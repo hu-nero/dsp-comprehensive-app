@@ -550,7 +550,7 @@ void npr_1s_protection(void)
             // 过压告警
             if(vLine_max > AlmThr_OverVolt_Work1)
             {
-                AlmCnt_UnderVolt_Work2 ++;
+                AlmCnt_OverVolt_Work1 ++;
                 // 仅告警
                 if(AlmCnt_OverVolt_Work1 > 2)
                 {

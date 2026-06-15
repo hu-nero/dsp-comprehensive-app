@@ -245,6 +245,19 @@ CAN_App_Switch_Init(void)
     Hardware_SwitchControl(DO_ID_A3QR7,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_REMOTE_SINGLE_CTRL_FEED,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_REMOTE_PARALEL_CTRL_FEED,SWITCH_OFF);
+    // 读取面板、柜体开关状态
+    g_cabinet_context.switch_list.manual_switch = (SwitchState_t)Hardware_SwitchFeed(DI_ID_LOCALREMOTE);
+    g_cabinet_context.switch_list.emergency_stop_switch = (SwitchState_t)Hardware_SwitchFeed(DI_ID_EMERGENCY_STOP);
+    // 读取内部开关状态
+    g_cabinet_context.switch_list.A3QS1_switch = (SwitchState_t)Hardware_SwitchFeed(DI_ID_A3QS1);
+    g_cabinet_context.switch_list.A3K17_switch = (SwitchState_t)Hardware_SwitchFeed(DI_ID_A3K17);
+    g_cabinet_context.switch_list.A3QS2_switch = (SwitchState_t)Hardware_SwitchFeed(DI_ID_A3QS2);
+    g_cabinet_context.switch_list.A3QS3_switch = (SwitchState_t)Hardware_SwitchFeed(DI_ID_A3QS3);
+    g_cabinet_context.switch_list.A3QF1_switch = (SwitchState_t)Hardware_SwitchFeed(DI_ID_A3QF1);
+    g_cabinet_context.switch_list.A3QF2_switch = (SwitchState_t)Hardware_SwitchFeed(DI_ID_A3QF2);
+    g_cabinet_context.switch_list.A3QF3_switch = (SwitchState_t)Hardware_SwitchFeed(DI_ID_A3QF3);
+    g_cabinet_context.switch_list.A3QR1_switch = (SwitchState_t)Hardware_SwitchFeed(DI_ID_A3QR1);
+    g_cabinet_context.switch_list.A3QR2_switch = (SwitchState_t)Hardware_SwitchFeed(DI_ID_A3QR2);
     IO_Scan();
 }
 

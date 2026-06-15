@@ -2272,8 +2272,14 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
         FaultWord1.DataBit.Bit9 = 1;
         Context->state = CABINET_STATE_STANDBY;
         Context->target_state = CABINET_STATE_INVALID;
-        return RESULT_EMERGENCY_STOP;
     }
+    if ((Context->switch_list.emergency_stop_switch == SWITCH_ON) &&
+        (Context->switch_last.emergency_stop_switch == SWITCH_OFF))
+    {
+        // 急停后消磁
+        Context->panel_remote_degauss_flag = true;
+    }
+    Context->switch_last.emergency_stop_switch = Context->switch_list.emergency_stop_switch;
     return RESULT_SUCCESS;
 }
 
