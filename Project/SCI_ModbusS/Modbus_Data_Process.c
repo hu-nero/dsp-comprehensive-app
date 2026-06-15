@@ -89,6 +89,7 @@ void Modbus_Send_To_HMI(void)
 		HoldRegBuf[37] = Auto_Restarttime_Self;
 		HoldRegBuf[38] = Auto_Restarttime_Para_Request;
 		HoldRegBuf[39] = SysTimeser_back;
+		HoldRegBuf[40] = Auto_SingParaConv_Time;
 	}
 }
 
@@ -136,6 +137,7 @@ void Modbus_Recv_For_HMI(void)
 		Auto_Restarttime_Self = HoldRegBuf[37];
 		Auto_Restarttime_Para_Request = HoldRegBuf[38];
 		SysTimeser_back = HoldRegBuf[39];
+		Auto_SingParaConv_Time = HoldRegBuf[40];
 
 
 		ParaSaveFlag = Cap_Ctrl_Word.DataBit.Bit4;

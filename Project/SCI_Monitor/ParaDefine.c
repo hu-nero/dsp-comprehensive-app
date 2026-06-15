@@ -62,7 +62,7 @@ const struct RTMType sParaData_Group5[]=
 };
 const struct RTMType sParaData_Group6[]=
 {
-/* Line - 16 */40,0x0004,(void*)&GroupCtrl[6],
+/* Line - 16 */41,0x0004,(void*)&GroupCtrl[6],
 /* Line -  1 */  1,0x4043,(void*)&AlmCntThr_UnderVolt_Phase,
 /* Line -  2 */  2,0x40A3,(void*)&AlmThr_UnderVolt_Phase,
 /* Line -  3 */  3,0x4043,(void*)&AlmCntThr_OverVolt_Work1,
@@ -103,6 +103,7 @@ const struct RTMType sParaData_Group6[]=
 /* Line - 33 */ 38,0x40A3,(void*)&Auto_Restarttime_Self,
 /* Line - 33 */ 39,0x40A3,(void*)&Auto_Restarttime_Para_Request,
 /* Line - 33 */ 40,0x4043,(void*)&SysTimeser_back,
+/* Line - 33 */ 41,0x40A3,(void*)&Auto_SingParaConv_Time,
 
 };
 const struct RTMType sParaData_Group7[]=
