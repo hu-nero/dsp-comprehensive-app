@@ -15,8 +15,9 @@
 static uint32_t gAutoRequestParallelCount = 0;
 static union DataBit_Type Cap_Ctrl_Word_Old;
 static uint32_t g_cabinet_period;
-static uint32_t g_cabinet_grid;
+static uint32_t g_cabinet_grid_count;
 static uint32_t g_cabinet_auto_second_reboot_count;
+static uint16_t g_cabinet_grid;
 static bool allow_convert_single; //故障自重启中第二次重启标志
 
 static inline void Cabinet_SetCabinetReset(CabinetContext_t* Context);
@@ -178,6 +179,7 @@ Cabinet_Init(CabinetContext_t* Context,
     g_cabinet_period = 5000;
     // 485的一键解列标志
     g_cabinet_grid = 0;
+    g_cabinet_grid_count = 0;
     // 自动第二次重启成功与否计时
     g_cabinet_auto_second_reboot_count = 0;
     // 清空故障自启中的二次重启标志
@@ -320,6 +322,9 @@ Cabinet_SetCabinetReset(CabinetContext_t* Context)
     allow_convert_single = false;
     // 自动第二次重启成功与否计时
     g_cabinet_auto_second_reboot_count = 0;
+    // 485的一键解列标志
+    g_cabinet_grid = 0;
+    g_cabinet_grid_count = 0;
     // 清空同步柜请求状态
     tmp_sync_state = CAN_Adapter_GetCommSectionToSync();
     tmp_sync_state.section_status.bit.grid_connection_request = 0;
@@ -1856,12 +1861,24 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     if (g_cabinet_grid != 1)
     {
         g_cabinet_grid = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_GRID);
-    } 
-    if (g_cabinet_grid == 1)
+        g_cabinet_grid_count = 0;
+    }
+    else
     {
         if (Cabinet_OneclickDisconnect(Context) == RESULT_SUCCESS)
         {
             g_cabinet_grid = 0;
+        }
+        // 一键解列指令超过60s 清空
+        if (g_cabinet_grid_count > 60000)
+        {
+            g_cabinet_grid_count = 0;
+            g_cabinet_grid = 0;
+            AlarmWord2.DataBit.Bit7 = 0;
+        }
+        else
+        {
+            g_cabinet_grid_count ++;
         }
     }
 
