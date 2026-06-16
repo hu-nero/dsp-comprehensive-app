@@ -235,24 +235,17 @@ Cabinet_Process(CabinetContext_t* Context)
                     // 就地
                     else
                     {
-                        if (NPR_FaultCode != 0)
+                        FaultAutoRecoveryContext_t *fault_ctx = &Context->fault_recovery_ctx;
+                        if (fault_ctx->u16npr_old_code != NPR_FaultCode)
                         {
-                            // 刀闸状态检查处理
-                            Cabinet_ExecuteKnifeSwitchProcedure(Context);
-                            FaultAutoRecoveryContext_t *fault_ctx = &Context->fault_recovery_ctx;
-                            if (fault_ctx->u16npr_old_code != NPR_FaultCode)
+                            // 故障发生
+                            if (fault_ctx->u16npr_old_code == 0 && NPR_FaultCode != 0)
                             {
-                                // 故障发生
-                                if (fault_ctx->u16npr_old_code == 0 && NPR_FaultCode != 0)
-                                {
-                                    // 新故障
-                                    fault_ctx->fault_status = true;
-                                }
-                                // 更新旧故障码记录
-                                fault_ctx->u16npr_old_code = NPR_FaultCode;
+                                // 新故障
+                                fault_ctx->fault_status = true;
                             }
-
-                            return;
+                            // 更新旧故障码记录
+                            fault_ctx->u16npr_old_code = NPR_FaultCode;
                         }
                     }
                     // 根据当前状态处理状态转换
