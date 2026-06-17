@@ -757,7 +757,7 @@ void variable_init(void)
 	Auto_Restarttime_Self = 0;
 	Auto_Restarttime_Para_Request = 0;
 	Auto_SingParaConv_Time = 0;
-	PS_Monitor_ID = 0;
+	PS_Monitor_ID = 1;
 
 	memset(&RemInputSum, 0, sizeof(RemoteInput_t));
 	memset(&DcsInputSum, 0, sizeof(RemoteInput_t));

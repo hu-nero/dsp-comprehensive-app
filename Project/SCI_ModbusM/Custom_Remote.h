@@ -8,8 +8,6 @@
 extern int RemInputRegBuf[64];
 extern int RemHoldRegBuf[64];
 
-#define RemoteDeviceAddr   0x01
-
 #include "SCI_ModbusS\Custom_ModbusRTU.H"
 //////////////////////////////////////////////////////////////////////////
 extern void CRC_Check_Romote(u16 *pCrcBuf, u16 LEN, u16 *CRCByteH, u16 *CRCByteL);

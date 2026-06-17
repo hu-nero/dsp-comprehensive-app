@@ -28,7 +28,7 @@ void ModbusRem_Protocol(u16 *pRxBuffer, u16 *pFront, u16 nRear, u16 RevSize, u16
 	if(uiLength >= 8)  //generate a message
 	{
 		//Step2-1: Byte1 is Check slave address
-		if(pRxBuffer[(*pFront)] == RemoteDeviceAddr)
+		if(pRxBuffer[(*pFront)] == PS_Monitor_ID)
 		{
 			//Step2-2: Byte2 is Modbus different Function code
 			ucTempCnt = (*pFront) + 1;
@@ -64,7 +64,7 @@ void ModbusRem_Protocol(u16 *pRxBuffer, u16 *pFront, u16 nRear, u16 RevSize, u16
 	}
 	if( ((uiLength >= 8)&&(FuncCode != Code10_WHoldRegs)) || ((uiLength >= 21)&&(FuncCode == Code10_WHoldRegs)) )
 	{
-		if(pRxBuffer[(*pFront)] == RemoteDeviceAddr)
+		if(pRxBuffer[(*pFront)] == PS_Monitor_ID)
 		{
 			//Step2-2: Byte2 is Modbus different Function code
 			ucTempCnt = (*pFront) + 1;

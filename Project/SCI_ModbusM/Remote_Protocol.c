@@ -63,7 +63,7 @@ void Remote_InputReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 		}
 
 		ucTempCnt = usReadLen*2;
-		pTxBuffer[0] = RemoteDeviceAddr;
+		pTxBuffer[0] = PS_Monitor_ID;
 		pTxBuffer[1] = Code04_RInputReg;
 		pTxBuffer[2] = ucTempCnt; //*2
 		CRC_Check_Romote(pTxBuffer, (ucTempCnt+3), pTxBuffer+ucTempCnt+3, pTxBuffer+ucTempCnt+4);
@@ -103,7 +103,7 @@ void Remote_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 		}
 
 		ucTempCnt = usReadLen*2;
-		pTxBuffer[0] = RemoteDeviceAddr;	// SavleAddr(1byte)
+		pTxBuffer[0] = PS_Monitor_ID;	// SavleAddr(1byte)
 		pTxBuffer[1] = Code03_RHoldReg;  	// FunsCode(1byte)
 		pTxBuffer[2] = ucTempCnt;       	// ByteNum(1byte)
 		CRC_Check_Romote(pTxBuffer, (ucTempCnt+3), pTxBuffer+ucTempCnt+3, pTxBuffer+ucTempCnt+4);
@@ -123,7 +123,7 @@ void Remote_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 			}
 		}
 		// Slave begin ack
-		pTxBuffer[0] = RemoteDeviceAddr;
+		pTxBuffer[0] = PS_Monitor_ID;
 		pTxBuffer[1] = Code06_WHoldReg;
 		pTxBuffer[2] = pMesBuf[2];
 		pTxBuffer[3] = pMesBuf[3];
@@ -151,7 +151,7 @@ void Remote_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 			}
 		}
 		// Slave begin ack
-		pTxBuffer[0] = RemoteDeviceAddr;
+		pTxBuffer[0] = PS_Monitor_ID;
 		pTxBuffer[1] = Code10_WHoldRegs;
 		pTxBuffer[2] = pMesBuf[2];
 		pTxBuffer[3] = pMesBuf[3];

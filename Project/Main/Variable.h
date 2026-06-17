@@ -17,8 +17,8 @@ typedef struct
 	s16 UaOut, UbOut, UcOut;
 	s16 UabOut, UbcOut, UcaOut;
 	s16 IaOut, IbOut, IcOut;
-	s16 P_Sys, Q_Sys, S_Sys;
-	s16 PF_Sys, Ublk, Iblk;
+	s16 P_Sys, Q_Sys, S_Sys, PF_Sys;
+	s16 Ublk, Iblk;
 	s16 FLwater;
 }	RemoteInput_t;
 

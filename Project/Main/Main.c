@@ -322,10 +322,10 @@ void RemCommVarRemap(void)
 	RemInputSum.IaOut = IaOut_rmsf *10;
 	RemInputSum.IbOut = IbOut_rmsf *10;
 	RemInputSum.IcOut = IcOut_rmsf *10;
-	RemInputSum.P_Sys = P_Sys *10;
-	RemInputSum.Q_Sys = Q_Sys *10;
-	RemInputSum.S_Sys = S_Sys *10;
-	RemInputSum.PF_Sys = PF_Sys *100;
+	RemInputSum.P_Sys = (s16)(P_Sys *10);
+	RemInputSum.Q_Sys = (s16)(Q_Sys *10);
+	RemInputSum.S_Sys = (s16)(S_Sys *10);
+	RemInputSum.PF_Sys = (s16)(PF_Sys *100);
 	RemInputSum.Ublk = Uout_Imbalance *100;
 	RemInputSum.Iblk = Iout_Imbalance *100;
 	RemInputSum.FLwater = FlowRate*10;
@@ -1316,9 +1316,9 @@ void GetVoltCurr(void)
     {
         if(MainSta2Word.DataBit.SingQF1 || MainSta2Word.DataBit.ParaQF2)
         {
-            P_Sys = fabsf(P_Work)*0.00107;
-            Q_Sys = fabsf(Q_Work)*0.001062;
-            S_Sys = (s16)( UabOut_rmsf * IaOut_rmsf * 0.001732f );
+            P_Sys = (P_Work)*0.00107;
+            Q_Sys = (Q_Work)*0.001062;
+            S_Sys = ( UabOut_rmsf * IaOut_rmsf * 0.001732f );
             PF_Sys = fabs(PF_Work);
         }
         else
@@ -1331,11 +1331,11 @@ void GetVoltCurr(void)
     }
     else if( (!MainSta2Word.DataBit.WorkLpQS1) && (MainSta2Word.DataBit.CheckLpQS1) )
     {
-        P_Sys = fabsf(P_Work)*0.00107;
-        Q_Sys = fabsf(Q_Work)*0.001062;
+        P_Sys = (P_Work)*0.00107;
+        Q_Sys = (Q_Work)*0.001062;
 //                        S_Sys = fabs(S_Ovh)*0.001;
 //                        PF_Sys = fabs(PF_Ovh);
-        S_Sys = (s16)( UabOut_rmsf * IaOut_rmsf * 1.732f );
+        S_Sys = ( UabOut_rmsf * IaOut_rmsf * 0.001732f );
         PF_Sys = fabs(PF_Work);
     }
     else
