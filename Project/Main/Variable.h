@@ -17,8 +17,8 @@ typedef struct
 	s16 UaOut, UbOut, UcOut;
 	s16 UabOut, UbcOut, UcaOut;
 	s16 IaOut, IbOut, IcOut;
-	s32 P_Sys, Q_Sys, S_Sys, PF_Sys;
-	s16 Ublk, Iblk;
+	s16 P_Sys, Q_Sys, S_Sys;
+	s16 PF_Sys, Ublk, Iblk;
 	s16 FLwater;
 }	RemoteInput_t;
 
@@ -150,6 +150,7 @@ extern float FltThr_OverCurr_Silicon;
 extern float Auto_Restarttime_Self;
 extern float Auto_Restarttime_Para_Request;
 extern float Auto_SingParaConv_Time;
+extern unsigned int PS_Monitor_ID;
 
 extern float UabSl_HalfMemory[20], UbcSl_HalfMemory[20], UcaSl_HalfMemory[20];
 extern float UabPar_HalfMemory[20], UbcPar_HalfMemory[20], UcaPar_HalfMemory[20];

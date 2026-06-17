@@ -137,6 +137,7 @@ float FltThr_OverCurr_Silicon;
 float Auto_Restarttime_Self;
 float Auto_Restarttime_Para_Request;
 float Auto_SingParaConv_Time;
+unsigned int PS_Monitor_ID;
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
@@ -756,6 +757,7 @@ void variable_init(void)
 	Auto_Restarttime_Self = 0;
 	Auto_Restarttime_Para_Request = 0;
 	Auto_SingParaConv_Time = 0;
+	PS_Monitor_ID = 0;
 
 	memset(&RemInputSum, 0, sizeof(RemoteInput_t));
 	memset(&DcsInputSum, 0, sizeof(RemoteInput_t));
