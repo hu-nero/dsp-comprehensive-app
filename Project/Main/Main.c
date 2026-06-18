@@ -1293,7 +1293,7 @@ void GetVoltCurr(void)
 //                  ftmp = P_Work*P_Work + Q_Work*Q_Work;
 //                  S_Work = sqrtf(ftmp);
 
-    PF_Work = atan2f(Q_Work, P_Work);
+    /*PF_Work = atan2f(Q_Work, P_Work);*/
     P_Ovh = P_Ovh*0.9999 + work3_rms*0.0001;
     Q_Ovh = Q_Ovh*0.9999 + work4_rms*0.0001;
     SysCnt_10msRmsCalc ++;
@@ -1319,7 +1319,7 @@ void GetVoltCurr(void)
             P_Sys = (P_Work)*0.00107;
             Q_Sys = (Q_Work)*0.001062;
             S_Sys = ( UabOut_rmsf * IaOut_rmsf * 0.001732f );
-            PF_Sys = fabs(PF_Work);
+            PF_Sys = P_Sys / S_Sys;
         }
         else
         {
@@ -1336,7 +1336,7 @@ void GetVoltCurr(void)
 //                        S_Sys = fabs(S_Ovh)*0.001;
 //                        PF_Sys = fabs(PF_Ovh);
         S_Sys = ( UabOut_rmsf * IaOut_rmsf * 0.001732f );
-        PF_Sys = fabs(PF_Work);
+        PF_Sys = P_Sys / S_Sys;
     }
     else
     {
