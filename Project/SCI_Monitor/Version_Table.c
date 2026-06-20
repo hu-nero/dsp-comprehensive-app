@@ -44,7 +44,7 @@ Uint16  RTM_File_Ver[STRING_NUM] =
 	('s'<<0 | 'e'<<8),
 };
 
-// DSP-35M-V11
+// DSP-35M-V12
 Uint16  Soft_Ver[STRING_NUM] =
 {
 	11,
@@ -53,5 +53,5 @@ Uint16  Soft_Ver[STRING_NUM] =
 	('3'<<0 | '5'<<8),
 	('M'<<0 | '-'<<8),
 	('V'<<0 | '1'<<8),
-	('1'<<0 | '0'<<8),
+	('2'<<0 | '0'<<8),
 };

@@ -688,75 +688,75 @@ void variable_init(void)
 	NPR_HWFMWord7.DataInt=0;
 
     AlmCnt_UnderVolt_Phase=0;
-    AlmCntThr_UnderVolt_Phase=0;
+    AlmCntThr_UnderVolt_Phase=10;
 
     AlmCnt_OverVolt_Work1=0;
-    AlmCntThr_OverVolt_Work1=0;
+    AlmCntThr_OverVolt_Work1=5;
     AlmCnt_OverVolt_Work2=0;
-    AlmCntThr_OverVolt_Work2=0;
+    AlmCntThr_OverVolt_Work2=5;
 
     AlmCnt_UnderVolt_Work1=0;
-    AlmCntThr_UnderVolt_Work1=0;
+    AlmCntThr_UnderVolt_Work1=5;
     AlmCnt_UnderVolt_Work2=0;
-    AlmCntThr_UnderVolt_Work2=0;
+    AlmCntThr_UnderVolt_Work2=5;
 
-    AlmCnt_OverImba_Volt=0;
-    AlmCntThr_OverImba_Volt=0;
-    FltCnt_OverImba_Volt=0;
-    FltCntThr_OverImba_Volt=0;
+    AlmCnt_OverImba_Volt=5;
+    AlmCntThr_OverImba_Volt=5;
+    FltCnt_OverImba_Volt=5;
+    FltCntThr_OverImba_Volt=5;
 
     AlmCnt_OverImba_Curr=0;
-    AlmCntThr_OverImba_Curr=0;
+    AlmCntThr_OverImba_Curr=5;
     FltCnt_OverImba_Curr=0;
-    FltCntThr_OverImba_Curr=0;
+    FltCntThr_OverImba_Curr=5;
 
     AlmCnt_OverCurr_Work1=0;
     FltCnt_OverCurr_Work1=0;
-    AlmCntThr_OverCurr_Work1=0;
+    AlmCntThr_OverCurr_Work1=5;
     AlmCnt_OverCurr_Work2=0;
     FltCnt_OverCurr_Work2=0;
-    AlmCntThr_OverCurr_Work2=0;
+    AlmCntThr_OverCurr_Work2=5;
 
     FltCnt_OverLow_Flow1=0;
-    FltCntThr_OverLow_Flow1=0;
+    FltCntThr_OverLow_Flow1=300;
     FltCnt_OverLow_Flow2=0;
-    FltCntThr_OverLow_Flow2=0;
+    FltCntThr_OverLow_Flow2=120;
 
-    AlmThr_UnderVolt_Phase=0;
-    AlmThr_OverVolt_Work1=0;
-    FltCnt_OverVolt_Work1=0;
-    FltThr_OverVolt_Work1=0;
-    AlmThr_OverVolt_Work2=0;
-    FltCnt_OverVolt_Work2=0;
-    FltThr_OverVolt_Work2=0;
-    AlmThr_UnderVolt_Work1=0;
-    FltCnt_UnderVolt_Work1=0;
-    FltThr_UnderVolt_Work1=0;
-    AlmThr_UnderVolt_Work2=0;
-    FltCnt_UnderVolt_Work2=0;
-    FltThr_UnderVolt_Work2=0;
-    AlmThr_OverImba_Volt=0;
-    FltThr_OverImba_Volt=0;
-    AlmThr_OverImba_Curr=0;
-    FltThr_OverImba_Curr=0;
-    AlmThr_OverCurr_Work1=0;
-    FltThr_OverCurr_Work1=0;
-    AlmThr_OverCurr_Work2=0;
-    FltThr_OverCurr_Work2=0;
-    FltThr_OverLow_Flow1=0;
-    FltThr_OverLow_Flow2=0;
-    Auto_Restarttime_Flow=0;
+    AlmThr_UnderVolt_Phase=20;
+    AlmThr_OverVolt_Work1=220;
+    FltCnt_OverVolt_Work1=5;
+    FltThr_OverVolt_Work1=240;
+    AlmThr_OverVolt_Work2=450;
+    FltCnt_OverVolt_Work2=5;
+    FltThr_OverVolt_Work2=480;
+    AlmThr_UnderVolt_Work1=180;
+    FltCnt_UnderVolt_Work1=5;
+    FltThr_UnderVolt_Work1=170;
+    AlmThr_UnderVolt_Work2=320;
+    FltCnt_UnderVolt_Work2=5;
+    FltThr_UnderVolt_Work2=260;
+    AlmThr_OverImba_Volt=0.1;
+    FltThr_OverImba_Volt=0.2;
+    AlmThr_OverImba_Curr=0.1;
+    FltThr_OverImba_Curr=0.2;
+    AlmThr_OverCurr_Work1=600;
+    FltThr_OverCurr_Work1=800;
+    AlmThr_OverCurr_Work2=720;
+    FltThr_OverCurr_Work2=800;
+    FltThr_OverLow_Flow1=8;
+    FltThr_OverLow_Flow2=3;
+    Auto_Restarttime_Flow=1820;
 
     FltCnt_UnderCurr_Silicon = 0;
     FltCnt_OverCurr_Silicon = 0;
 
 	Cap_Ctrl_Word.DataInt=0;
 	Can_External_Addr = 0x02;
-	FltThr_UnderCurr_Silicon = 0;
-	FltThr_UnderCurr_Silicon = 0;
-	Auto_Restarttime_Self = 0;
-	Auto_Restarttime_Para_Request = 0;
-	Auto_SingParaConv_Time = 0;
+	FltThr_UnderCurr_Silicon = 5;
+	FltThr_OverCurr_Silicon = 10;
+	Auto_Restarttime_Self = 60;
+	Auto_Restarttime_Para_Request = 61;
+	Auto_SingParaConv_Time = 1;
 	PS_Monitor_ID = 1;
 
 	memset(&RemInputSum, 0, sizeof(RemoteInput_t));

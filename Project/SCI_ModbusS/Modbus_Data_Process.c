@@ -64,13 +64,13 @@ void Modbus_Send_To_HMI(void)
 		HoldRegBuf[12] = AlmThr_UnderVolt_Work2;
 		HoldRegBuf[13] = FltThr_UnderVolt_Work2;
 		HoldRegBuf[14] = AlmCntThr_OverImba_Volt;
-		HoldRegBuf[15] = AlmThr_OverImba_Volt * 100;
+		HoldRegBuf[15] = AlmThr_OverImba_Volt * 100 + 0.5;
 		HoldRegBuf[16] = FltCntThr_OverImba_Volt;
-		HoldRegBuf[17] = FltThr_OverImba_Volt * 100;
+		HoldRegBuf[17] = FltThr_OverImba_Volt * 100 + 0.5;
 		HoldRegBuf[18] = AlmCntThr_OverImba_Curr;
-		HoldRegBuf[19] = AlmThr_OverImba_Curr * 100;
+		HoldRegBuf[19] = AlmThr_OverImba_Curr * 100 + 0.5;
 		HoldRegBuf[20] = FltCntThr_OverImba_Curr;
-		HoldRegBuf[21] = FltThr_OverImba_Curr * 100;
+		HoldRegBuf[21] = FltThr_OverImba_Curr * 100 + 0.5;
 		HoldRegBuf[22] = AlmCntThr_OverCurr_Work1;
 		HoldRegBuf[23] = AlmThr_OverCurr_Work1;
 		HoldRegBuf[24] = FltThr_OverCurr_Work1;
