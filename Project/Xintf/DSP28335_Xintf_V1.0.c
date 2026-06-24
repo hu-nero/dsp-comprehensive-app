@@ -143,9 +143,9 @@ void Palarell_Extern_ADCScan(void)
 /*J11(3,4)*/UbOut_ad= AD1;
 /*J12(3,4)*/UcOut_ad = AD1;
 
-/*J6 (3,4)*/IcOvh_ad = AD1;
-/*J7 (3,4)*/IaOvh_ad = AD2;
-/*J8 (3,4)*/IbOvh_ad = AD2;
+/*J6 (3,4)*/IaOvh_ad = AD1;
+/*J7 (3,4)*/IbOvh_ad = AD2;
+/*J8 (3,4)*/IcOvh_ad = AD2;
 
 /*J23(1,2)*/temp	 = AD2;
 /*J23(3,4)*/temp 	 = AD2;

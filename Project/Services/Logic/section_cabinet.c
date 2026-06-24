@@ -812,7 +812,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         return;
                     }
 
-                    (void)Cabinet_ExecuteAutoDegaussProcedure(Context, 5000);
+                    (void)Cabinet_ExecuteAutoDegaussProcedure(Context, SECTION_CONNECT_CIRCUIT_DEGAUSS_TIME);
                 }
                 // ② 待机->并机
                 else if (Context->target_state == CABINET_STATE_PARALLEL)
@@ -850,7 +850,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         return;
                     }
                     // 消磁
-                    (void)Cabinet_ExecuteAutoDegaussProcedure(Context, 5000);
+                    (void)Cabinet_ExecuteAutoDegaussProcedure(Context, SECTION_CONNECT_CIRCUIT_DEGAUSS_TIME);
                 }
                 else
                 {
@@ -892,7 +892,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                             Cabinet_ErrBranch(Context);
                             return;
                         }
-                        (void)Cabinet_ExecuteAutoDegaussProcedure(Context, 10000);
+                        (void)Cabinet_ExecuteAutoDegaussProcedure(Context, SECTION_DISCONNECT_CIRCUIT_DEGAUSS_TIME);
                     }
                     else if (result == RESULT_WAIT)
                     {
@@ -999,7 +999,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     if (result == RESULT_SUCCESS)
                     {
                         // 消磁
-                        (void)Cabinet_ExecuteAutoDegaussProcedure(Context, 10000);
+                        (void)Cabinet_ExecuteAutoDegaussProcedure(Context, SECTION_DISCONNECT_CIRCUIT_DEGAUSS_TIME);
                     }
                     else if (result == RESULT_WAIT)
                     {
@@ -1687,9 +1687,9 @@ Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context)
     CAN_Adapter_SetCommSectionToSync(section_to_sync_status);
 
     SwitchWord1.DataBit.DO_REMOTE_SINGLE_CTRL_FEED = IOOutput1.DataBit.Bit0;
-    SwitchWord1.DataBit.DO_A3QF1 =  IOOutput1.DataBit.Bit2;
+    SwitchWord1.DataBit.DO_A3QF1 =  SwitchWord1.DataBit.DO_A3QF1;
     SwitchWord1.DataBit.DO_REMOTE_PARALEL_CTRL_FEED = IOOutput1.DataBit.Bit4;
-    SwitchWord1.DataBit.DO_A3QF2 = IOOutput1.DataBit.Bit5;
+    SwitchWord1.DataBit.DO_A3QF2 = SwitchWord1.DataBit.DO_A3QF2;
     SwitchWord1.DataBit.DO_A3QR1 = IOOutput2.DataBit.Bit6;
     SwitchWord1.DataBit.DO_A3QR2 = IOOutput2.DataBit.Bit7;
     SwitchWord1.DataBit.DO_A3QR3 = IOOutput1.DataBit.Bit8;
@@ -2447,7 +2447,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 				}
 
 				// 自复位消磁
-				ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, 10000);
+				ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, SECTION_DISCONNECT_CIRCUIT_DEGAUSS_TIME);
 				if (degauss_res == RESULT_SUCCESS)
 				{
 					Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_WAIT;
@@ -3556,7 +3556,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                             }
 
                             // 自复位消磁
-                            ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, 10000);
+                            ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, SECTION_DISCONNECT_CIRCUIT_DEGAUSS_TIME);
                             if (degauss_res == RESULT_SUCCESS)
                             {
                                 Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_WAIT;
@@ -3694,7 +3694,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                             }
 
                             // 自复位消磁
-                            ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, 5000);
+                            ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, SECTION_CONNECT_CIRCUIT_DEGAUSS_TIME);
                             if (degauss_res == RESULT_SUCCESS)
                             {
                                 Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_WAIT;

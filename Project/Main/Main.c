@@ -53,9 +53,7 @@ void GetVoltCurr(void);
 void npr_1s_protection(void);
 
 void RmsFillter(void);
-void GetVIRms(void);
 void CalImbalance(void);
-void GetPQ2r(void);
 void RealTime20msFun(void);
 void GetFlowRate_Calc(void);
 
@@ -173,7 +171,6 @@ void main(void)
 			flag_EPWM1_INT_Underflow = 0;
 			GetVoltCurr();
 		}
-//		GetVIRms();
 //////////////////////////////////////////////////////////////////////////////
         if(SysCnt_1s != SysCnt_1sOld)
         {
@@ -495,13 +492,14 @@ void FunStatusUpdate(void)
 /******************************************************************/
 void npr_1s_protection(void)
 {
-	uint16_t status1,status2;
+	uint16_t status1,status2,status3;
 
 	status1 = Cabinet_GetComPowerToSectionParamStatus1();
     status2 = Cabinet_GetComSyncToSectionStatus();
+    status3 = Cabinet_GetComPowerToSectionStatus();
 	/////////////////////////////////////////////
 
-    if (((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) ||
+    if (((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1) && ((status3>>10)&1)) ||
         ((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)))
     {
         // 对地
@@ -575,7 +573,7 @@ void npr_1s_protection(void)
 
             /////////////////////////////////////////////
             // 单机直接判断欠压；并机需要读取同步柜给的并网有电信号
-            if (((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) ||
+            if ((((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) && ((status3>>10)&1)) ||
                 (((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) && (((status2>>9)&1) == 1)) )
             {
                 // 欠压故障
@@ -716,7 +714,7 @@ void npr_1s_protection(void)
             /////////////////////////////////////////////
             // 欠压
             // 单机直接判断欠压；并机需要读取同步柜给的并网有电信号
-            if (((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) ||
+            if ((((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) && ((status3>>10)&1)) ||
                 (((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) && (((status2>>9)&1) == 1)) )
             {
                 // 欠压故障
@@ -809,71 +807,77 @@ void npr_1s_protection(void)
             }
         }
         //////////////////////////////////////////////////
-        if(Uout_Imbalance > AlmThr_OverImba_Volt)
+        if (vLine_max > 100)
         {
-            AlmCnt_OverImba_Volt ++;
-            if(AlmCnt_OverImba_Volt > AlmCntThr_OverImba_Volt)
+            if(Uout_Imbalance > AlmThr_OverImba_Volt)
             {
-                AlarmWord_Map(6);
-            }
-        }
-        else
-        {
-            AlmCnt_OverImba_Volt = 0;
-            AlarmWord_Clear(6);
-        }
-
-        if(Uout_Imbalance > FltThr_OverImba_Volt)
-        {
-            if(FltCnt_OverImba_Volt < FltCntThr_OverImba_Volt)
-            {
-                FltCnt_OverImba_Volt ++;
+                AlmCnt_OverImba_Volt ++;
+                if(AlmCnt_OverImba_Volt > AlmCntThr_OverImba_Volt)
+                {
+                    AlarmWord_Map(6);
+                }
             }
             else
             {
-                NPR_FaultCode = 21;
-                FaultWord_Map(21);
+                AlmCnt_OverImba_Volt = 0;
+                AlarmWord_Clear(6);
             }
-        }
-        else
-        {
-            if(FltCnt_OverImba_Volt > 0)
+
+            if(Uout_Imbalance > FltThr_OverImba_Volt)
             {
-                FltCnt_OverImba_Volt --;
+                if(FltCnt_OverImba_Volt < FltCntThr_OverImba_Volt)
+                {
+                    FltCnt_OverImba_Volt ++;
+                }
+                else
+                {
+                    NPR_FaultCode = 21;
+                    FaultWord_Map(21);
+                }
+            }
+            else
+            {
+                if(FltCnt_OverImba_Volt > 0)
+                {
+                    FltCnt_OverImba_Volt --;
+                }
             }
         }
         ////////////////////////////////////////////////////////
-        if(Iout_Imbalance > AlmThr_OverImba_Curr)
+        if (Iphase_max > 30)
         {
-            AlmCnt_OverImba_Curr ++;
-            if(AlmCnt_OverImba_Curr > AlmCntThr_OverImba_Curr)
+            if(Iout_Imbalance > AlmThr_OverImba_Curr)
             {
-                AlarmWord_Map(7);
-            }
-        }
-        else
-        {
-            AlmCnt_OverImba_Curr = 0;
-            AlarmWord_Clear(7);
-        }
-
-        if(Iout_Imbalance > FltThr_OverImba_Curr)
-        {
-            if(FltCnt_OverImba_Curr < FltCntThr_OverImba_Curr)
-            {
-                FltCnt_OverImba_Curr ++;
+                AlmCnt_OverImba_Curr ++;
+                if(AlmCnt_OverImba_Curr > AlmCntThr_OverImba_Curr)
+                {
+                    AlarmWord_Map(7);
+                }
             }
             else
             {
-                NPR_FaultCode = 22;
-                FaultWord_Map(22);
+                AlmCnt_OverImba_Curr = 0;
+                AlarmWord_Clear(7);
             }
-        }
-        else
-        {
-            if(FltCnt_OverImba_Curr > 0)
+
+            if(Iout_Imbalance > FltThr_OverImba_Curr)
             {
-                FltCnt_OverImba_Curr --;
+                if(FltCnt_OverImba_Curr < FltCntThr_OverImba_Curr)
+                {
+                    FltCnt_OverImba_Curr ++;
+                }
+                else
+                {
+                    NPR_FaultCode = 22;
+                    FaultWord_Map(22);
+                }
+            }
+            else
+            {
+                if(FltCnt_OverImba_Curr > 0)
+                {
+                    FltCnt_OverImba_Curr --;
+                }
             }
         }
     }
@@ -1196,14 +1200,21 @@ void GetVoltCurr(void)
     UbcOut_rms -= fabsf(UbcOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.057;
     UcaOut_rms -= fabsf(UcaOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0569;
 
-    work1_rms -= (UaOut_HalfMemory[SysCnt_10msRmsCalc]*IaPar_HalfMemory[SysCnt_10msRmsCalc]+UbOut_HalfMemory[SysCnt_10msRmsCalc]*IbPar_HalfMemory[SysCnt_10msRmsCalc]+UcOut_HalfMemory[SysCnt_10msRmsCalc]*IcPar_HalfMemory[SysCnt_10msRmsCalc]) * 0.05;
+    if( MainSta2Word.DataBit.WorkLpQS1 && (!MainSta2Word.DataBit.CheckLpQS1) )
+    {
+        if(MainSta2Word.DataBit.SingQF1 || MainSta2Word.DataBit.ParaQF2)
+        {
+            work1_rms -= ((UaOut_HalfMemory[SysCnt_10msRmsCalc]*IaPar_HalfMemory[SysCnt_10msRmsCalc]+UbOut_HalfMemory[SysCnt_10msRmsCalc]*IbPar_HalfMemory[SysCnt_10msRmsCalc]+UcOut_HalfMemory[SysCnt_10msRmsCalc]*IcPar_HalfMemory[SysCnt_10msRmsCalc]))* 0.05;
 
-    work2_rms -= ((UbcOut_HalfMemory[SysCnt_10msRmsCalc]*IaPar_HalfMemory[SysCnt_10msRmsCalc]+UcaOut_HalfMemory[SysCnt_10msRmsCalc]*IbPar_HalfMemory[SysCnt_10msRmsCalc]+UabOut_HalfMemory[SysCnt_10msRmsCalc]*IcPar_HalfMemory[SysCnt_10msRmsCalc])/ Sqrt_3)* 0.05;
+            work2_rms -= ((UbcOut_HalfMemory[SysCnt_10msRmsCalc]*IaPar_HalfMemory[SysCnt_10msRmsCalc]+UcaOut_HalfMemory[SysCnt_10msRmsCalc]*IbPar_HalfMemory[SysCnt_10msRmsCalc]+UabOut_HalfMemory[SysCnt_10msRmsCalc]*IcPar_HalfMemory[SysCnt_10msRmsCalc])/ Sqrt_3)* 0.05;
+        }
+    }
+    else if( (!MainSta2Word.DataBit.WorkLpQS1) && (MainSta2Word.DataBit.CheckLpQS1) )
+    {
+        work1_rms -= ((UaOut_HalfMemory[SysCnt_10msRmsCalc]*IaOvh_HalfMemory[SysCnt_10msRmsCalc]+UbOut_HalfMemory[SysCnt_10msRmsCalc]*IbOvh_HalfMemory[SysCnt_10msRmsCalc]+UcOut_HalfMemory[SysCnt_10msRmsCalc]*IcOvh_HalfMemory[SysCnt_10msRmsCalc]))* 0.05;
 
-    work3_rms -= ((UaOut_HalfMemory[SysCnt_10msRmsCalc]*IaOvh_HalfMemory[SysCnt_10msRmsCalc]+UbOut_HalfMemory[SysCnt_10msRmsCalc]*IbOvh_HalfMemory[SysCnt_10msRmsCalc]+UcOut_HalfMemory[SysCnt_10msRmsCalc]*IcOvh_HalfMemory[SysCnt_10msRmsCalc]))* 0.05;
-
-    work4_rms -= ((UbcOut_HalfMemory[SysCnt_10msRmsCalc]*IaOvh_HalfMemory[SysCnt_10msRmsCalc]+UcaOut_HalfMemory[SysCnt_10msRmsCalc]*IbOvh_HalfMemory[SysCnt_10msRmsCalc]+UabOut_HalfMemory[SysCnt_10msRmsCalc]*IcOvh_HalfMemory[SysCnt_10msRmsCalc])/ Sqrt_3)* 0.05;
-
+        work2_rms -= ((UbcOut_HalfMemory[SysCnt_10msRmsCalc]*IaOvh_HalfMemory[SysCnt_10msRmsCalc]+UcaOut_HalfMemory[SysCnt_10msRmsCalc]*IbOvh_HalfMemory[SysCnt_10msRmsCalc]+UabOut_HalfMemory[SysCnt_10msRmsCalc]*IcOvh_HalfMemory[SysCnt_10msRmsCalc])/ Sqrt_3)* 0.05;
+    }
 
     UabSl_HalfMemory[SysCnt_10msRmsCalc] = UabSl;
     UbcSl_HalfMemory[SysCnt_10msRmsCalc] = UbcSl;
@@ -1245,7 +1256,6 @@ void GetVoltCurr(void)
     IbOvh_rms += sqrtf(IbOvh_HalfMemory[SysCnt_10msRmsCalc]*IbOvh_HalfMemory[SysCnt_10msRmsCalc]) * 0.057;
     IcOvh_rms += sqrtf(IcOvh_HalfMemory[SysCnt_10msRmsCalc]*IcOvh_HalfMemory[SysCnt_10msRmsCalc]) * 0.0569;
 
-
     UaOut_rms += fabsf(UaOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0571;
     UbOut_rms += fabsf(UbOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.057;
     UcOut_rms += fabsf(UcOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0569;
@@ -1254,14 +1264,21 @@ void GetVoltCurr(void)
     UbcOut_rms += fabsf(UbcOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.057;
     UcaOut_rms += fabsf(UcaOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0569;
 
-    work1_rms += ((UaOut_HalfMemory[SysCnt_10msRmsCalc]*IaPar_HalfMemory[SysCnt_10msRmsCalc]+UbOut_HalfMemory[SysCnt_10msRmsCalc]*IbPar_HalfMemory[SysCnt_10msRmsCalc]+UcOut_HalfMemory[SysCnt_10msRmsCalc]*IcPar_HalfMemory[SysCnt_10msRmsCalc]))* 0.05;
+    if( MainSta2Word.DataBit.WorkLpQS1 && (!MainSta2Word.DataBit.CheckLpQS1) )
+    {
+        if(MainSta2Word.DataBit.SingQF1 || MainSta2Word.DataBit.ParaQF2)
+        {
+            work1_rms += ((UaOut_HalfMemory[SysCnt_10msRmsCalc]*IaPar_HalfMemory[SysCnt_10msRmsCalc]+UbOut_HalfMemory[SysCnt_10msRmsCalc]*IbPar_HalfMemory[SysCnt_10msRmsCalc]+UcOut_HalfMemory[SysCnt_10msRmsCalc]*IcPar_HalfMemory[SysCnt_10msRmsCalc]))* 0.05;
 
-    work2_rms += ((UbcOut_HalfMemory[SysCnt_10msRmsCalc]*IaPar_HalfMemory[SysCnt_10msRmsCalc]+UcaOut_HalfMemory[SysCnt_10msRmsCalc]*IbPar_HalfMemory[SysCnt_10msRmsCalc]+UabOut_HalfMemory[SysCnt_10msRmsCalc]*IcPar_HalfMemory[SysCnt_10msRmsCalc])/ Sqrt_3)* 0.05;
+            work2_rms += ((UbcOut_HalfMemory[SysCnt_10msRmsCalc]*IaPar_HalfMemory[SysCnt_10msRmsCalc]+UcaOut_HalfMemory[SysCnt_10msRmsCalc]*IbPar_HalfMemory[SysCnt_10msRmsCalc]+UabOut_HalfMemory[SysCnt_10msRmsCalc]*IcPar_HalfMemory[SysCnt_10msRmsCalc])/ Sqrt_3)* 0.05;
+        }
+    }
+    else if( (!MainSta2Word.DataBit.WorkLpQS1) && (MainSta2Word.DataBit.CheckLpQS1) )
+    {
+        work1_rms += ((UaOut_HalfMemory[SysCnt_10msRmsCalc]*IaOvh_HalfMemory[SysCnt_10msRmsCalc]+UbOut_HalfMemory[SysCnt_10msRmsCalc]*IbOvh_HalfMemory[SysCnt_10msRmsCalc]+UcOut_HalfMemory[SysCnt_10msRmsCalc]*IcOvh_HalfMemory[SysCnt_10msRmsCalc]))* 0.05;
 
-    work3_rms += ((UaOut_HalfMemory[SysCnt_10msRmsCalc]*IaOvh_HalfMemory[SysCnt_10msRmsCalc]+UbOut_HalfMemory[SysCnt_10msRmsCalc]*IbOvh_HalfMemory[SysCnt_10msRmsCalc]+UcOut_HalfMemory[SysCnt_10msRmsCalc]*IcOvh_HalfMemory[SysCnt_10msRmsCalc]))* 0.05;
-
-    work4_rms += ((UbcOut_HalfMemory[SysCnt_10msRmsCalc]*IaOvh_HalfMemory[SysCnt_10msRmsCalc]+UcaOut_HalfMemory[SysCnt_10msRmsCalc]*IbOvh_HalfMemory[SysCnt_10msRmsCalc]+UabOut_HalfMemory[SysCnt_10msRmsCalc]*IcOvh_HalfMemory[SysCnt_10msRmsCalc])/ Sqrt_3)* 0.05;
-
+        work2_rms += ((UbcOut_HalfMemory[SysCnt_10msRmsCalc]*IaOvh_HalfMemory[SysCnt_10msRmsCalc]+UcaOut_HalfMemory[SysCnt_10msRmsCalc]*IbOvh_HalfMemory[SysCnt_10msRmsCalc]+UabOut_HalfMemory[SysCnt_10msRmsCalc]*IcOvh_HalfMemory[SysCnt_10msRmsCalc])/ Sqrt_3)* 0.05;
+    }
 
     UabPar_rmsf = UabPar_rmsf * 0.9999 + fabsf(UabPar_rms * 0.0001);
     UbcPar_rmsf = UbcPar_rmsf * 0.9999 + fabsf(UbcPar_rms * 0.0001);
@@ -1290,27 +1307,13 @@ void GetVoltCurr(void)
     P_Work = P_Work*0.9999 + work1_rms*0.0001;
 
     Q_Work = Q_Work*0.9999 + work2_rms*0.0001;
-//                  ftmp = P_Work*P_Work + Q_Work*Q_Work;
-//                  S_Work = sqrtf(ftmp);
 
-    /*PF_Work = atan2f(Q_Work, P_Work);*/
-    P_Ovh = P_Ovh*0.9999 + work3_rms*0.0001;
-    Q_Ovh = Q_Ovh*0.9999 + work4_rms*0.0001;
     SysCnt_10msRmsCalc ++;
     if(SysCnt_10msRmsCalc >= 20)
     {
         SysCnt_10msRmsCalc = 0;
-                    Flag_RmsBufFull = 1;
+        Flag_RmsBufFull = 1;
     }
-
-//                    ftmp = P_Ovh*P_Ovh + Q_Ovh*Q_Ovh;
-//                    S_Ovh = sqrtf(ftmp);
-//
-//                    PF_Ovh = atan2(Q_Ovh, P_Ovh);
-                    /*work_cnt++;*/
-                    /*if(work_cnt>20)*/
-                        /*work_cnt=0;*/
-
 
     if( MainSta2Word.DataBit.WorkLpQS1 && (!MainSta2Word.DataBit.CheckLpQS1) )
     {
@@ -1318,8 +1321,18 @@ void GetVoltCurr(void)
         {
             P_Sys = (P_Work)*0.00107;
             Q_Sys = (Q_Work)*0.001062;
-            S_Sys = ( UabOut_rmsf * IaOut_rmsf * 0.001732f );
-            PF_Sys = P_Sys / S_Sys;
+            if (Flag_RmsBufFull)
+            {
+                // 视在功率
+                S_Work = P_Sys*P_Sys + Q_Sys*Q_Sys;
+                S_Sys = sqrtf(S_Work);
+                // 功率因子
+                if (S_Sys != 0)
+                {
+                    PF_Sys = P_Sys / S_Sys;
+                }
+                Flag_RmsBufFull = 0;
+            }
         }
         else
         {
@@ -1333,10 +1346,18 @@ void GetVoltCurr(void)
     {
         P_Sys = (P_Work)*0.00107;
         Q_Sys = (Q_Work)*0.001062;
-//                        S_Sys = fabs(S_Ovh)*0.001;
-//                        PF_Sys = fabs(PF_Ovh);
-        S_Sys = ( UabOut_rmsf * IaOut_rmsf * 0.001732f );
-        PF_Sys = P_Sys / S_Sys;
+        if (Flag_RmsBufFull)
+        {
+            // 视在功率
+            S_Work = P_Sys*P_Sys + Q_Sys*Q_Sys;
+            S_Sys = sqrtf(S_Work);
+            // 功率因子
+            if (S_Sys != 0)
+            {
+                PF_Sys = P_Sys / S_Sys;
+            }
+            Flag_RmsBufFull = 0;
+        }
     }
     else
     {
@@ -1346,128 +1367,6 @@ void GetVoltCurr(void)
         PF_Sys = 0;
     }
 
-}
-
-/*void GetVoltCurr(void)*/
-/*{*/
-    /*////////////////////////////////////////////////////////////////*/
-    /*if(Flag_RmsBufFull == 0)*/
-    /*{*/
-        /*UabSl_HalfMemory[SysCnt_10msRmsCalc] = fabs(UabSl);*/
-        /*UbcSl_HalfMemory[SysCnt_10msRmsCalc] = fabs(UbcSl);*/
-        /*UcaSl_HalfMemory[SysCnt_10msRmsCalc] = fabs(UcaSl);*/
-
-        /*UabPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(UabPar);*/
-        /*UbcPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(UbcPar);*/
-        /*UcaPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(UcaPar);*/
-
-        /*IaPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(IaPar);*/
-        /*IbPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(IbPar);*/
-        /*IcPar_HalfMemory[SysCnt_10msRmsCalc] = fabs(IcPar);*/
-
-        /*IaOvh_HalfMemory[SysCnt_10msRmsCalc] = fabs(IaOvh);*/
-        /*IbOvh_HalfMemory[SysCnt_10msRmsCalc] = fabs(IbOvh);*/
-        /*IcOvh_HalfMemory[SysCnt_10msRmsCalc] = fabs(IcOvh);*/
-
-        /*UaOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UaOut);*/
-        /*UbOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UbOut);*/
-        /*UcOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UcOut);*/
-
-        /*UabOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UabOut);*/
-        /*UbcOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UbcOut);*/
-        /*UcaOut_HalfMemory[SysCnt_10msRmsCalc] = fabs(UcaOut);*/
-
-        /*SysCnt_10msRmsCalc ++;*/
-        /*if(SysCnt_10msRmsCalc >= 20)*/
-        /*{*/
-            /*SysCnt_10msRmsCalc = 0;*/
-            /*Flag_RmsBufFull = 1;*/
-        /*}*/
-    /*}*/
-/*}*/
-void GetVIRms(void)
-{
-	u16 i=0;
-
-	if(Flag_RmsBufFull)
-	{
-		for(i=0; i<20; i++)
-		{
-			UabSl_sum += UabSl_HalfMemory[i];
-			UbcSl_sum += UbcSl_HalfMemory[i];
-			UcaSl_sum += UcaSl_HalfMemory[i];
-
-			UabPar_sum += UabPar_HalfMemory[i];
-			UbcPar_sum += UbcPar_HalfMemory[i];
-			UcaPar_sum += UcaPar_HalfMemory[i];
-
-			IaPar_sum += IaPar_HalfMemory[i]*IaPar_HalfMemory[i];
-			IbPar_sum += IbPar_HalfMemory[i]*IbPar_HalfMemory[i];
-			IcPar_sum += IcPar_HalfMemory[i]*IcPar_HalfMemory[i];
-
-			IaOvh_sum += IaOvh_HalfMemory[i]*IaOvh_HalfMemory[i];
-			IbOvh_sum += IbOvh_HalfMemory[i]*IbOvh_HalfMemory[i];
-			IcOvh_sum += IcOvh_HalfMemory[i]*IcOvh_HalfMemory[i];
-
-			UaOut_sum += UaOut_HalfMemory[i];
-			UbOut_sum += UbOut_HalfMemory[i];
-			UcOut_sum += UcOut_HalfMemory[i];
-
-			UabOut_sum += UabOut_HalfMemory[i];
-			UbcOut_sum += UbcOut_HalfMemory[i];
-			UcaOut_sum += UcaOut_HalfMemory[i];
-		}
-
-		UabSl_rms = UabSl_sum*0.05*1.127;
-		UbcSl_rms = UbcSl_sum*0.05*1.127;
-		UcaSl_rms = UcaSl_sum*0.05*1.127;
-
-		UabPar_rms = UabPar_sum*0.05*1.147;
-		UbcPar_rms = UbcPar_sum*0.05*1.147;
-		UcaPar_rms = UcaPar_sum*0.05*1.147;
-
-        IaPar_rms = sqrtf((float)IaPar_sum*0.05);
-        IbPar_rms = sqrtf((float)IbPar_sum*0.05);
-        IcPar_rms = sqrtf((float)IcPar_sum*0.05);
-
-        IaOvh_rms = sqrtf((float)IaOvh_sum*0.05);
-        IbOvh_rms = sqrtf((float)IbOvh_sum*0.05);
-        IcOvh_rms = sqrtf((float)IcOvh_sum*0.05);
-
-		UaOut_rms = UaOut_sum*0.05*1.127;
-		UbOut_rms = UbOut_sum*0.05*1.127;
-		UcOut_rms = UcOut_sum*0.05*1.127;
-
-		UabOut_rms = UabOut_sum*0.05*1.127;
-		UbcOut_rms = UbcOut_sum*0.05*1.127;
-		UcaOut_rms = UcaOut_sum*0.05*1.127;
-
-		UabSl_sum=0;
-		UbcSl_sum=0;
-		UcaSl_sum=0;
-
-		UabPar_sum=0;
-		UbcPar_sum=0;
-		UcaPar_sum=0;
-
-		IaPar_sum=0;
-		IbPar_sum=0;
-		IcPar_sum=0;
-
-		IaOvh_sum=0;
-		IbOvh_sum=0;
-		IcOvh_sum=0;
-
-		UaOut_sum=0;
-		UbOut_sum=0;
-		UcOut_sum=0;
-
-		UabOut_sum=0;
-		UbcOut_sum=0;
-		UcaOut_sum=0;
-
-		Flag_RmsBufFull = 0;
-	}
 }
 
 void RmsFillter(void)
@@ -1572,92 +1471,6 @@ void CalImbalance(void)
 	}
 }
 /******************************************************************/
-void GetPQ2r(void)
-{
-	float ftmp = 0;
-	u16 i=0;
-
-	    if(Flag_RmsBufFull==0)
-	    {
-	        for(i=0; i<5; i++)
-	        {
-	           work1[i] = UaOut_HalfMemory[i]*IaPar_HalfMemory[i]+UbOut_HalfMemory[i]*IbPar_HalfMemory[i]+UbOut_HalfMemory[i]*IbPar_HalfMemory[i];
-
-	           work2[i] = (UbcOut_HalfMemory[i]*IaPar_HalfMemory[i]+UbOut_HalfMemory[i]*IbPar_HalfMemory[i]+UbOut_HalfMemory[i]*IbPar_HalfMemory[i])/ Sqrt_3;
-
-	           work3[i] = UaOut_HalfMemory[i]*IaOvh_HalfMemory[i]+UbOut_HalfMemory[i]*IbOvh_HalfMemory[i]+UbOut_HalfMemory[i]*IbOvh_HalfMemory[i];
-
-	           work4[i] = (UbcOut_HalfMemory[i]*IaOvh_HalfMemory[i]+UcaOut_HalfMemory[i]*IbOvh_HalfMemory[i]+UabOut_HalfMemory[i]*IcOvh_HalfMemory[i])/ Sqrt_3;
-	        }
-	    }
-	    if(Flag_RmsBufFull)
-	        {
-	            for(i=0; i<5; i++)
-	            {
-	                work1_sum += work1[i];
-	                work2_sum += work2[i];
-	                work3_sum += work3[i];
-	                work4_sum += work4[i];
-	            }
-	            work1_rms = work1_sum*0.2;
-	            work2_rms = work2_sum*0.2;
-	            work3_rms = work3_sum*0.2;
-	            work4_rms = work4_sum*0.2;
-
-	            work1_sum=0;
-	            work2_sum=0;
-	            work3_sum=0;
-	            work4_sum=0;
-
-	        }
-	    P_Work = P_Work*0.999 + work1_rms*0.001;
-
-	    Q_Work = Q_Work*0.999 + work2_rms*0.001;
-        ftmp = P_Work*P_Work + Q_Work*Q_Work;
-        S_Work = sqrtf(ftmp);
-
-        PF_Work = atan2f(Q_Work, P_Work);
-	    P_Ovh = P_Ovh*0.99 + work3_rms*0.01;
-	    Q_Ovh = Q_Ovh*0.99 + work4_rms*0.01;
-	    ftmp = P_Ovh*P_Ovh + Q_Ovh*Q_Ovh;
-	    S_Ovh = sqrtf(ftmp);
-
-	    PF_Ovh = atan2(Q_Ovh, P_Ovh);
-
-
-	if( MainSta2Word.DataBit.WorkLpQS1 && (!MainSta2Word.DataBit.CheckLpQS1) )
-	{
-		if(MainSta2Word.DataBit.SingQF1 || MainSta2Word.DataBit.ParaQF2)
-		{
-			P_Sys = fabs(P_Work)*0.001*1.052;
-			Q_Sys = fabs(Q_Work)*0.001*0.756;
-			S_Sys = fabs(S_Work)*0.001;
-			PF_Sys = fabs(PF_Work);
-		}
-		else
-		{
-			P_Sys = 0;
-			Q_Sys = 0;
-			S_Sys = 0;
-			PF_Sys = 0;
-		}
-	}
-	else if( (!MainSta2Word.DataBit.WorkLpQS1) && (MainSta2Word.DataBit.CheckLpQS1) )
-	{
-		P_Sys = fabs(P_Ovh)*0.001*1.052;
-		Q_Sys = fabs(Q_Ovh)*0.001*0.756;
-		S_Sys = fabs(S_Ovh)*0.001;
-		PF_Sys = fabs(PF_Ovh);
-	}
-	else
-	{
-		P_Sys = 0;
-		Q_Sys = 0;
-		S_Sys = 0;
-		PF_Sys = 0;
-	}
-}
-/******************************************************************/
 interrupt void EPWM1_INT_Underflow_isr(void)
 {
 	int i;
@@ -1708,8 +1521,6 @@ interrupt void EPWM1_INT_Underflow_isr(void)
 	if(IO_ADNotBusy == 1)
 		Palarell_Extern_ADCScan();
 ////////////////////////////////////////////////////////////////////////
-//   GetVoltCurr();
-   /*GetPQ2r();*/
    flag_EPWM1_INT_Underflow = 1;
 ////////////////////////////////////////////////////////////////////////
 }

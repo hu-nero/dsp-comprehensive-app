@@ -433,12 +433,14 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                 {
                     CAN_App_TurnOnA3QF1();
                     MainSta2WordCtrl.DataBit.SingQF1 = 1;
+                    SwitchWord1.DataBit.DO_A3QF1 = 1;
                     /*IO_QF1SingOn_En;*/
                 }
                 else if (State == SWITCH_OFF)
                 {
                     CAN_App_TurnOffA3QF1();
                     MainSta2WordCtrl.DataBit.SingQF1 = 0;
+                    SwitchWord1.DataBit.DO_A3QF1 = 0;
                     /*IO_QF1SingOn_Dis;*/
                 }
             }
@@ -449,12 +451,14 @@ Hardware_SwitchControl(uint16_t SwitchId, SwitchState_t State)
                 {
                     CAN_App_TurnOnA3QF2();
                     MainSta2WordCtrl.DataBit.ParaQF2 = 1;
+                    SwitchWord1.DataBit.DO_A3QF2 = 1;
                     /*IO_QF2ParaOn_En;*/
                 }
                 else if (State == SWITCH_OFF)
                 {
                     CAN_App_TurnOffA3QF2();
                     MainSta2WordCtrl.DataBit.ParaQF2 = 0;
+                    SwitchWord1.DataBit.DO_A3QF2 = 0;
                     /*IO_QF2ParaOn_Dis;*/
                 }
             }

@@ -11,7 +11,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define FAULT_RETRY_INTERVAL_MS  60000   // 故障重试间隔60秒
+#define FAULT_RETRY_INTERVAL_MS                  60000   // 故障重试间隔60秒
+#define SECTION_CONNECT_CIRCUIT_DEGAUSS_TIME      5000   // 连接回路消磁时间
+#define SECTION_DISCONNECT_CIRCUIT_DEGAUSS_TIME  10000   // 断开回路消磁时间
 // 电源运行状态
 typedef enum
 {
