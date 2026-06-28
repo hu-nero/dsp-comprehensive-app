@@ -20,6 +20,9 @@ static uint32_t g_cabinet_grid_count;
 static uint32_t g_cabinet_auto_second_reboot_count;
 static uint16_t g_cabinet_grid;
 static bool allow_convert_single; //故障自重启中第二次重启标志
+static uint16_t g_cabinet_fault_count; //故障计数
+static uint16_t g_cabinet_fault_code;
+static uint32_t g_cabinet_fault_code_count;
 
 static inline void Cabinet_SetCabinetReset(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ResetFromEmergency(CabinetContext_t* Context);
@@ -183,6 +186,12 @@ Cabinet_Init(CabinetContext_t* Context,
     g_cabinet_auto_second_reboot_count = 0;
     // 清空故障自启中的二次重启标志
     allow_convert_single = false;
+    // 故障计数
+    g_cabinet_fault_count = 0;
+    // 上次故障字
+    g_cabinet_fault_code = 0;
+    // 故障计数 计时
+    g_cabinet_fault_code_count = 0;
     return true;
 }
 
@@ -312,6 +321,12 @@ Cabinet_SetCabinetReset(CabinetContext_t* Context)
     CAN_Adapter_SetMaintenStatus(0);
     // 清空故障自启中的二次重启标志
     allow_convert_single = false;
+    // 故障计数
+    g_cabinet_fault_count = 0;
+    // 上次故障字
+    g_cabinet_fault_code = 0;
+    // 故障计数 计时
+    g_cabinet_fault_code_count = 0;
     // 自动第二次重启成功与否计时
     g_cabinet_auto_second_reboot_count = 0;
     // 485的一键解列标志
@@ -520,6 +535,12 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             Context->parallel_request_start = 0;
             Context->recovery_degauss_start_time = 0;
             Context->recovery_degauss_delay_ms = 0;
+            // 故障计数
+            g_cabinet_fault_count = 0;
+            // 上次故障字
+            g_cabinet_fault_code = 0;
+            // 故障计数 计时
+            g_cabinet_fault_code_count = 0;
 
             // 清除急停和故障标志，使能状态转换流程
             Context->fault_recovery_ctx.state_before_fault = CABINET_STATE_INVALID;
@@ -1421,7 +1442,7 @@ Cabinet_ResetFromEmergency(CabinetContext_t* Context)
         (void)Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
         (void)Context->switch_control(DO_ID_RESET, SWITCH_ON);
     }
-
+    Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "not catch");
     // 系统状态设置为待机
     Context->state = CABINET_STATE_STANDBY;
     Context->target_state = CABINET_STATE_INVALID;
@@ -2035,7 +2056,13 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     if ((Context->switch_list.A3QS1_switch == SWITCH_ON) &&
         (Context->switch_list.A3K17_switch == SWITCH_OFF))
     {
-        // TODO:运行灯亮
+        // 工作回路，但检修有电
+		if ((IaOvh_rmsf > 100) ||
+            (IbOvh_rmsf > 100) ||
+            (IcOvh_rmsf > 100))
+        {
+            Cabinet_ResetFromEmergency(Context);
+        }
     }
 
     // 连接电容电路
@@ -2044,7 +2071,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         Cabinet_ResetFromEmergency(Context);
     }
     // 连接消磁电路
-    if (Context->switch_list.A3QS2_switch == SWITCH_OFF)
+    if (Context->switch_list.A3QS3_switch == SWITCH_OFF)
     {
         Cabinet_ResetFromEmergency(Context);
     }
@@ -2148,6 +2175,10 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                     Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
                 }
             }
+            else if ((allow_recovery == 0) && (allow_convert_single == 0))
+            {
+                NPR_FaultCode = cleared_fault;
+            }
             // 第二次恢复，转单机
             else if ((allow_convert_single) &&
                      (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
@@ -2193,6 +2224,33 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
     else
     {
         g_cabinet_auto_second_reboot_count = 0;
+    }
+    // 故障自启的错误计数 超时情况
+    if (g_cabinet_fault_count)
+    {
+        if ((Context->state == CABINET_STATE_SINGLE) ||
+            (Context->state == CABINET_STATE_PARALLEL))
+        {
+            // 运行状态超过60s后，清空错误计数标志
+            if (g_cabinet_fault_code_count > (60000))
+            {
+                g_cabinet_fault_code_count = 0;
+                g_cabinet_fault_count = 0;
+                g_cabinet_fault_code = 0;
+            }
+            else
+            {
+                g_cabinet_fault_code_count ++;
+            }
+        }
+        else
+        {
+            g_cabinet_fault_code_count = 0;
+        }
+    }
+    else
+    {
+        g_cabinet_fault_code_count = 0;
     }
 }
 
@@ -2483,20 +2541,42 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                     // 远控时才允许复位
                     if (Context->switch_list.manual_switch == SWITCH_ON)
                     {
-                        if (((NPR_FaultCode >= 17) && (NPR_FaultCode <= 22)) ||
-                                ((NPR_FaultCode >= 27) && (NPR_FaultCode <= 28)))
+                        if (g_cabinet_fault_code == NPR_FaultCode)
                         {
-                            NPR_FaultCode = 0;
-                            MainSta2Word.DataBit.SingQF1 = 0;
-                            MainSta2Word.DataBit.SingQR1 = 0;
-                            MainSta2Word.DataBit.ParaQF2 = 0;
-                            MainSta2Word.DataBit.ParaQR2 = 0;
-                            FaultWord_Clear(17);
-                            FaultWord_Clear(19);
-                            FaultWord_Clear(18);
-                            FaultWord_Clear(20);
-                            FaultWord_Clear(21);
-                            FaultWord_Clear(22);
+                            g_cabinet_fault_count ++;
+                            if (g_cabinet_fault_count > 2)
+                            {
+                                g_cabinet_fault_count = 2;
+                            }
+                        }
+                        else
+                        {
+                            if (g_cabinet_fault_count > 0)
+                            {
+                                g_cabinet_fault_count --;
+                            }
+                        }
+                        // 记录故障标志
+                        g_cabinet_fault_code = NPR_FaultCode;
+                        //
+                        if (((Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_SINGLE) && (g_cabinet_fault_count<1)) ||
+                                ((Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_PARALLEL) && (g_cabinet_fault_count<2)))
+                        {
+                            if (((NPR_FaultCode >= 17) && (NPR_FaultCode <= 22)) ||
+                                    ((NPR_FaultCode >= 27) && (NPR_FaultCode <= 28)))
+                            {
+                                NPR_FaultCode = 0;
+                                MainSta2Word.DataBit.SingQF1 = 0;
+                                MainSta2Word.DataBit.SingQR1 = 0;
+                                MainSta2Word.DataBit.ParaQF2 = 0;
+                                MainSta2Word.DataBit.ParaQR2 = 0;
+                                FaultWord_Clear(17);
+                                FaultWord_Clear(19);
+                                FaultWord_Clear(18);
+                                FaultWord_Clear(20);
+                                FaultWord_Clear(21);
+                                FaultWord_Clear(22);
+                            }
                         }
                     }
 				}
