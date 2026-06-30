@@ -3537,7 +3537,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                     {
                         // 计时
                         Context->fault_timer_start = hal_timer_get_timestamp();
-                        Context->fault_timer_duration = 120000;
+                        Context->fault_timer_duration = Auto_Restarttime_Self * 1000;
                         Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_PARALLEL_CIRCUIT;
                     }
                     else
@@ -3550,8 +3550,8 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
         case AUTO_RECOVERY_FAULTCODE_PROCESS:
             {
                 Context->fault_timer_start = hal_timer_get_timestamp();
-                // 目前计时2分钟
-                Context->fault_timer_duration = 120000;
+                // 目前计时屏幕设置
+                Context->fault_timer_duration = Auto_Restarttime_Self * 1000;
 
                 if (Context->state == CABINET_STATE_SINGLE)
                 {

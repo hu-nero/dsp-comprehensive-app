@@ -18,7 +18,7 @@ const struct DiscreteRegType sDiscReg_Group[]=
 /*********************************************************************************/
 const struct InputRegType sInputReg_Group[]=
 {
-/* Total- 12 */     37, (void*)&RTUGroup[2],
+/* Total- 12 */     38, (void*)&RTUGroup[2],
 /* Line -  1 */ 0x0000, (void*)&InputRegBuf[0],
 /* Line -  2 */ 0x0001, (void*)&InputRegBuf[1],
 /* Line -  3 */ 0x0002, (void*)&InputRegBuf[2],
@@ -56,6 +56,7 @@ const struct InputRegType sInputReg_Group[]=
 /* Line - 35 */ 0x0022, (void*)&InputRegBuf[34],
 /* Line - 36 */ 0x0023, (void*)&InputRegBuf[35],
 /* Line - 37 */ 0x0024, (void*)&InputRegBuf[36],
+/* Line - 37 */ 0x0025, (void*)&InputRegBuf[37],
 };
 /*********************************************************************************/
 const struct HoldRegType sHoldReg_Group[]=
