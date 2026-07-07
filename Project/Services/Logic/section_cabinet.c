@@ -525,6 +525,10 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_PARALLEL);
             (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SHORT);
             (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_RESET);
+            (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_CAP1);
+            (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_CAP2);
+            (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_CAP3);
+            (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_CAP4);
             gAutoRequestParallelCount = 0;
             Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
             Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
@@ -1818,6 +1822,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     static uint16_t u16TmpParallelCount = 0;
     ExecuteResult_t res = RESULT_SUCCESS;
     uint16_t tmp_reset_switch;
+    uint16_t tmp_cap_switch[4];
 
     // 如果发生状态转换
     if ((Context->state != Context->target_state)  &&
@@ -1849,6 +1854,65 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             {
                 // 复位
                 Cabinet_SetCabinetReset(Context);
+            }
+        }
+    }
+    // 远端控制补充电容
+    if (Context->switch_list.manual_switch == SWITCH_ON)
+    {
+        tmp_cap_switch[0] = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_CAP1);
+        if (tmp_cap_switch[0] == 1)
+        {
+            Cap_Ctrl_Word.DataBit.Bit0 = !Cap_Ctrl_Word.DataBit.Bit0;
+            if (Cap_Ctrl_Word.DataBit.Bit0 == 1)
+            {
+                Context->switch_control(DO_ID_A3QR4, SWITCH_ON);
+            }
+            else
+            {
+                Context->switch_control(DO_ID_A3QR4, SWITCH_OFF);
+            }
+        }
+
+        tmp_cap_switch[1] = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_CAP2);
+        if (tmp_cap_switch[1] == 1)
+        {
+            Cap_Ctrl_Word.DataBit.Bit1 = !Cap_Ctrl_Word.DataBit.Bit1;
+            if (Cap_Ctrl_Word.DataBit.Bit1 == 1)
+            {
+                Context->switch_control(DO_ID_A3QR5, SWITCH_ON);
+            }
+            else
+            {
+                Context->switch_control(DO_ID_A3QR5, SWITCH_OFF);
+            }
+        }
+
+        tmp_cap_switch[2] = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_CAP3);
+        if (tmp_cap_switch[2] == 1)
+        {
+            Cap_Ctrl_Word.DataBit.Bit2 = !Cap_Ctrl_Word.DataBit.Bit2;
+            if (Cap_Ctrl_Word.DataBit.Bit2 == 1)
+            {
+                Context->switch_control(DO_ID_A3QR6, SWITCH_ON);
+            }
+            else
+            {
+                Context->switch_control(DO_ID_A3QR6, SWITCH_OFF);
+            }
+        }
+
+        tmp_cap_switch[3] = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_CAP4);
+        if (tmp_cap_switch[3] == 1)
+        {
+            Cap_Ctrl_Word.DataBit.Bit3 = !Cap_Ctrl_Word.DataBit.Bit3;
+            if (Cap_Ctrl_Word.DataBit.Bit3 == 1)
+            {
+                Context->switch_control(DO_ID_A3QR7, SWITCH_ON);
+            }
+            else
+            {
+                Context->switch_control(DO_ID_A3QR7, SWITCH_OFF);
             }
         }
     }

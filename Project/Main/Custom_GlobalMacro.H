@@ -18,7 +18,11 @@ union Remote_Ctrl_Word_Type
 		unsigned rem_short_stop:		1;		// 0:NoAct 1:enable
 		unsigned ComCut:		        2;		// 0:NoAct 1:Comm 2:Cut 3:Invalid
 		unsigned Reset:			        1;		// 0:NoAct 1:enable
-		unsigned Rsvd:			        7;		//
+		unsigned Rsvd:			        3;		//
+		unsigned rem_cap1_ctrl:		    1;		// 0:NoAct 1:enable
+		unsigned rem_cap2_ctrl:		    1;		// 0:NoAct 1:enable
+		unsigned rem_cap3_ctrl:		    1;		// 0:NoAct 1:enable
+		unsigned rem_cap4_ctrl:		    1;		// 0:NoAct 1:enable
 	}	bit;
 };
 /***********************************************************/
@@ -72,7 +76,10 @@ union NPR_Status_Word2_Type
 		unsigned CompCapQS2:1;
 		unsigned DgssQS3:	1;
 		unsigned DgssKM1:	1;
-		unsigned Rsvd:		4;
+		unsigned Cap1:		1;
+		unsigned Cap2:		1;
+		unsigned Cap3:		1;
+		unsigned Cap4:		1;
 		unsigned ComSync:	1;
 		unsigned ComPwr:	1;
 		unsigned ComHMI:	1;

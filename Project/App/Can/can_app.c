@@ -239,10 +239,10 @@ CAN_App_Switch_Init(void)
     Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_OFF);
-    Hardware_SwitchControl(DO_ID_A3QR4,SWITCH_OFF);
-    Hardware_SwitchControl(DO_ID_A3QR5,SWITCH_OFF);
-    Hardware_SwitchControl(DO_ID_A3QR6,SWITCH_OFF);
-    Hardware_SwitchControl(DO_ID_A3QR7,SWITCH_OFF);
+    /*Hardware_SwitchControl(DO_ID_A3QR4,SWITCH_OFF);*/
+    /*Hardware_SwitchControl(DO_ID_A3QR5,SWITCH_OFF);*/
+    /*Hardware_SwitchControl(DO_ID_A3QR6,SWITCH_OFF);*/
+    /*Hardware_SwitchControl(DO_ID_A3QR7,SWITCH_OFF);*/
     Hardware_SwitchControl(DO_ID_REMOTE_SINGLE_CTRL_FEED,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_REMOTE_PARALEL_CTRL_FEED,SWITCH_OFF);
     // 读取面板、柜体开关状态

@@ -19,6 +19,10 @@ typedef enum
     UART485_ID_REM_SHORT,     // 远控消磁启动
     UART485_ID_REM_RESET,     // 远控消磁停止
     UART485_ID_GRID,          // 远控一键解列
+    UART485_ID_REM_CAP1,      // 远控补偿电容1控制
+    UART485_ID_REM_CAP2,      // 远控补偿电容2控制
+    UART485_ID_REM_CAP3,      // 远控补偿电容3控制
+    UART485_ID_REM_CAP4,      // 远控补偿电容4控制
 } UART485_Adapter_SwitchType_t;
 
 

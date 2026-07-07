@@ -750,7 +750,7 @@ void variable_init(void)
     FltCnt_UnderCurr_Silicon = 0;
     FltCnt_OverCurr_Silicon = 0;
 
-	Cap_Ctrl_Word.DataInt=0x20;
+	Cap_Ctrl_Word.DataInt=0x2F;
 	Can_External_Addr = 0x02;
 	FltThr_UnderCurr_Silicon = 5;
 	FltThr_OverCurr_Silicon = 10;

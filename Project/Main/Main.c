@@ -436,6 +436,10 @@ void FunStatusUpdate(void)
 	MainSta2Word.DataBit.DgssQS3 = IO_DgssQS3_Feed;
 	MainSta2Word.DataBit.SingQR1 = IO_SingQR1_Feed;
 	MainSta2Word.DataBit.ParaQR2 = IO_ParaQR2_Feed;
+	MainSta2Word.DataBit.Cap1 = Cap_Ctrl_Word.DataBit.Bit0;
+	MainSta2Word.DataBit.Cap2 = Cap_Ctrl_Word.DataBit.Bit1;
+	MainSta2Word.DataBit.Cap3 = Cap_Ctrl_Word.DataBit.Bit2;
+	MainSta2Word.DataBit.Cap4 = Cap_Ctrl_Word.DataBit.Bit3;
 
 	if((AlarmWord1.DataInt) || (AlarmWord2.DataInt))
 	{

@@ -102,6 +102,58 @@ UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_Adapter_SwitchType_t Type)
                 gRemSwitchCtrlWord.CtrlWord.bit.ComCut = 0;
             }
             break;
+        case UART485_ID_REM_CAP1:
+            {
+                if (gRemSwitchCtrlWord.CtrlWord.bit.rem_cap1_ctrl == 1)
+                {
+                    state = 1;
+                }
+                else if (gRemSwitchCtrlWord.CtrlWord.bit.rem_cap1_ctrl == 0)
+                {
+                    state = 2;
+                }
+                gRemSwitchCtrlWord.CtrlWord.bit.rem_cap1_ctrl = 0;
+            }
+            break;
+        case UART485_ID_REM_CAP2:
+            {
+                if (gRemSwitchCtrlWord.CtrlWord.bit.rem_cap2_ctrl == 1)
+                {
+                    state = 1;
+                }
+                else if (gRemSwitchCtrlWord.CtrlWord.bit.rem_cap2_ctrl == 0)
+                {
+                    state = 2;
+                }
+                gRemSwitchCtrlWord.CtrlWord.bit.rem_cap2_ctrl = 0;
+            }
+            break;
+        case UART485_ID_REM_CAP3:
+            {
+                if (gRemSwitchCtrlWord.CtrlWord.bit.rem_cap3_ctrl == 1)
+                {
+                    state = 1;
+                }
+                else if (gRemSwitchCtrlWord.CtrlWord.bit.rem_cap3_ctrl == 0)
+                {
+                    state = 2;
+                }
+                gRemSwitchCtrlWord.CtrlWord.bit.rem_cap3_ctrl = 0;
+            }
+            break;
+        case UART485_ID_REM_CAP4:
+            {
+                if (gRemSwitchCtrlWord.CtrlWord.bit.rem_cap4_ctrl == 1)
+                {
+                    state = 1;
+                }
+                else if (gRemSwitchCtrlWord.CtrlWord.bit.rem_cap4_ctrl == 0)
+                {
+                    state = 2;
+                }
+                gRemSwitchCtrlWord.CtrlWord.bit.rem_cap4_ctrl = 0;
+            }
+            break;
         default:return 0;
     }
     return state;
@@ -267,6 +319,43 @@ UART485_Adapter_MainLoop(void)
         else
         {
             gRemSwitchCtrlWord.CtrlWord.bit.ComCut = RemHoldSum.CtrlWord.bit.ComCut;
+        }
+
+        // 补偿电容
+        if (RemHoldSum.CtrlWord.bit.rem_cap1_ctrl == 1)
+        {
+            gRemSwitchCtrlWord.CtrlWord.bit.rem_cap1_ctrl = 1;
+        }
+        else if (RemHoldSum.CtrlWord.bit.rem_cap1_ctrl == 0)
+        {
+            gRemSwitchCtrlWord.CtrlWord.bit.rem_cap1_ctrl = 0;
+        }
+
+        if (RemHoldSum.CtrlWord.bit.rem_cap2_ctrl == 1)
+        {
+            gRemSwitchCtrlWord.CtrlWord.bit.rem_cap2_ctrl = 1;
+        }
+        else if (RemHoldSum.CtrlWord.bit.rem_cap2_ctrl == 0)
+        {
+            gRemSwitchCtrlWord.CtrlWord.bit.rem_cap2_ctrl = 0;
+        }
+
+        if (RemHoldSum.CtrlWord.bit.rem_cap3_ctrl == 1)
+        {
+            gRemSwitchCtrlWord.CtrlWord.bit.rem_cap3_ctrl = 1;
+        }
+        else if (RemHoldSum.CtrlWord.bit.rem_cap3_ctrl == 0)
+        {
+            gRemSwitchCtrlWord.CtrlWord.bit.rem_cap3_ctrl = 0;
+        }
+
+        if (RemHoldSum.CtrlWord.bit.rem_cap4_ctrl == 1)
+        {
+            gRemSwitchCtrlWord.CtrlWord.bit.rem_cap4_ctrl = 1;
+        }
+        else if (RemHoldSum.CtrlWord.bit.rem_cap4_ctrl == 0)
+        {
+            gRemSwitchCtrlWord.CtrlWord.bit.rem_cap4_ctrl = 0;
         }
 
         RemHoldSum.CtrlWord.all = gRemHoldSum.CtrlWord.all;
