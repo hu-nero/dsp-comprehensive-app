@@ -1974,9 +1974,9 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
                 if (u16TmpSingleCount > 3500)
                 {
                     u16TmpSingleCount = 0;
-                    NPR_FaultCode = 26;
+                    NPR_FaultCode = 31;
                     Context->fault_recovery_ctx.fault_status = true;
-                    FaultWord1.DataBit.Bit9 = 1;
+                    FaultWord1.DataBit.Bit14 = 1;
                     Context->state = CABINET_STATE_STANDBY;
                     Context->target_state = CABINET_STATE_INVALID;
                 }
@@ -2003,9 +2003,9 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
                 if (u16TmpParallelCount > 3500)
                 {
                     u16TmpParallelCount = 0;
-                    NPR_FaultCode = 26;
+                    NPR_FaultCode = 32;
                     Context->fault_recovery_ctx.fault_status = true;
-                    FaultWord1.DataBit.Bit9 = 1;
+                    FaultWord1.DataBit.Bit15 = 1;
                     Context->state = CABINET_STATE_STANDBY;
                     Context->target_state = CABINET_STATE_INVALID;
                 }
@@ -3589,6 +3589,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 if (Context->power_status.run_state == POWER_FAULT)
                 {
                     Context->fault_recovery_state = AUTO_RECOVERY_FAULTCODE_PROCESS;
+                    Cabinet_SetAlarm(Context, ALARM_PWR_FLT, "power fault");
                 }
                 else
                 {
@@ -3603,6 +3604,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                         Context->fault_timer_start = hal_timer_get_timestamp();
                         Context->fault_timer_duration = Auto_Restarttime_Self * 1000;
                         Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_PARALLEL_CIRCUIT;
+                        Cabinet_SetAlarm(Context, ALARM_SYNC_DISCONNECT, "sync disconnect");
                     }
                     else
                     {
@@ -3631,6 +3633,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                         (adapter_status.sync_online_status))
                     {
                         Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_PARALLEL_CIRCUIT;
+                        Cabinet_SetAlarm(Context, ALARM_SYNC_DISCONNECT, "sync disconnect");
                     }
                     else
                     {
@@ -3917,6 +3920,10 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                     Context->state = CABINET_STATE_SINGLE;
                     // 故障恢复流程
                     Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
+                    // 取消逻辑告警
+                    AlarmWord1.DataBit.Bit13 = 0;
+                    AlarmWord1.DataBit.Bit14 = 0;
+                    AlarmWord2.DataBit.Bit10 = 0;
                 }
                 else if (res == RESULT_FAILED)
                 {
@@ -3936,6 +3943,10 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                     Context->state = CABINET_STATE_PARALLEL;
                     // 故障恢复流程
                     Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
+                    // 取消逻辑告警
+                    AlarmWord1.DataBit.Bit13 = 0;
+                    AlarmWord1.DataBit.Bit14 = 0;
+                    AlarmWord2.DataBit.Bit10 = 0;
                 }
                 else if (res == RESULT_FAILED)
                 {

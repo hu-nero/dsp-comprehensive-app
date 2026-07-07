@@ -884,6 +884,26 @@ void npr_1s_protection(void)
                 }
             }
         }
+        
+        // 负功率故障
+        // 当功率小于-30kW时，持续300ms则负功率停机故障
+        if ((P_Sys < -30.0f) && (Iphase_min > 5.0f))
+        {
+            if(FltCnt_P_Sys_WorkMode > 1)
+            {
+                FltCnt_P_Sys_WorkMode = 0;
+                NPR_FaultCode = 30;
+                FaultWord_Map(30);
+            }
+            else
+            {
+                FltCnt_P_Sys_WorkMode ++;
+            }
+        }
+        else
+        {
+            FltCnt_P_Sys_WorkMode = 0;
+        }
     }
     else
     {

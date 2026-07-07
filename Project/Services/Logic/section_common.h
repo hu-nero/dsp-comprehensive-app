@@ -75,6 +75,9 @@ typedef enum
     ALARM_PWR_STATE_MISMATCH,       // 电源状态不匹配
     ALARM_HASCYCLE,                 // 柜体有回路
     ALARM_PARA_FACTOR_MISMATHC,     // 并机系数不匹配
+    ALARM_PWR_FLT,                  // 电源故障-区段停机
+    ALARM_SYNC_DISCONNECT,          // 同步柜解列-区段停机
+    ALARM_AUTO_SELFSTART_FAL,       // 自启流程失败
     ALARM_FAULT,                    // 状态转换异常
     ALARM_MAX
 } AlarmType_t;

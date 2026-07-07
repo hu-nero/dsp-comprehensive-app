@@ -151,6 +151,7 @@ extern float Auto_Restarttime_Self;
 extern float Auto_Restarttime_Para_Request;
 extern float Auto_SingParaConv_Time;
 extern unsigned int PS_Monitor_ID;
+extern float FltCnt_P_Sys_WorkMode;
 
 extern float UabSl_HalfMemory[20], UbcSl_HalfMemory[20], UcaSl_HalfMemory[20];
 extern float UabPar_HalfMemory[20], UbcPar_HalfMemory[20], UcaPar_HalfMemory[20];
