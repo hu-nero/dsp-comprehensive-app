@@ -4,6 +4,8 @@
 #include "GPIO\Custom_IOMacro.H"
 /*************************************************************/
 
+static Uint16 g_SciRemote_len = 0;
+
 void Sci_Remote_init(volatile struct SCI_REGS *p, float LSPCLK_FREQ, float SCI_FREQ)
 {
 	long SCI_PRD;
@@ -125,6 +127,30 @@ void Sci_Remote_SendArray(volatile struct SCI_REGS *p, Uint16 * p_Arr, Uint16 Le
 	}
 	IO_EN2RS485_RECV;
 }
+
+void Sci_Remote_SendArray_loop(volatile struct SCI_REGS *p, Uint16 * p_Arr)
+{
+	static Uint16 i = 0;
+    if (g_SciRemote_len>0)
+    {
+        IO_EN2RS485_SEND;
+		Sci_Modbus_SendData(p, *(p_Arr + i) );
+        i++;
+        g_SciRemote_len--;
+    }
+    else
+    {
+        i=0;
+        IO_EN2RS485_RECV;
+    }
+}
+
+void Sci_Remote_SendArray_new(Uint16 Len)
+{
+    // len赋值
+    g_SciRemote_len = Len;
+}
+
 
 //===========================================================================
 // End of file.

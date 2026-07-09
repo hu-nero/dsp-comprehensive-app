@@ -67,7 +67,8 @@ void Remote_InputReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 		pTxBuffer[1] = Code04_RInputReg;
 		pTxBuffer[2] = ucTempCnt; //*2
 		CRC_Check_Romote(pTxBuffer, (ucTempCnt+3), pTxBuffer+ucTempCnt+3, pTxBuffer+ucTempCnt+4);
-		Sci_Remote_SendArray(&ScicRegs, pTxBuffer, ucTempCnt+5);
+        /*Sci_Remote_SendArray(&ScicRegs, pTxBuffer, ucTempCnt+5);*/
+        Sci_Remote_SendArray_new(ucTempCnt+5);
 
 	}
 }
@@ -107,7 +108,8 @@ void Remote_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 		pTxBuffer[1] = Code03_RHoldReg;  	// FunsCode(1byte)
 		pTxBuffer[2] = ucTempCnt;       	// ByteNum(1byte)
 		CRC_Check_Romote(pTxBuffer, (ucTempCnt+3), pTxBuffer+ucTempCnt+3, pTxBuffer+ucTempCnt+4);
-		Sci_Remote_SendArray(&ScicRegs, pTxBuffer, ucTempCnt+5);
+        /*Sci_Remote_SendArray(&ScicRegs, pTxBuffer, ucTempCnt+5);*/
+        Sci_Remote_SendArray_new(ucTempCnt+5);
 	}
 
 	else if(FuncCode == Code06_WHoldReg)
@@ -131,7 +133,8 @@ void Remote_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 		pTxBuffer[5] = pMesBuf[5];
 		CRC_Check_Romote(pTxBuffer, 6, pTxBuffer+6, pTxBuffer+7);
 
-		Sci_Remote_SendArray(&ScicRegs, pTxBuffer, 8);
+		/*Sci_Remote_SendArray(&ScicRegs, pTxBuffer, 8);*/
+        Sci_Remote_SendArray_new(8);
 	}
 	else if(FuncCode == Code10_WHoldRegs)
 	{
@@ -161,7 +164,8 @@ void Remote_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 
 		CRC_Check_Romote(pTxBuffer, 6, pTxBuffer+6, pTxBuffer+7);
 
-		Sci_Remote_SendArray(&ScicRegs, pTxBuffer, 8);
+		/*Sci_Remote_SendArray(&ScicRegs, pTxBuffer, 8);*/
+        Sci_Remote_SendArray_new(8);
 ///////////////////////////////////////////////////////////////////////////////////////////
 	}
 }

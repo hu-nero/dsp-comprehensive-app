@@ -86,7 +86,7 @@ void main(void)
 	Sci_Modbus_init(&ScibRegs, 375e5, 9600);
 #endif
 
-	Sci_DCS_init(&SciaRegs, 375e5, 9600);
+	/*Sci_DCS_init(&SciaRegs, 375e5, 9600);*/
 	Sci_Remote_init(&ScicRegs, 375e5, 9600);
 
 	InitSpi();
@@ -129,14 +129,16 @@ void main(void)
 		Modbus_Send_To_HMI();
 		Sci_Modbus_RxData(&ScibRegs, Modbus_RecvBuffer, &Modbus_RecvTail, Modbus_Recv_BUFF_SIZE);
 		ModbusRTU_Protocol(Modbus_RecvBuffer, &Modbus_RecvFront, Modbus_RecvTail, Modbus_Recv_BUFF_SIZE, Modbus_SendBuffer);
+        Sci_Modbus_SendArray_loop(&ScibRegs, Modbus_SendBuffer);
 		Modbus_Recv_For_HMI();
 #endif
 		///////////////////////////////////////////////////////////////////////////////
-		Sci_DCS_RxData(&SciaRegs, MbsDcs_RecvBuffer, &MbsDcs_RecvTail, Modbus_Recv_BUFF_SIZE);
-		ModbusDcs_Protocol(MbsDcs_RecvBuffer, &MbsDcs_RecvFront, MbsDcs_RecvTail, Modbus_Recv_BUFF_SIZE, MbsDcs_SendBuffer);
+        /*Sci_DCS_RxData(&SciaRegs, MbsDcs_RecvBuffer, &MbsDcs_RecvTail, Modbus_Recv_BUFF_SIZE);*/
+        /*ModbusDcs_Protocol(MbsDcs_RecvBuffer, &MbsDcs_RecvFront, MbsDcs_RecvTail, Modbus_Recv_BUFF_SIZE, MbsDcs_SendBuffer);*/
 		///////////////////////////////////////////////////////////////////////////////
 		Sci_Remote_RxData(&ScicRegs, MbsRem_RecvBuffer, &MbsRem_RecvTail, Modbus_Recv_BUFF_SIZE);
 		ModbusRem_Protocol(MbsRem_RecvBuffer, &MbsRem_RecvFront, MbsRem_RecvTail, Modbus_Recv_BUFF_SIZE, MbsRem_SendBuffer);
+        Sci_Remote_SendArray_loop(&ScicRegs, MbsRem_SendBuffer);
 ///////////////////////////////////////////////////////////////////////////////
 		Flag_EEPROMCheck = EEPROMAccess(&ParaDownloadCtrlWord, &EEPROMAceNum);
 		if(Flag_EEPROMCheck == 30)

@@ -84,7 +84,8 @@ void Func_InputReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 		pTxBuffer[1] = Code04_RInputReg;
 		pTxBuffer[2] = ucTempCnt; //*2
 		CRC_Check(pTxBuffer, (ucTempCnt+3), pTxBuffer+ucTempCnt+3, pTxBuffer+ucTempCnt+4);
-		Sci_Modbus_SendArray(&ScibRegs, pTxBuffer, ucTempCnt+5);
+		//Sci_Modbus_SendArray(&ScibRegs, pTxBuffer, ucTempCnt+5);
+        Sci_Modbus_SendArray_new(ucTempCnt+5);
 	}
 }
 /**********************************************************************************/
@@ -132,7 +133,8 @@ void Func_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 		pTxBuffer[1] = Code03_RHoldReg;  // FunsCode(1byte)
 		pTxBuffer[2] = ucTempCnt;        // ByteNum(1byte)
 		CRC_Check(pTxBuffer, (ucTempCnt+3), pTxBuffer+ucTempCnt+3, pTxBuffer+ucTempCnt+4);
-		Sci_Modbus_SendArray(&ScibRegs, pTxBuffer, ucTempCnt+5);
+		/*Sci_Modbus_SendArray(&ScibRegs, pTxBuffer, ucTempCnt+5);*/
+        Sci_Modbus_SendArray_new(ucTempCnt+5);
 	}
 
 	else if(FuncCode == Code06_WHoldReg)
@@ -156,7 +158,8 @@ void Func_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 		pTxBuffer[5] = pMesBuf[5];
 		CRC_Check(pTxBuffer, 6, pTxBuffer+6, pTxBuffer+7);
 
-		Sci_Modbus_SendArray(&ScibRegs, pTxBuffer, 8);
+		/*Sci_Modbus_SendArray(&ScibRegs, pTxBuffer, 8);*/
+        Sci_Modbus_SendArray_new(8);
 	}
 	else if(FuncCode == Code10_WHoldRegs)
 	{

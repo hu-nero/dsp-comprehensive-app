@@ -5,6 +5,8 @@
 #include "GPIO\Custom_IOMacro.H"
 /*************************************************************/
 
+static Uint16 g_SciModbus_len = 0;
+
 void Sci_Modbus_init(volatile struct SCI_REGS *p, float LSPCLK_FREQ, float SCI_FREQ)
 {
 	long SCI_PRD;
@@ -125,6 +127,27 @@ void Sci_Modbus_SendArray(volatile struct SCI_REGS *p, Uint16 * p_Arr, Uint16 Le
 	{
 		Sci_Modbus_SendData(p, *(p_Arr + i) );
 	}
+}
+
+void Sci_Modbus_SendArray_loop(volatile struct SCI_REGS *p, Uint16 * p_Arr)
+{
+	static Uint16 i = 0;
+    if (g_SciModbus_len>0)
+    {
+		Sci_Modbus_SendData(p, *(p_Arr + i) );
+        i++;
+        g_SciModbus_len--;
+    }
+    else
+    {
+        i=0;
+    }
+}
+
+void Sci_Modbus_SendArray_new(Uint16 Len)
+{
+    // len赋值
+    g_SciModbus_len = Len;
 }
 
 //===========================================================================
