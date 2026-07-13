@@ -755,9 +755,9 @@ void variable_init(void)
 	Can_External_Addr = 0x02;
 	FltThr_UnderCurr_Silicon = 5;
 	FltThr_OverCurr_Silicon = 10;
-	Auto_Restarttime_Self = 60;
+	Auto_Restarttime_Self = 180;
 	Auto_Restarttime_Para_Request = 61;
-	Auto_SingParaConv_Time = 1;
+	Auto_SingParaConv_Time = 2;
 	PS_Monitor_ID = 1;
     FltCnt_P_Sys_WorkMode = 0;
 
