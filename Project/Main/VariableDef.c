@@ -46,21 +46,27 @@ float IaPar_rms=0, IbPar_rms=0, IcPar_rms=0;
 float IaOvh_rms=0, IbOvh_rms=0, IcOvh_rms=0;
 float UaOut_rms=0, UbOut_rms=0, UcOut_rms=0;
 float UabOut_rms=0, UbcOut_rms=0, UcaOut_rms=0;
-float work1_rms=0,work2_rms=0,work3_rms=0,work4_rms=0;
+float work1_rms=0,work2_rms=0;
 
 float P_Work=0, Q_Work=0, S_Work=0, PF_Work=0;
 float P_Ovh=0, Q_Ovh=0, S_Ovh=0, PF_Ovh=0;
 float P_Sys=0, Q_Sys=0, S_Sys=0, PF_Sys=0;
 
 int Flag_RmsBufFull=0;
-float UabSl_HalfMemory[20], UbcSl_HalfMemory[20], UcaSl_HalfMemory[20];
-float UabPar_HalfMemory[20], UbcPar_HalfMemory[20], UcaPar_HalfMemory[20];
-float IaPar_HalfMemory[20], IbPar_HalfMemory[20], IcPar_HalfMemory[20];
-float IaOvh_HalfMemory[20], IbOvh_HalfMemory[20], IcOvh_HalfMemory[20];
-float UaOut_HalfMemory[20], UbOut_HalfMemory[20], UcOut_HalfMemory[20];
-float UabOut_HalfMemory[20], UbcOut_HalfMemory[20]={0}, UcaOut_HalfMemory[20];
-float work1[20], work2[20], work3[20], work4[20];
+float UabSl_HalfMemory[12], UbcSl_HalfMemory[12], UcaSl_HalfMemory[12];
+float UabPar_HalfMemory[12], UbcPar_HalfMemory[12], UcaPar_HalfMemory[12];
+float IaPar_HalfMemory[12], IbPar_HalfMemory[12], IcPar_HalfMemory[12];
+float IaOvh_HalfMemory[12], IbOvh_HalfMemory[12], IcOvh_HalfMemory[12];
+float UaOut_HalfMemory[12], UbOut_HalfMemory[12], UcOut_HalfMemory[12];
+float UabOut_HalfMemory[12], UbcOut_HalfMemory[12]={0}, UcaOut_HalfMemory[12];
 
+float P_inst_buf[12] = {0};
+float Q_inst_buf[12] = {0};
+int   pwr_buf_idx = 0;
+float P_sum = 0.0f;
+float Q_sum = 0.0f;
+unsigned int clear_sample_count;
+unsigned int clear_sample_flag;
 unsigned int flag_EPWM1_INT_Underflow=0;
 
 unsigned int AlmCnt_UnderVolt_Phase;
@@ -766,28 +772,34 @@ void variable_init(void)
 	RemHoldSum.CtrlWord.all = 0;
 	DcsHoldSum.CtrlWord.all = 0;
 
-    memset(UabSl_HalfMemory, 0, sizeof(float)*20);
-    memset(UbcSl_HalfMemory, 0, sizeof(float)*20);
-    memset(UcaSl_HalfMemory, 0, sizeof(float)*20);
-    memset(UabPar_HalfMemory, 0, sizeof(float)*20);
-    memset(UbcPar_HalfMemory, 0, sizeof(float)*20);
-    memset(UcaPar_HalfMemory, 0, sizeof(float)*20);
-    memset(IaPar_HalfMemory, 0, sizeof(float)*20);
-    memset(IbPar_HalfMemory, 0, sizeof(float)*20);
-    memset(IcPar_HalfMemory, 0, sizeof(float)*20);
-    memset(IaOvh_HalfMemory, 0, sizeof(float)*20);
-    memset(IbOvh_HalfMemory, 0, sizeof(float)*20);
-    memset(IcOvh_HalfMemory, 0, sizeof(float)*20);
-    memset(UaOut_HalfMemory, 0, sizeof(float)*20);
-    memset(UbOut_HalfMemory, 0, sizeof(float)*20);
-    memset(UcOut_HalfMemory, 0, sizeof(float)*20);
-    memset(UabOut_HalfMemory, 0, sizeof(float)*20);
-    memset(UbcOut_HalfMemory, 0, sizeof(float)*20);
-    memset(UcaOut_HalfMemory, 0, sizeof(float)*20);
-    memset(work1, 0, sizeof(float)*20);
-    memset(work2, 0, sizeof(float)*20);
-    memset(work3, 0, sizeof(float)*20);
-    memset(work4, 0, sizeof(float)*20);
+    memset(UabSl_HalfMemory, 0, sizeof(float)*12);
+    memset(UbcSl_HalfMemory, 0, sizeof(float)*12);
+    memset(UcaSl_HalfMemory, 0, sizeof(float)*12);
+    memset(UabPar_HalfMemory, 0, sizeof(float)*12);
+    memset(UbcPar_HalfMemory, 0, sizeof(float)*12);
+    memset(UcaPar_HalfMemory, 0, sizeof(float)*12);
+    memset(IaPar_HalfMemory, 0, sizeof(float)*12);
+    memset(IbPar_HalfMemory, 0, sizeof(float)*12);
+    memset(IcPar_HalfMemory, 0, sizeof(float)*12);
+    memset(IaOvh_HalfMemory, 0, sizeof(float)*12);
+    memset(IbOvh_HalfMemory, 0, sizeof(float)*12);
+    memset(IcOvh_HalfMemory, 0, sizeof(float)*12);
+    memset(UaOut_HalfMemory, 0, sizeof(float)*12);
+    memset(UbOut_HalfMemory, 0, sizeof(float)*12);
+    memset(UcOut_HalfMemory, 0, sizeof(float)*12);
+    memset(UabOut_HalfMemory, 0, sizeof(float)*12);
+    memset(UbcOut_HalfMemory, 0, sizeof(float)*12);
+    memset(UcaOut_HalfMemory, 0, sizeof(float)*12);
+
+    P_Work = 0.0f;
+    Q_Work = 0.0f;
+    P_sum  = 0.0f;
+    Q_sum  = 0.0f;
+    clear_sample_count = 0;
+    clear_sample_flag = 0;
+    memset(P_inst_buf, 0, sizeof(P_inst_buf)*12);
+    memset(Q_inst_buf, 0, sizeof(Q_inst_buf)*12);
+    pwr_buf_idx = 0;
 
 }
 /*******************************************************************************************/

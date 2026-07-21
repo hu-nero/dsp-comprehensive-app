@@ -68,7 +68,7 @@ extern float IaPar_rms, IbPar_rms, IcPar_rms;
 extern float IaOvh_rms, IbOvh_rms, IcOvh_rms;
 extern float UaOut_rms, UbOut_rms, UcOut_rms;
 extern float UabOut_rms, UbcOut_rms, UcaOut_rms;
-extern float work1_rms,work2_rms,work3_rms,work4_rms;
+extern float work1_rms,work2_rms;
 
 extern float P_Work, Q_Work, S_Work, PF_Work;
 extern float P_Ovh, Q_Ovh, S_Ovh, PF_Ovh;
@@ -153,14 +153,20 @@ extern float Auto_SingParaConv_Time;
 extern unsigned int PS_Monitor_ID;
 extern float FltCnt_P_Sys_WorkMode;
 
-extern float UabSl_HalfMemory[20], UbcSl_HalfMemory[20], UcaSl_HalfMemory[20];
-extern float UabPar_HalfMemory[20], UbcPar_HalfMemory[20], UcaPar_HalfMemory[20];
-extern float IaPar_HalfMemory[20], IbPar_HalfMemory[20], IcPar_HalfMemory[20];
-extern float IaOvh_HalfMemory[20], IbOvh_HalfMemory[20], IcOvh_HalfMemory[20];
-extern float UaOut_HalfMemory[20], UbOut_HalfMemory[20], UcOut_HalfMemory[20];
-extern float UabOut_HalfMemory[20], UbcOut_HalfMemory[20], UcaOut_HalfMemory[20];
-extern float work1[20], work2[20], work3[20], work4[20];
+extern float UabSl_HalfMemory[12], UbcSl_HalfMemory[12], UcaSl_HalfMemory[12];
+extern float UabPar_HalfMemory[12], UbcPar_HalfMemory[12], UcaPar_HalfMemory[12];
+extern float IaPar_HalfMemory[12], IbPar_HalfMemory[12], IcPar_HalfMemory[12];
+extern float IaOvh_HalfMemory[12], IbOvh_HalfMemory[12], IcOvh_HalfMemory[12];
+extern float UaOut_HalfMemory[12], UbOut_HalfMemory[12], UcOut_HalfMemory[12];
+extern float UabOut_HalfMemory[12], UbcOut_HalfMemory[12], UcaOut_HalfMemory[12];
 
+extern float P_inst_buf[12];
+extern float Q_inst_buf[12];
+extern int   pwr_buf_idx;
+extern float P_sum;
+extern float Q_sum;
+extern unsigned int clear_sample_count;
+extern unsigned int clear_sample_flag;
 extern unsigned int flag_EPWM1_INT_Underflow;
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
@@ -233,10 +239,11 @@ extern float vLine_Alarm_Low,vLine_Alarm_High;
 // y = CLKDIV = 0
 // x = 0;  TBCLK = SYSCLKOUT / (2^y)
 // x > 0;  TBCLK = SYSCLKOUT / (2x X 2^y)
+#define PWM_SAMPLE_SIZE          12
 #define PWM_BlockClock     75000000
 ////////////////////////////////////////////////////////////////
-#define PWM_SwitchFreq     15500
-#define PWM_ControlFreq    15500
+#define PWM_SwitchFreq     18600//10 point:15500
+#define PWM_ControlFreq    18600
 #define PWM_CountMode      TB_COUNT_UPDOWN
 
 #define PWM_PeriodReg      (PWM_BlockClock/PWM_SwitchFreq/PWM_CountMode)

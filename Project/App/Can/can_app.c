@@ -239,10 +239,52 @@ CAN_App_Switch_Init(void)
     Hardware_SwitchControl(DO_ID_A3QR1,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QR2,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_A3QR3,SWITCH_OFF);
-    /*Hardware_SwitchControl(DO_ID_A3QR4,SWITCH_OFF);*/
-    /*Hardware_SwitchControl(DO_ID_A3QR5,SWITCH_OFF);*/
-    /*Hardware_SwitchControl(DO_ID_A3QR6,SWITCH_OFF);*/
-    /*Hardware_SwitchControl(DO_ID_A3QR7,SWITCH_OFF);*/
+    {
+        if (Cap_Ctrl_Word.DataBit.Bit0 == 1)
+        {
+            Cap_Ctrl_Word.DataBit.Bit0 = 1;
+            Hardware_SwitchControl(DO_ID_A3QR4, SWITCH_ON);
+        }
+        else
+        {
+            Cap_Ctrl_Word.DataBit.Bit0 = 0;
+            Hardware_SwitchControl(DO_ID_A3QR4, SWITCH_OFF);
+        }
+
+        if (Cap_Ctrl_Word.DataBit.Bit1 == 1)
+        {
+            Cap_Ctrl_Word.DataBit.Bit1 = 1;
+            Hardware_SwitchControl(DO_ID_A3QR5, SWITCH_ON);
+        }
+        else
+        {
+            Cap_Ctrl_Word.DataBit.Bit1 = 0;
+            Hardware_SwitchControl(DO_ID_A3QR5, SWITCH_OFF);
+        }
+
+        if (Cap_Ctrl_Word.DataBit.Bit2 == 1)
+        {
+            Cap_Ctrl_Word.DataBit.Bit2 = 1;
+            Hardware_SwitchControl(DO_ID_A3QR6, SWITCH_ON);
+        }
+        else
+        {
+            Cap_Ctrl_Word.DataBit.Bit2 = 0;
+            Hardware_SwitchControl(DO_ID_A3QR6, SWITCH_OFF);
+        }
+
+        if (Cap_Ctrl_Word.DataBit.Bit3 == 1)
+        {
+            Cap_Ctrl_Word.DataBit.Bit3 = 1;
+            Hardware_SwitchControl(DO_ID_A3QR7, SWITCH_ON);
+        }
+        else
+        {
+            Cap_Ctrl_Word.DataBit.Bit3 = 0;
+            Hardware_SwitchControl(DO_ID_A3QR7, SWITCH_OFF);
+        }
+    }
+
     Hardware_SwitchControl(DO_ID_REMOTE_SINGLE_CTRL_FEED,SWITCH_OFF);
     Hardware_SwitchControl(DO_ID_REMOTE_PARALEL_CTRL_FEED,SWITCH_OFF);
     // 读取面板、柜体开关状态
