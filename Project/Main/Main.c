@@ -1195,29 +1195,32 @@ void GetFlowRate_Calc(void)
 /******************************************************************/
 void GetVoltCurr(void)
 {
-    UabSl_rms -= fabsf(UabSl_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;//1.1592
-    UbcSl_rms -= fabsf(UbcSl_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;//1.1364
-    UcaSl_rms -= fabsf(UcaSl_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;//1.1364
+    /** 0.0966;//1.1592*/
+    /** 0.0947;//1.1364*/
+    /** 0.0947;//1.1364*/
+    UabSl_rms -= fabsf(UabSl_HalfMemory[SysCnt_10msRmsCalc]);
+    UbcSl_rms -= fabsf(UbcSl_HalfMemory[SysCnt_10msRmsCalc]);
+    UcaSl_rms -= fabsf(UcaSl_HalfMemory[SysCnt_10msRmsCalc]);
 
-    UabPar_rms -= fabsf(UabPar_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    UbcPar_rms -= fabsf(UbcPar_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
-    UcaPar_rms -= fabsf(UcaPar_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
+    UabPar_rms -= fabsf(UabPar_HalfMemory[SysCnt_10msRmsCalc]);
+    UbcPar_rms -= fabsf(UbcPar_HalfMemory[SysCnt_10msRmsCalc]);
+    UcaPar_rms -= fabsf(UcaPar_HalfMemory[SysCnt_10msRmsCalc]);
 
-    IaPar_rms -= fabsf(IaPar_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    IbPar_rms -= fabsf(IbPar_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    IcPar_rms -= fabsf(IcPar_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
+    IaPar_rms -= fabsf(IaPar_HalfMemory[SysCnt_10msRmsCalc]);
+    IbPar_rms -= fabsf(IbPar_HalfMemory[SysCnt_10msRmsCalc]);
+    IcPar_rms -= fabsf(IcPar_HalfMemory[SysCnt_10msRmsCalc]);
 
-    IaOvh_rms -= fabsf(IaOvh_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    IbOvh_rms -= fabsf(IbOvh_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    IcOvh_rms -= fabsf(IcOvh_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
+    IaOvh_rms -= fabsf(IaOvh_HalfMemory[SysCnt_10msRmsCalc]);
+    IbOvh_rms -= fabsf(IbOvh_HalfMemory[SysCnt_10msRmsCalc]);
+    IcOvh_rms -= fabsf(IcOvh_HalfMemory[SysCnt_10msRmsCalc]);
 
-    UaOut_rms -= fabsf(UaOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    UbOut_rms -= fabsf(UbOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
-    UcOut_rms -= fabsf(UcOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
+    UaOut_rms -= fabsf(UaOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UbOut_rms -= fabsf(UbOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UcOut_rms -= fabsf(UcOut_HalfMemory[SysCnt_10msRmsCalc]);
 
-    UabOut_rms -= fabsf(UabOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    UbcOut_rms -= fabsf(UbcOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
-    UcaOut_rms -= fabsf(UcaOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
+    UabOut_rms -= fabsf(UabOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UbcOut_rms -= fabsf(UbcOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UcaOut_rms -= fabsf(UcaOut_HalfMemory[SysCnt_10msRmsCalc]);
 
     UabSl_HalfMemory[SysCnt_10msRmsCalc] = UabSl;
     UbcSl_HalfMemory[SysCnt_10msRmsCalc] = UbcSl;
@@ -1243,29 +1246,29 @@ void GetVoltCurr(void)
     UbcOut_HalfMemory[SysCnt_10msRmsCalc] = UbcOut;
     UcaOut_HalfMemory[SysCnt_10msRmsCalc] = UcaOut;
 
-    UabSl_rms += fabsf(UabSl_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    UbcSl_rms += fabsf(UbcSl_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
-    UcaSl_rms += fabsf(UcaSl_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
+    UabSl_rms += fabsf(UabSl_HalfMemory[SysCnt_10msRmsCalc]);
+    UbcSl_rms += fabsf(UbcSl_HalfMemory[SysCnt_10msRmsCalc]);
+    UcaSl_rms += fabsf(UcaSl_HalfMemory[SysCnt_10msRmsCalc]);
 
-    UabPar_rms += fabsf(UabPar_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    UbcPar_rms += fabsf(UbcPar_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
-    UcaPar_rms += fabsf(UcaPar_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
+    UabPar_rms += fabsf(UabPar_HalfMemory[SysCnt_10msRmsCalc]);
+    UbcPar_rms += fabsf(UbcPar_HalfMemory[SysCnt_10msRmsCalc]);
+    UcaPar_rms += fabsf(UcaPar_HalfMemory[SysCnt_10msRmsCalc]);
 
-    IaPar_rms += fabsf(IaPar_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    IbPar_rms += fabsf(IbPar_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    IcPar_rms += fabsf(IcPar_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
+    IaPar_rms += fabsf(IaPar_HalfMemory[SysCnt_10msRmsCalc]);
+    IbPar_rms += fabsf(IbPar_HalfMemory[SysCnt_10msRmsCalc]);
+    IcPar_rms += fabsf(IcPar_HalfMemory[SysCnt_10msRmsCalc]);
 
-    IaOvh_rms += fabsf(IaOvh_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    IbOvh_rms += fabsf(IbOvh_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    IcOvh_rms += fabsf(IcOvh_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
+    IaOvh_rms += fabsf(IaOvh_HalfMemory[SysCnt_10msRmsCalc]);
+    IbOvh_rms += fabsf(IbOvh_HalfMemory[SysCnt_10msRmsCalc]);
+    IcOvh_rms += fabsf(IcOvh_HalfMemory[SysCnt_10msRmsCalc]);
 
-    UaOut_rms += fabsf(UaOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    UbOut_rms += fabsf(UbOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
-    UcOut_rms += fabsf(UcOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
+    UaOut_rms += fabsf(UaOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UbOut_rms += fabsf(UbOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UcOut_rms += fabsf(UcOut_HalfMemory[SysCnt_10msRmsCalc]);
 
-    UabOut_rms += fabsf(UabOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0966;
-    UbcOut_rms += fabsf(UbcOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
-    UcaOut_rms += fabsf(UcaOut_HalfMemory[SysCnt_10msRmsCalc]) * 0.0947;
+    UabOut_rms += fabsf(UabOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UbcOut_rms += fabsf(UbcOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UcaOut_rms += fabsf(UcaOut_HalfMemory[SysCnt_10msRmsCalc]);
 
     float p_inst = 0.0f, q_inst = 0.0f;
     if( MainSta2Word.DataBit.WorkLpQS1 && (!MainSta2Word.DataBit.CheckLpQS1) )
@@ -1295,29 +1298,29 @@ void GetVoltCurr(void)
     work1_rms = P_sum / PWM_SAMPLE_SIZE;
     work2_rms = Q_sum / PWM_SAMPLE_SIZE;
 
-    UabPar_rmsf = UabPar_rmsf * 0.9999 + fabsf(UabPar_rms * 0.0001);
-    UbcPar_rmsf = UbcPar_rmsf * 0.9999 + fabsf(UbcPar_rms * 0.0001);
-    UcaPar_rmsf = UcaPar_rmsf * 0.9999 + fabsf(UcaPar_rms * 0.0001);
+    UabPar_rmsf = UabPar_rmsf * 0.9999 + fabsf(UabPar_rms * 0.00000966);
+    UbcPar_rmsf = UbcPar_rmsf * 0.9999 + fabsf(UbcPar_rms * 0.00000947);
+    UcaPar_rmsf = UcaPar_rmsf * 0.9999 + fabsf(UcaPar_rms * 0.00000947);
 
-    UabSl_rmsf = UabSl_rmsf * 0.9999 + fabsf(UabSl_rms * 0.0001);
-    UbcSl_rmsf = UbcSl_rmsf * 0.9999 + fabsf(UbcSl_rms * 0.0001);
-    UcaSl_rmsf = UcaSl_rmsf * 0.9999 + fabsf(UcaSl_rms * 0.0001);
+    UabSl_rmsf = UabSl_rmsf * 0.9999 + fabsf(UabSl_rms * 0.00000966);
+    UbcSl_rmsf = UbcSl_rmsf * 0.9999 + fabsf(UbcSl_rms * 0.00000947);
+    UcaSl_rmsf = UcaSl_rmsf * 0.9999 + fabsf(UcaSl_rms * 0.00000947);
 
-    IaOvh_rmsf = IaOvh_rmsf * 0.9999 + fabsf(IaOvh_rms * 0.0001);
-    IbOvh_rmsf = IbOvh_rmsf * 0.9999 + fabsf(IbOvh_rms * 0.0001);
-    IcOvh_rmsf = IcOvh_rmsf * 0.9999 + fabsf(IcOvh_rms * 0.0001);
+    IaOvh_rmsf = IaOvh_rmsf * 0.9999 + fabsf(IaOvh_rms * 0.00000966);
+    IbOvh_rmsf = IbOvh_rmsf * 0.9999 + fabsf(IbOvh_rms * 0.00000966);
+    IcOvh_rmsf = IcOvh_rmsf * 0.9999 + fabsf(IcOvh_rms * 0.00000947);
 
-    IaPar_rmsf = IaPar_rmsf * 0.9999 + fabsf(IaPar_rms * 0.0001);
-    IbPar_rmsf = IbPar_rmsf * 0.9999 + fabsf(IbPar_rms * 0.0001);
-    IcPar_rmsf = IcPar_rmsf * 0.9999 + fabsf(IcPar_rms * 0.0001);
+    IaPar_rmsf = IaPar_rmsf * 0.9999 + fabsf(IaPar_rms * 0.00000966);
+    IbPar_rmsf = IbPar_rmsf * 0.9999 + fabsf(IbPar_rms * 0.00000966);
+    IcPar_rmsf = IcPar_rmsf * 0.9999 + fabsf(IcPar_rms * 0.00000947);
 
-    UaOut_rmsf = UaOut_rmsf * 0.9999 + fabsf(UaOut_rms * 0.0001);
-    UbOut_rmsf = UbOut_rmsf * 0.9999 + fabsf(UbOut_rms * 0.0001);
-    UcOut_rmsf = UcOut_rmsf * 0.9999 + fabsf(UcOut_rms * 0.0001);
+    UaOut_rmsf = UaOut_rmsf * 0.9999 + fabsf(UaOut_rms * 0.00000966);
+    UbOut_rmsf = UbOut_rmsf * 0.9999 + fabsf(UbOut_rms * 0.00000947);
+    UcOut_rmsf = UcOut_rmsf * 0.9999 + fabsf(UcOut_rms * 0.00000947);
 
-    UabOut_rmsf = UabOut_rmsf * 0.9999 + fabsf(UabOut_rms * 0.0001);
-    UbcOut_rmsf = UbcOut_rmsf * 0.9999 + fabsf(UbcOut_rms * 0.0001);
-    UcaOut_rmsf = UcaOut_rmsf * 0.9999 + fabsf(UcaOut_rms * 0.0001);
+    UabOut_rmsf = UabOut_rmsf * 0.9999 + fabsf(UabOut_rms * 0.00000966);
+    UbcOut_rmsf = UbcOut_rmsf * 0.9999 + fabsf(UbcOut_rms * 0.00000947);
+    UcaOut_rmsf = UcaOut_rmsf * 0.9999 + fabsf(UcaOut_rms * 0.00000947);
 
     P_Work = P_Work*0.9999 + work1_rms*0.0001;
     Q_Work = Q_Work*0.9999 + work2_rms*0.0001;
