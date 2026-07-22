@@ -2528,6 +2528,12 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 {
     static uint16_t fltCount = 0;
 	ExecuteResult_t res;
+    // 检修接通则故障消磁不执行
+    if( (Context->switch_list.A3QS1_switch == SWITCH_OFF) &&
+        (Context->switch_list.A3K17_switch == SWITCH_ON) )
+    {
+        return RESULT_INVALID_STATE;
+    }
     if ((NPR_FaultCode != 0) && (Context->fault_recovery_ctx.fault_status == true))
     {
         if (fltCount < 50)
@@ -3312,11 +3318,10 @@ Cabinet_SetAlarm(CabinetContext_t* Context, AlarmType_t Type, const char* Messag
 static bool
 Cabinet_IsSatisfyPowerParallel(CabinetContext_t* Context)
 {
-//    CommSyncToSection_t status;
-//    status = CAN_Adapter_GetSyncToSectionStatus();
-//
-//    return status.sync_status.bit.is_parallel_factor_satisfy;
-	return true;
+	CommSyncToSection_t status;
+    status = CAN_Adapter_GetCommSyncToSectionStatus();
+
+    return status.sync_status.bit.is_parallel_factor_satisfy;
 }
 
 // 等待开关反馈稳定

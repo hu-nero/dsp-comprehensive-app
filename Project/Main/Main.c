@@ -1365,6 +1365,18 @@ void GetVoltCurr(void)
             }
             if (clear_sample_flag)
             {
+                memset(IaPar_HalfMemory, 0, sizeof(float)*12);
+                memset(IbPar_HalfMemory, 0, sizeof(float)*12);
+                memset(IcPar_HalfMemory, 0, sizeof(float)*12);
+                memset(IaOvh_HalfMemory, 0, sizeof(float)*12);
+                memset(IbOvh_HalfMemory, 0, sizeof(float)*12);
+                memset(IcOvh_HalfMemory, 0, sizeof(float)*12);
+                memset(UaOut_HalfMemory, 0, sizeof(float)*12);
+                memset(UbOut_HalfMemory, 0, sizeof(float)*12);
+                memset(UcOut_HalfMemory, 0, sizeof(float)*12);
+                memset(UabOut_HalfMemory, 0, sizeof(float)*12);
+                memset(UbcOut_HalfMemory, 0, sizeof(float)*12);
+                memset(UcaOut_HalfMemory, 0, sizeof(float)*12);
                 IaPar_rms  = 0;
                 IbPar_rms  = 0;
                 IcPar_rms  = 0;
@@ -1377,6 +1389,18 @@ void GetVoltCurr(void)
                 UabOut_rms = 0;
                 UbcOut_rms = 0;
                 UcaOut_rms = 0;
+                IaPar_rmsf = 0;
+                IbPar_rmsf = 0;
+                IcPar_rmsf = 0;
+                IaOvh_rmsf = 0;
+            IbOvh_rmsf = 0;
+            IcOvh_rmsf = 0;
+            UaOut_rmsf = 0;
+            UbOut_rmsf = 0;
+            UcOut_rmsf = 0;
+            UabOut_rmsf = 0;
+            UbcOut_rmsf = 0;
+            UcaOut_rmsf = 0;
                 clear_sample_flag = 0;
             }
         }
@@ -1412,6 +1436,18 @@ void GetVoltCurr(void)
         }
         if (clear_sample_flag)
         {
+            memset(IaPar_HalfMemory, 0, sizeof(float)*12);
+            memset(IbPar_HalfMemory, 0, sizeof(float)*12);
+            memset(IcPar_HalfMemory, 0, sizeof(float)*12);
+            memset(IaOvh_HalfMemory, 0, sizeof(float)*12);
+            memset(IbOvh_HalfMemory, 0, sizeof(float)*12);
+            memset(IcOvh_HalfMemory, 0, sizeof(float)*12);
+            memset(UaOut_HalfMemory, 0, sizeof(float)*12);
+            memset(UbOut_HalfMemory, 0, sizeof(float)*12);
+            memset(UcOut_HalfMemory, 0, sizeof(float)*12);
+            memset(UabOut_HalfMemory, 0, sizeof(float)*12);
+            memset(UbcOut_HalfMemory, 0, sizeof(float)*12);
+            memset(UcaOut_HalfMemory, 0, sizeof(float)*12);
             IaPar_rms  = 0;
             IbPar_rms  = 0;
             IcPar_rms  = 0;
@@ -1424,6 +1460,18 @@ void GetVoltCurr(void)
             UabOut_rms = 0;
             UbcOut_rms = 0;
             UcaOut_rms = 0;
+            IaPar_rmsf = 0;
+            IbPar_rmsf = 0;
+            IcPar_rmsf = 0;
+            IaOvh_rmsf = 0;
+            IbOvh_rmsf = 0;
+            IcOvh_rmsf = 0;
+            UaOut_rmsf = 0;
+            UbOut_rmsf = 0;
+            UcOut_rmsf = 0;
+            UabOut_rmsf = 0;
+            UbcOut_rmsf = 0;
+            UcaOut_rmsf = 0;
             clear_sample_flag = 0;
         }
     }
