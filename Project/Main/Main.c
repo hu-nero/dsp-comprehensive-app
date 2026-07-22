@@ -159,6 +159,7 @@ void main(void)
 			CtrlCnt_LedTogg = 0;
 			IO_DSPLED_TOG;
 			GetFlowRate_Calc();
+            MotorFreq_FpgaScan();
 		}
 
 		if(RealTime1ms >= 20)

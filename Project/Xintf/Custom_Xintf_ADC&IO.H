@@ -17,6 +17,7 @@ extern void IO_Scan(void);
 //#pragma CODE_SECTION(Palarell_Extern_ADCScan, "ramfuncs");
 extern void Palarell_Extern_ADCScan(void);
 extern void Zone7_Init(void);
+extern void MotorFreq_FpgaScan(void);
 /*************************************/
 
 
