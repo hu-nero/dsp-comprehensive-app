@@ -961,14 +961,14 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         return;
                     }
                     // 判断是否满足并机系数
-                    if (!Cabinet_IsSatisfyPowerParallel(Context))
-                    {
-                        // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_PARA_FACTOR_MISMATHC, "Not meeting the parallel operation coefficient");
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
-                        return;
-                    }
+                    /*if (!Cabinet_IsSatisfyPowerParallel(Context))*/
+                    /*{*/
+                        /*// 发出警告*/
+                        /*Cabinet_SetAlarm(Context, ALARM_PARA_FACTOR_MISMATHC, "Not meeting the parallel operation coefficient");*/
+                        /*// 根据状态进行回调*/
+                        /*Cabinet_ErrBranch(Context);*/
+                        /*return;*/
+                    /*}*/
                     result = Cabinet_ExecuteBackupProcedure(Context);
                     if (result == RESULT_SUCCESS)
                     {
