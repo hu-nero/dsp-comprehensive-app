@@ -844,7 +844,7 @@ void npr_1s_protection(void)
             }
         }
         ////////////////////////////////////////////////////////
-        if (Iphase_max > 30)
+        if (Iphase_max > 5)
         {
             if(Iout_Imbalance > AlmThr_OverImba_Curr)
             {
