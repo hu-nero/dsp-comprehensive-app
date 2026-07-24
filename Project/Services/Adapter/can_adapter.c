@@ -194,6 +194,8 @@ CAN_Adapter_Init(void)
     gCommSectionToSyncStatus.section_status.all = 0;
     gCommSectionToPowerStatus.section_status.all = 0;
     memset(&gCommPowerToSectionParam, 0, sizeof(CommPowerToSection_t));
+    // 初始默认电源处于工况2
+    gCommPowerToSectionParam.power_status_word_1 = 0x10;
     // 回调
     CAN_App_Set_func_status_handler(CAN_Adapter_RxHandler);
     CAN_Agent_Set_SendStatus_Callback(eCanPort_0, CAN_Adapter_SendStatus_Callback);

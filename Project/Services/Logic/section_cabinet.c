@@ -2435,13 +2435,18 @@ Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Context)
         Context->state = CABINET_STATE_STANDBY;
         Context->target_state = CABINET_STATE_INVALID;
     }
-    if ((Context->switch_list.emergency_stop_switch == SWITCH_ON) &&
-        (Context->switch_last.emergency_stop_switch == SWITCH_OFF))
+    // 工作回路，急停连锁消磁
+    if ((Context->switch_list.A3QS1_switch == SWITCH_ON) &&
+        (Context->switch_list.A3K17_switch == SWITCH_OFF))
     {
-        // 急停后消磁
-        Context->panel_remote_degauss_flag = true;
+        if ((Context->switch_list.emergency_stop_switch == SWITCH_ON) &&
+                (Context->switch_last.emergency_stop_switch == SWITCH_OFF))
+        {
+            // 急停后消磁
+            Context->panel_remote_degauss_flag = true;
+        }
+        Context->switch_last.emergency_stop_switch = Context->switch_list.emergency_stop_switch;
     }
-    Context->switch_last.emergency_stop_switch = Context->switch_list.emergency_stop_switch;
     return RESULT_SUCCESS;
 }
 
@@ -2528,9 +2533,8 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 {
     static uint16_t fltCount = 0;
 	ExecuteResult_t res;
-    // 检修接通则故障消磁不执行
-    if( (Context->switch_list.A3QS1_switch == SWITCH_OFF) &&
-        (Context->switch_list.A3K17_switch == SWITCH_ON) )
+    // 工作回路断开则故障消磁不执行
+    if(Context->switch_list.A3QS1_switch == SWITCH_OFF)
     {
         return RESULT_INVALID_STATE;
     }

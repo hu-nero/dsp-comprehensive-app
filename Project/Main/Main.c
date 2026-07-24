@@ -493,15 +493,19 @@ void FunStatusUpdate(void)
 /******************************************************************/
 void npr_1s_protection(void)
 {
-	uint16_t status1,status2,status3;
+	uint16_t status1,status2,status3,checkCircleStatus;
 
 	status1 = Cabinet_GetComPowerToSectionParamStatus1();
     status2 = Cabinet_GetComSyncToSectionStatus();
     status3 = Cabinet_GetComPowerToSectionStatus();
+    checkCircleStatus = ((MainSta2Word.DataBit.WorkLpQS1 == 0) && (MainSta2Word.DataBit.CheckLpQS1 == 1));
 	/////////////////////////////////////////////
 
-    if (((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1) && ((status3>>10)&1)) ||
-        ((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)))
+    // 工作回路：需要满足单机/并机；检修回路直接判断
+    if ( (((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1) && ((status3>>10)&1)) ||
+          ((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1))) ||
+         (checkCircleStatus)
+       )
     {
         // 对地
         if(vphase_min < AlmThr_UnderVolt_Phase)
@@ -668,7 +672,9 @@ void npr_1s_protection(void)
             }
         }
         // 工况2
-        else if (((status1>>4)&1) == 1)
+        else if ((((status1>>4)&1) == 1) ||
+                 (checkCircleStatus)
+                )
         {
             /////////////////////////////////////////////
             // 过压故障
@@ -715,8 +721,10 @@ void npr_1s_protection(void)
             /////////////////////////////////////////////
             // 欠压
             // 单机直接判断欠压；并机需要读取同步柜给的并网有电信号
-            if ((((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) && ((status3>>10)&1)) ||
-                (((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) && (((status2>>9)&1) == 1)) )
+            if (((((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) && ((status3>>10)&1)) ||
+                 (((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) && (((status2>>9)&1) == 1))) ||
+                (checkCircleStatus)
+               )
             {
                 // 欠压故障
                 if(vLine_min < FltThr_UnderVolt_Work2)
