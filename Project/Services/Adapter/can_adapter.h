@@ -216,7 +216,7 @@ extern void CAN_Adapter_ClearGridConnectionStatus(void);
 
 extern AdapterStatus_t CAN_Adapter_GetAdapterStatus(void);
 
-extern u16 CAN_Adapter_SetMaintenStatus(u16 Status);
+extern void CAN_Adapter_SetMaintenStatus(u16 Status);
 extern u16 CAN_Adapter_GetMaintenStatus(void);
 // 柜体交互
 extern CommSyncToSection_t CAN_Adapter_GetCommSyncToSectionStatus(void);

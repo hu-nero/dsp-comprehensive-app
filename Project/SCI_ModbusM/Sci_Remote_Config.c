@@ -134,7 +134,7 @@ void Sci_Remote_SendArray_loop(volatile struct SCI_REGS *p, Uint16 * p_Arr)
     if (g_SciRemote_len>0)
     {
         IO_EN2RS485_SEND;
-		Sci_Modbus_SendData(p, *(p_Arr + i) );
+        Sci_Remote_SendData(p, *(p_Arr + i) );
         i++;
         g_SciRemote_len--;
     }

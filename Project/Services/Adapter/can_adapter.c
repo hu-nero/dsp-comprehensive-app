@@ -163,7 +163,7 @@ CAN_Adapter_GetAdapterStatus(void)
     return gAdapterStatus;
 }
 
-u16
+void
 CAN_Adapter_SetMaintenStatus(u16 Status)
 {
     gSyncToSection_PwrToPwrless = Status;

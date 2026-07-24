@@ -8,6 +8,7 @@
 #include "Main\Comm_Variable.H"
 #include "main\Variable.h"
 #include "math.h"
+#include "string.h"
 #include "GPIO\Custom_IOMacro.H"
 #include "EPWM\Custom_PWM.H"
 #include "ADCInner\Custom_InnerADC.H"
@@ -844,7 +845,7 @@ void npr_1s_protection(void)
             }
         }
         ////////////////////////////////////////////////////////
-        if (Iphase_max > 5)
+        if (Iphase_max > 30)
         {
             if(Iout_Imbalance > AlmThr_OverImba_Curr)
             {
