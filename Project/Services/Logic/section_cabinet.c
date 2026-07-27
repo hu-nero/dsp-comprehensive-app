@@ -294,7 +294,8 @@ Cabinet_Process(CabinetContext_t* Context)
 
     // 清除报警清报警字
     if ((AlarmWord2.DataBit.Bit0 == 1) ||
-        ((AlarmWord2.DataInt>>6)&0x1F))
+        ((AlarmWord2.DataInt>>6)&0x1F) ||
+        ((AlarmWord1.DataInt>>13)&0x3))
     {
         // 计时周期
         g_cabinet_period --;
@@ -302,6 +303,7 @@ Cabinet_Process(CabinetContext_t* Context)
         {
             AlarmWord2.DataBit.Bit0 = 0;
             AlarmWord2.DataInt &= ~(0x1F << 6);
+            AlarmWord1.DataInt &= ~(0x3 << 13);
             g_cabinet_period = 5000;
         }
     }
@@ -386,6 +388,48 @@ Cabinet_SetCabinetReset(CabinetContext_t* Context)
 
     // 读取面板、柜体开关状态
     Cabinet_ReadAllSwitchStatus(Context);
+
+    // 清空电压、电流、功率缓存
+    memset(IaPar_HalfMemory, 0, sizeof(float)*12);
+    memset(IbPar_HalfMemory, 0, sizeof(float)*12);
+    memset(IcPar_HalfMemory, 0, sizeof(float)*12);
+    memset(IaOvh_HalfMemory, 0, sizeof(float)*12);
+    memset(IbOvh_HalfMemory, 0, sizeof(float)*12);
+    memset(IcOvh_HalfMemory, 0, sizeof(float)*12);
+    memset(UaOut_HalfMemory, 0, sizeof(float)*12);
+    memset(UbOut_HalfMemory, 0, sizeof(float)*12);
+    memset(UcOut_HalfMemory, 0, sizeof(float)*12);
+    memset(UabOut_HalfMemory, 0, sizeof(float)*12);
+    memset(UbcOut_HalfMemory, 0, sizeof(float)*12);
+    memset(UcaOut_HalfMemory, 0, sizeof(float)*12);
+    IaPar_rms  = 0;
+    IbPar_rms  = 0;
+    IcPar_rms  = 0;
+    IaOvh_rms = 0;
+    IbOvh_rms = 0;
+    IcOvh_rms = 0;
+    UaOut_rms = 0;
+    UbOut_rms = 0;
+    UcOut_rms = 0;
+    UabOut_rms = 0;
+    UbcOut_rms = 0;
+    UcaOut_rms = 0;
+    IaPar_rmsf = 0;
+    IbPar_rmsf = 0;
+    IcPar_rmsf = 0;
+    IaOvh_rmsf = 0;
+    IbOvh_rmsf = 0;
+    IcOvh_rmsf = 0;
+    UaOut_rmsf = 0;
+    UbOut_rmsf = 0;
+    UcOut_rmsf = 0;
+    UabOut_rmsf = 0;
+    UbcOut_rmsf = 0;
+    UcaOut_rmsf = 0;
+    P_Sys = 0;
+    Q_Sys = 0;
+    S_Sys = 0;
+    PF_Sys = 0;
 }
 
 static inline void
@@ -1362,31 +1406,6 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                         Context->demagnetize_state = DEMAGNETIZE_IDLE;
                         Context->state = CABINET_STATE_STANDBY;
                         Context->target_state = CABINET_STATE_INVALID;
-                        // 清空电压、电流缓存
-                        memset(IaPar_HalfMemory, 0, sizeof(float)*20);
-                        memset(IbPar_HalfMemory, 0, sizeof(float)*20);
-                        memset(IcPar_HalfMemory, 0, sizeof(float)*20);
-
-                        memset(IaOvh_HalfMemory, 0, sizeof(float)*20);
-                        memset(IbOvh_HalfMemory, 0, sizeof(float)*20);
-                        memset(IcOvh_HalfMemory, 0, sizeof(float)*20);
-
-                        memset(UaOut_HalfMemory, 0, sizeof(float)*20);
-                        memset(UbOut_HalfMemory, 0, sizeof(float)*20);
-                        memset(UcOut_HalfMemory, 0, sizeof(float)*20);
-
-                        memset(UabOut_HalfMemory, 0, sizeof(float)*20);
-                        memset(UbcOut_HalfMemory, 0, sizeof(float)*20);
-                        memset(UcaOut_HalfMemory, 0, sizeof(float)*20);
-                        // 功率缓存清空
-                        P_Work = 0;
-                        Q_Work = 0;
-                        work1_rms = 0;
-                        work2_rms = 0;
-                        P_Sys = 0;
-                        Q_Sys = 0;
-                        S_Sys = 0;
-                        PF_Sys = 0;
                     }
                     else if (demag_result == RESULT_WAIT)
                     {
@@ -1430,31 +1449,6 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                         Context->demagnetize_state = DEMAGNETIZE_IDLE;
                         Context->state = CABINET_STATE_STANDBY;
                         Context->target_state = CABINET_STATE_INVALID;
-                        // 清空电压、电流缓存
-                        memset(IaPar_HalfMemory, 0, sizeof(float)*20);
-                        memset(IbPar_HalfMemory, 0, sizeof(float)*20);
-                        memset(IcPar_HalfMemory, 0, sizeof(float)*20);
-
-                        memset(IaOvh_HalfMemory, 0, sizeof(float)*20);
-                        memset(IbOvh_HalfMemory, 0, sizeof(float)*20);
-                        memset(IcOvh_HalfMemory, 0, sizeof(float)*20);
-
-                        memset(UaOut_HalfMemory, 0, sizeof(float)*20);
-                        memset(UbOut_HalfMemory, 0, sizeof(float)*20);
-                        memset(UcOut_HalfMemory, 0, sizeof(float)*20);
-
-                        memset(UabOut_HalfMemory, 0, sizeof(float)*20);
-                        memset(UbcOut_HalfMemory, 0, sizeof(float)*20);
-                        memset(UcaOut_HalfMemory, 0, sizeof(float)*20);
-                        // 功率缓存清空
-                        P_Work = 0;
-                        Q_Work = 0;
-                        work1_rms = 0;
-                        work2_rms = 0;
-                        P_Sys = 0;
-                        Q_Sys = 0;
-                        S_Sys = 0;
-                        PF_Sys = 0;
                         return;
                     }
                     else if (demag_result == RESULT_WAIT)
@@ -2613,31 +2607,6 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
         Context->target_state = CABINET_STATE_INVALID;
         Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_START;
         Context->fault_recovery_ctx.fault_status = false;
-        // 清空电压、电流缓存
-        memset(IaPar_HalfMemory, 0, sizeof(float)*20);
-        memset(IbPar_HalfMemory, 0, sizeof(float)*20);
-        memset(IcPar_HalfMemory, 0, sizeof(float)*20);
-
-        memset(IaOvh_HalfMemory, 0, sizeof(float)*20);
-        memset(IbOvh_HalfMemory, 0, sizeof(float)*20);
-        memset(IcOvh_HalfMemory, 0, sizeof(float)*20);
-
-        memset(UaOut_HalfMemory, 0, sizeof(float)*20);
-        memset(UbOut_HalfMemory, 0, sizeof(float)*20);
-        memset(UcOut_HalfMemory, 0, sizeof(float)*20);
-
-        memset(UabOut_HalfMemory, 0, sizeof(float)*20);
-        memset(UbcOut_HalfMemory, 0, sizeof(float)*20);
-        memset(UcaOut_HalfMemory, 0, sizeof(float)*20);
-        // 功率缓存清空
-        P_Work = 0;
-        Q_Work = 0;
-        work1_rms = 0;
-        work2_rms = 0;
-        P_Sys = 0;
-        Q_Sys = 0;
-        S_Sys = 0;
-        PF_Sys = 0;
     }
 
 	// 子状态消磁

@@ -1398,10 +1398,10 @@ void GetVoltCurr(void)
                 UabOut_rms = 0;
                 UbcOut_rms = 0;
                 UcaOut_rms = 0;
-                IaPar_rmsf = 0;
-                IbPar_rmsf = 0;
-                IcPar_rmsf = 0;
-                IaOvh_rmsf = 0;
+            IaPar_rmsf = 0;
+            IbPar_rmsf = 0;
+            IcPar_rmsf = 0;
+            IaOvh_rmsf = 0;
             IbOvh_rmsf = 0;
             IcOvh_rmsf = 0;
             UaOut_rmsf = 0;
