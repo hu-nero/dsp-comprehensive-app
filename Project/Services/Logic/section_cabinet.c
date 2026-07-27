@@ -2766,9 +2766,9 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
             (Context->switch_list.A3K17_switch == SWITCH_ON))
         {
             // 检修电流判断
-            if (!((Context->current_read(CURRENT_I6_PHASE_A) < 20) &&
-                 (Context->current_read(CURRENT_I6_PHASE_B) < 20) &&
-                 (Context->current_read(CURRENT_I6_PHASE_C) < 20)))
+            if (!((Context->current_read(CURRENT_I6_PHASE_A) < 10) &&
+                 (Context->current_read(CURRENT_I6_PHASE_B) < 10) &&
+                 (Context->current_read(CURRENT_I6_PHASE_C) < 10)))
             {
                 // 发出警告
                 Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "Current is on");
