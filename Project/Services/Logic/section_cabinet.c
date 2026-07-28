@@ -594,6 +594,11 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             Context->fault_recovery_ctx.state_before_fault = CABINET_STATE_INVALID;
             Context->fault_recovery_ctx.last_fault_code = 0;
 
+            if (NPR_FaultCode != 0)
+            {
+                return;
+            }
+
             // 读取旋钮状态
             single_switch = (SwitchState_t)Context->switch_feed(DI_ID_SINGLE);
             parallel_switch = (SwitchState_t)Context->switch_feed(DI_ID_BUS1);
@@ -668,6 +673,11 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
         else
         {
         	uint16_t tmp_single_switch,tmp_parallel_switch;
+
+            if (NPR_FaultCode != 0)
+            {
+                return;
+            }
             // 清空旋钮状态
             (void)Context->switch_feed(DI_ID_SINGLE);
             (void)Context->switch_feed(DI_ID_BUS1);
