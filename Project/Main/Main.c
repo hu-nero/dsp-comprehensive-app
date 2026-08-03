@@ -1207,29 +1207,29 @@ void GetVoltCurr(void)
     /** 0.0966;//1.1592*/
     /** 0.0947;//1.1364*/
     /** 0.0947;//1.1364*/
-    UabSl_rms -= fabsf(UabSl_HalfMemory[SysCnt_10msRmsCalc]);
-    UbcSl_rms -= fabsf(UbcSl_HalfMemory[SysCnt_10msRmsCalc]);
-    UcaSl_rms -= fabsf(UcaSl_HalfMemory[SysCnt_10msRmsCalc]);
+    UabSl_rms -= ABS(UabSl_HalfMemory[SysCnt_10msRmsCalc]);
+    UbcSl_rms -= ABS(UbcSl_HalfMemory[SysCnt_10msRmsCalc]);
+    UcaSl_rms -= ABS(UcaSl_HalfMemory[SysCnt_10msRmsCalc]);
 
-    UabPar_rms -= fabsf(UabPar_HalfMemory[SysCnt_10msRmsCalc]);
-    UbcPar_rms -= fabsf(UbcPar_HalfMemory[SysCnt_10msRmsCalc]);
-    UcaPar_rms -= fabsf(UcaPar_HalfMemory[SysCnt_10msRmsCalc]);
+    UabPar_rms -= ABS(UabPar_HalfMemory[SysCnt_10msRmsCalc]);
+    UbcPar_rms -= ABS(UbcPar_HalfMemory[SysCnt_10msRmsCalc]);
+    UcaPar_rms -= ABS(UcaPar_HalfMemory[SysCnt_10msRmsCalc]);
 
-    IaPar_rms -= fabsf(IaPar_HalfMemory[SysCnt_10msRmsCalc]);
-    IbPar_rms -= fabsf(IbPar_HalfMemory[SysCnt_10msRmsCalc]);
-    IcPar_rms -= fabsf(IcPar_HalfMemory[SysCnt_10msRmsCalc]);
+    IaPar_rms -= ABS(IaPar_HalfMemory[SysCnt_10msRmsCalc]);
+    IbPar_rms -= ABS(IbPar_HalfMemory[SysCnt_10msRmsCalc]);
+    IcPar_rms -= ABS(IcPar_HalfMemory[SysCnt_10msRmsCalc]);
 
-    IaOvh_rms -= fabsf(IaOvh_HalfMemory[SysCnt_10msRmsCalc]);
-    IbOvh_rms -= fabsf(IbOvh_HalfMemory[SysCnt_10msRmsCalc]);
-    IcOvh_rms -= fabsf(IcOvh_HalfMemory[SysCnt_10msRmsCalc]);
+    IaOvh_rms -= ABS(IaOvh_HalfMemory[SysCnt_10msRmsCalc]);
+    IbOvh_rms -= ABS(IbOvh_HalfMemory[SysCnt_10msRmsCalc]);
+    IcOvh_rms -= ABS(IcOvh_HalfMemory[SysCnt_10msRmsCalc]);
 
-    UaOut_rms -= fabsf(UaOut_HalfMemory[SysCnt_10msRmsCalc]);
-    UbOut_rms -= fabsf(UbOut_HalfMemory[SysCnt_10msRmsCalc]);
-    UcOut_rms -= fabsf(UcOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UaOut_rms -= ABS(UaOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UbOut_rms -= ABS(UbOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UcOut_rms -= ABS(UcOut_HalfMemory[SysCnt_10msRmsCalc]);
 
-    UabOut_rms -= fabsf(UabOut_HalfMemory[SysCnt_10msRmsCalc]);
-    UbcOut_rms -= fabsf(UbcOut_HalfMemory[SysCnt_10msRmsCalc]);
-    UcaOut_rms -= fabsf(UcaOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UabOut_rms -= ABS(UabOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UbcOut_rms -= ABS(UbcOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UcaOut_rms -= ABS(UcaOut_HalfMemory[SysCnt_10msRmsCalc]);
 
     UabSl_HalfMemory[SysCnt_10msRmsCalc] = UabSl;
     UbcSl_HalfMemory[SysCnt_10msRmsCalc] = UbcSl;
@@ -1255,43 +1255,43 @@ void GetVoltCurr(void)
     UbcOut_HalfMemory[SysCnt_10msRmsCalc] = UbcOut;
     UcaOut_HalfMemory[SysCnt_10msRmsCalc] = UcaOut;
 
-    UabSl_rms += fabsf(UabSl_HalfMemory[SysCnt_10msRmsCalc]);
-    UbcSl_rms += fabsf(UbcSl_HalfMemory[SysCnt_10msRmsCalc]);
-    UcaSl_rms += fabsf(UcaSl_HalfMemory[SysCnt_10msRmsCalc]);
+    UabSl_rms += ABS(UabSl_HalfMemory[SysCnt_10msRmsCalc]);
+    UbcSl_rms += ABS(UbcSl_HalfMemory[SysCnt_10msRmsCalc]);
+    UcaSl_rms += ABS(UcaSl_HalfMemory[SysCnt_10msRmsCalc]);
 
-    UabPar_rms += fabsf(UabPar_HalfMemory[SysCnt_10msRmsCalc]);
-    UbcPar_rms += fabsf(UbcPar_HalfMemory[SysCnt_10msRmsCalc]);
-    UcaPar_rms += fabsf(UcaPar_HalfMemory[SysCnt_10msRmsCalc]);
+    UabPar_rms += ABS(UabPar_HalfMemory[SysCnt_10msRmsCalc]);
+    UbcPar_rms += ABS(UbcPar_HalfMemory[SysCnt_10msRmsCalc]);
+    UcaPar_rms += ABS(UcaPar_HalfMemory[SysCnt_10msRmsCalc]);
 
-    IaPar_rms += fabsf(IaPar_HalfMemory[SysCnt_10msRmsCalc]);
-    IbPar_rms += fabsf(IbPar_HalfMemory[SysCnt_10msRmsCalc]);
-    IcPar_rms += fabsf(IcPar_HalfMemory[SysCnt_10msRmsCalc]);
+    IaPar_rms += ABS(IaPar_HalfMemory[SysCnt_10msRmsCalc]);
+    IbPar_rms += ABS(IbPar_HalfMemory[SysCnt_10msRmsCalc]);
+    IcPar_rms += ABS(IcPar_HalfMemory[SysCnt_10msRmsCalc]);
 
-    IaOvh_rms += fabsf(IaOvh_HalfMemory[SysCnt_10msRmsCalc]);
-    IbOvh_rms += fabsf(IbOvh_HalfMemory[SysCnt_10msRmsCalc]);
-    IcOvh_rms += fabsf(IcOvh_HalfMemory[SysCnt_10msRmsCalc]);
+    IaOvh_rms += ABS(IaOvh_HalfMemory[SysCnt_10msRmsCalc]);
+    IbOvh_rms += ABS(IbOvh_HalfMemory[SysCnt_10msRmsCalc]);
+    IcOvh_rms += ABS(IcOvh_HalfMemory[SysCnt_10msRmsCalc]);
 
-    UaOut_rms += fabsf(UaOut_HalfMemory[SysCnt_10msRmsCalc]);
-    UbOut_rms += fabsf(UbOut_HalfMemory[SysCnt_10msRmsCalc]);
-    UcOut_rms += fabsf(UcOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UaOut_rms += ABS(UaOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UbOut_rms += ABS(UbOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UcOut_rms += ABS(UcOut_HalfMemory[SysCnt_10msRmsCalc]);
 
-    UabOut_rms += fabsf(UabOut_HalfMemory[SysCnt_10msRmsCalc]);
-    UbcOut_rms += fabsf(UbcOut_HalfMemory[SysCnt_10msRmsCalc]);
-    UcaOut_rms += fabsf(UcaOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UabOut_rms += ABS(UabOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UbcOut_rms += ABS(UbcOut_HalfMemory[SysCnt_10msRmsCalc]);
+    UcaOut_rms += ABS(UcaOut_HalfMemory[SysCnt_10msRmsCalc]);
 
-    float p_inst = 0.0f, q_inst = 0.0f;
+    long long p_inst = 0, q_inst = 0;
     if( MainSta2Word.DataBit.WorkLpQS1 && (!MainSta2Word.DataBit.CheckLpQS1) )
     {
         if(MainSta2Word.DataBit.SingQF1 || MainSta2Word.DataBit.ParaQF2)
         {
-            p_inst = UaOut * IaPar + UbOut * IbPar + UcOut * IcPar;
-            q_inst = (UbcOut * IaPar + UcaOut * IbPar + UabOut * IcPar) / Sqrt_3;
+            p_inst = ((long long)UaOut * IaPar + (long long)UbOut * IbPar + (long long)UcOut * IcPar);
+            q_inst = ((long long)UbcOut * IaPar + (long long)UcaOut * IbPar + (long long)UabOut * IcPar);
         }
     }
     else if( (!MainSta2Word.DataBit.WorkLpQS1) && (MainSta2Word.DataBit.CheckLpQS1) )
     {
-        p_inst = UaOut * IaOvh + UbOut * IbOvh + UcOut * IcOvh;
-        q_inst = (UbcOut * IaOvh + UcaOut * IbOvh + UabOut * IcOvh) / Sqrt_3;
+        p_inst = ((long long)UaOut * IaOvh + (long long)UbOut * IbOvh + (long long)UcOut * IcOvh);
+        q_inst = ((long long)UbcOut * IaOvh + (long long)UcaOut * IbOvh + (long long)UabOut * IcOvh);
     }
 
     P_sum -= P_inst_buf[pwr_buf_idx];
@@ -1304,35 +1304,32 @@ void GetVoltCurr(void)
 
     pwr_buf_idx = (pwr_buf_idx + 1) % PWM_SAMPLE_SIZE;
 
-    work1_rms = P_sum / PWM_SAMPLE_SIZE;
-    work2_rms = Q_sum / PWM_SAMPLE_SIZE;
+    UabSl_rmsf = UabSl_rmsf * 0.9999 + fabsf((float)UabSl_rms * 0.0000000966);//1.1592/12*0.0001/100 矫正系数/12数组*0.0001滤波/100 AD的移位恢复
+    UbcSl_rmsf = UbcSl_rmsf * 0.9999 + fabsf((float)UbcSl_rms * 0.0000000947);
+    UcaSl_rmsf = UcaSl_rmsf * 0.9999 + fabsf((float)UcaSl_rms * 0.0000000947);
 
-    UabPar_rmsf = UabPar_rmsf * 0.9999 + fabsf(UabPar_rms * 0.00000966);
-    UbcPar_rmsf = UbcPar_rmsf * 0.9999 + fabsf(UbcPar_rms * 0.00000947);
-    UcaPar_rmsf = UcaPar_rmsf * 0.9999 + fabsf(UcaPar_rms * 0.00000947);
+    UabPar_rmsf = UabPar_rmsf * 0.9999 + fabsf((float)UabPar_rms * 0.0000000966);
+    UbcPar_rmsf = UbcPar_rmsf * 0.9999 + fabsf((float)UbcPar_rms * 0.0000000947);
+    UcaPar_rmsf = UcaPar_rmsf * 0.9999 + fabsf((float)UcaPar_rms * 0.0000000947);
 
-    UabSl_rmsf = UabSl_rmsf * 0.9999 + fabsf(UabSl_rms * 0.00000966);
-    UbcSl_rmsf = UbcSl_rmsf * 0.9999 + fabsf(UbcSl_rms * 0.00000947);
-    UcaSl_rmsf = UcaSl_rmsf * 0.9999 + fabsf(UcaSl_rms * 0.00000947);
+    IaOvh_rmsf = IaOvh_rmsf * 0.9999 + fabsf((float)IaOvh_rms * 0.0000000966);
+    IbOvh_rmsf = IbOvh_rmsf * 0.9999 + fabsf((float)IbOvh_rms * 0.0000000966);
+    IcOvh_rmsf = IcOvh_rmsf * 0.9999 + fabsf((float)IcOvh_rms * 0.0000000947);
 
-    IaOvh_rmsf = IaOvh_rmsf * 0.9999 + fabsf(IaOvh_rms * 0.00000966);
-    IbOvh_rmsf = IbOvh_rmsf * 0.9999 + fabsf(IbOvh_rms * 0.00000966);
-    IcOvh_rmsf = IcOvh_rmsf * 0.9999 + fabsf(IcOvh_rms * 0.00000947);
+    IaPar_rmsf = IaPar_rmsf * 0.9999 + fabsf((float)IaPar_rms * 0.0000000966);
+    IbPar_rmsf = IbPar_rmsf * 0.9999 + fabsf((float)IbPar_rms * 0.0000000966);
+    IcPar_rmsf = IcPar_rmsf * 0.9999 + fabsf((float)IcPar_rms * 0.0000000947);
 
-    IaPar_rmsf = IaPar_rmsf * 0.9999 + fabsf(IaPar_rms * 0.00000966);
-    IbPar_rmsf = IbPar_rmsf * 0.9999 + fabsf(IbPar_rms * 0.00000966);
-    IcPar_rmsf = IcPar_rmsf * 0.9999 + fabsf(IcPar_rms * 0.00000947);
+    UaOut_rmsf = UaOut_rmsf * 0.9999 + fabsf((float)UaOut_rms * 0.0000000966);
+    UbOut_rmsf = UbOut_rmsf * 0.9999 + fabsf((float)UbOut_rms * 0.0000000947);
+    UcOut_rmsf = UcOut_rmsf * 0.9999 + fabsf((float)UcOut_rms * 0.0000000947);
 
-    UaOut_rmsf = UaOut_rmsf * 0.9999 + fabsf(UaOut_rms * 0.00000966);
-    UbOut_rmsf = UbOut_rmsf * 0.9999 + fabsf(UbOut_rms * 0.00000947);
-    UcOut_rmsf = UcOut_rmsf * 0.9999 + fabsf(UcOut_rms * 0.00000947);
+    UabOut_rmsf = UabOut_rmsf * 0.9999 + fabsf((float)UabOut_rms * 0.0000000966);
+    UbcOut_rmsf = UbcOut_rmsf * 0.9999 + fabsf((float)UbcOut_rms * 0.0000000947);
+    UcaOut_rmsf = UcaOut_rmsf * 0.9999 + fabsf((float)UcaOut_rms * 0.0000000947);
 
-    UabOut_rmsf = UabOut_rmsf * 0.9999 + fabsf(UabOut_rms * 0.00000966);
-    UbcOut_rmsf = UbcOut_rmsf * 0.9999 + fabsf(UbcOut_rms * 0.00000947);
-    UcaOut_rmsf = UcaOut_rmsf * 0.9999 + fabsf(UcaOut_rms * 0.00000947);
-
-    P_Work = P_Work*0.9999 + work1_rms*0.0001;
-    Q_Work = Q_Work*0.9999 + work2_rms*0.0001;
+    P_Work = P_Work*0.9999 + (float)P_sum * 8.3333334e-10f; // x/12/10000/10000
+    Q_Work = Q_Work*0.9999 + (float)Q_sum * 4.8112522e-10f; // x/12/10000/1.732/10000
 
     SysCnt_10msRmsCalc ++;
     if(SysCnt_10msRmsCalc >= 12)
@@ -1345,8 +1342,8 @@ void GetVoltCurr(void)
     {
         if(MainSta2Word.DataBit.SingQF1 || MainSta2Word.DataBit.ParaQF2)
         {
-            P_Sys = (P_Work)*0.00046;
-            Q_Sys = (Q_Work)*0.00108;
+            P_Sys = (P_Work)*0.001073;
+            Q_Sys = (Q_Work)*0.001062;
             if (Flag_RmsBufFull)
             {
                 // 视在功率
@@ -1366,122 +1363,33 @@ void GetVoltCurr(void)
             Q_Sys = 0;
             S_Sys = 0;
             PF_Sys = 0;
-            clear_sample_count++;
-            if(clear_sample_count >= 65000)
-            {
-                clear_sample_count = 0;
-                clear_sample_flag = 1;
-            }
-            if (clear_sample_flag)
-            {
-                memset(IaPar_HalfMemory, 0, sizeof(float)*12);
-                memset(IbPar_HalfMemory, 0, sizeof(float)*12);
-                memset(IcPar_HalfMemory, 0, sizeof(float)*12);
-                memset(IaOvh_HalfMemory, 0, sizeof(float)*12);
-                memset(IbOvh_HalfMemory, 0, sizeof(float)*12);
-                memset(IcOvh_HalfMemory, 0, sizeof(float)*12);
-                memset(UaOut_HalfMemory, 0, sizeof(float)*12);
-                memset(UbOut_HalfMemory, 0, sizeof(float)*12);
-                memset(UcOut_HalfMemory, 0, sizeof(float)*12);
-                memset(UabOut_HalfMemory, 0, sizeof(float)*12);
-                memset(UbcOut_HalfMemory, 0, sizeof(float)*12);
-                memset(UcaOut_HalfMemory, 0, sizeof(float)*12);
-                IaPar_rms  = 0;
-                IbPar_rms  = 0;
-                IcPar_rms  = 0;
-                IaOvh_rms = 0;
-                IbOvh_rms = 0;
-                IcOvh_rms = 0;
-                UaOut_rms = 0;
-                UbOut_rms = 0;
-                UcOut_rms = 0;
-                UabOut_rms = 0;
-                UbcOut_rms = 0;
-                UcaOut_rms = 0;
-            IaPar_rmsf = 0;
-            IbPar_rmsf = 0;
-            IcPar_rmsf = 0;
-            IaOvh_rmsf = 0;
-            IbOvh_rmsf = 0;
-            IcOvh_rmsf = 0;
-            UaOut_rmsf = 0;
-            UbOut_rmsf = 0;
-            UcOut_rmsf = 0;
-            UabOut_rmsf = 0;
-            UbcOut_rmsf = 0;
-            UcaOut_rmsf = 0;
-                clear_sample_flag = 0;
-            }
         }
     }
     else if( (!MainSta2Word.DataBit.WorkLpQS1) && (MainSta2Word.DataBit.CheckLpQS1) )
     {
-        P_Sys = (P_Work)*0.00046;
-        Q_Sys = (Q_Work)*0.00108;
-        if (Flag_RmsBufFull)
+        if (vLine_min > 20)
         {
-            // 视在功率
-            S_Work = P_Sys*P_Sys + Q_Sys*Q_Sys;
-            S_Sys = sqrtf(S_Work);
-            // 功率因子
-            if (S_Sys != 0)
+            P_Sys = (P_Work)*0.001073;
+            Q_Sys = (Q_Work)*0.001062;
+            if (Flag_RmsBufFull)
             {
-                PF_Sys = P_Sys / S_Sys;
+                // 视在功率
+                S_Work = P_Sys*P_Sys + Q_Sys*Q_Sys;
+                S_Sys = sqrtf(S_Work);
+                // 功率因子
+                if (S_Sys != 0)
+                {
+                    PF_Sys = P_Sys / S_Sys;
+                }
+                Flag_RmsBufFull = 0;
             }
-            Flag_RmsBufFull = 0;
         }
-    }
-    else
-    {
-        P_Sys = 0;
-        Q_Sys = 0;
-        S_Sys = 0;
-        PF_Sys = 0;
-        clear_sample_count++;
-        if(clear_sample_count >= 65000)
+        else
         {
-            clear_sample_count = 0;
-            clear_sample_flag = 1;
-        }
-        if (clear_sample_flag)
-        {
-            memset(IaPar_HalfMemory, 0, sizeof(float)*12);
-            memset(IbPar_HalfMemory, 0, sizeof(float)*12);
-            memset(IcPar_HalfMemory, 0, sizeof(float)*12);
-            memset(IaOvh_HalfMemory, 0, sizeof(float)*12);
-            memset(IbOvh_HalfMemory, 0, sizeof(float)*12);
-            memset(IcOvh_HalfMemory, 0, sizeof(float)*12);
-            memset(UaOut_HalfMemory, 0, sizeof(float)*12);
-            memset(UbOut_HalfMemory, 0, sizeof(float)*12);
-            memset(UcOut_HalfMemory, 0, sizeof(float)*12);
-            memset(UabOut_HalfMemory, 0, sizeof(float)*12);
-            memset(UbcOut_HalfMemory, 0, sizeof(float)*12);
-            memset(UcaOut_HalfMemory, 0, sizeof(float)*12);
-            IaPar_rms  = 0;
-            IbPar_rms  = 0;
-            IcPar_rms  = 0;
-            IaOvh_rms = 0;
-            IbOvh_rms = 0;
-            IcOvh_rms = 0;
-            UaOut_rms = 0;
-            UbOut_rms = 0;
-            UcOut_rms = 0;
-            UabOut_rms = 0;
-            UbcOut_rms = 0;
-            UcaOut_rms = 0;
-            IaPar_rmsf = 0;
-            IbPar_rmsf = 0;
-            IcPar_rmsf = 0;
-            IaOvh_rmsf = 0;
-            IbOvh_rmsf = 0;
-            IcOvh_rmsf = 0;
-            UaOut_rmsf = 0;
-            UbOut_rmsf = 0;
-            UcOut_rmsf = 0;
-            UabOut_rmsf = 0;
-            UbcOut_rmsf = 0;
-            UcaOut_rmsf = 0;
-            clear_sample_flag = 0;
+            P_Sys = 0;
+            Q_Sys = 0;
+            S_Sys = 0;
+            PF_Sys = 0;
         }
     }
 }

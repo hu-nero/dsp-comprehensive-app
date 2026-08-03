@@ -36,12 +36,12 @@ extern UINT SysTimeser_back,SysTimeser_backold;
 ////////////////////////////////////////////////////////////////////
 extern float Iout_Imbalance, Uout_Imbalance;
 
-extern float UabSl, UbcSl, UcaSl;
-extern float UabPar, UbcPar, UcaPar;
-extern float IaPar, IbPar, IcPar;
-extern float IaOvh, IbOvh, IcOvh;
-extern float UaOut, UbOut, UcOut;
-extern float UabOut, UbcOut, UcaOut;
+extern long UabSl, UbcSl, UcaSl;
+extern long UabPar, UbcPar, UcaPar;
+extern long IaPar, IbPar, IcPar;
+extern long IaOvh, IbOvh, IcOvh;
+extern long UaOut, UbOut, UcOut;
+extern long UabOut, UbcOut, UcaOut;
 extern float FpgaMotorFreq;
 
 extern float UabSl_rmsf, UbcSl_rmsf, UcaSl_rmsf;
@@ -54,21 +54,12 @@ extern float P_Workf, Q_Workf, S_Workf;
 extern float P_Ovhf, Q_Ovhf, S_Ovhf;
 extern float IaOut_rmsf, IbOut_rmsf, IcOut_rmsf;
 
-extern float UabSl_sum, UbcSl_sum, UcaSl_sum;
-extern float UabPar_sum, UbcPar_sum, UcaPar_sum;
-extern float IaPar_sum, IbPar_sum, IcPar_sum;
-extern float IaOvh_sum, IbOvh_sum, IcOvh_sum;
-extern float UaOut_sum, UbOut_sum, UcOut_sum;
-extern float UabOut_sum, UbcOut_sum, UcaOut_sum;
-extern float work1_sum,work2_sum,work3_sum,work4_sum;
-
-extern float UabSl_rms, UbcSl_rms, UcaSl_rms;
-extern float UabPar_rms, UbcPar_rms, UcaPar_rms;
-extern float IaPar_rms, IbPar_rms, IcPar_rms;
-extern float IaOvh_rms, IbOvh_rms, IcOvh_rms;
-extern float UaOut_rms, UbOut_rms, UcOut_rms;
-extern float UabOut_rms, UbcOut_rms, UcaOut_rms;
-extern float work1_rms,work2_rms;
+extern long UabSl_rms, UbcSl_rms, UcaSl_rms;
+extern long UabPar_rms, UbcPar_rms, UcaPar_rms;
+extern long IaPar_rms, IbPar_rms, IcPar_rms;
+extern long IaOvh_rms, IbOvh_rms, IcOvh_rms;
+extern long UaOut_rms, UbOut_rms, UcOut_rms;
+extern long UabOut_rms, UbcOut_rms, UcaOut_rms;
 
 extern float P_Work, Q_Work, S_Work, PF_Work;
 extern float P_Ovh, Q_Ovh, S_Ovh, PF_Ovh;
@@ -153,18 +144,18 @@ extern float Auto_SingParaConv_Time;
 extern unsigned int PS_Monitor_ID;
 extern float FltCnt_P_Sys_WorkMode;
 
-extern float UabSl_HalfMemory[12], UbcSl_HalfMemory[12], UcaSl_HalfMemory[12];
-extern float UabPar_HalfMemory[12], UbcPar_HalfMemory[12], UcaPar_HalfMemory[12];
-extern float IaPar_HalfMemory[12], IbPar_HalfMemory[12], IcPar_HalfMemory[12];
-extern float IaOvh_HalfMemory[12], IbOvh_HalfMemory[12], IcOvh_HalfMemory[12];
-extern float UaOut_HalfMemory[12], UbOut_HalfMemory[12], UcOut_HalfMemory[12];
-extern float UabOut_HalfMemory[12], UbcOut_HalfMemory[12], UcaOut_HalfMemory[12];
+extern long UabSl_HalfMemory[12], UbcSl_HalfMemory[12], UcaSl_HalfMemory[12];
+extern long UabPar_HalfMemory[12], UbcPar_HalfMemory[12], UcaPar_HalfMemory[12];
+extern long IaPar_HalfMemory[12], IbPar_HalfMemory[12], IcPar_HalfMemory[12];
+extern long IaOvh_HalfMemory[12], IbOvh_HalfMemory[12], IcOvh_HalfMemory[12];
+extern long UaOut_HalfMemory[12], UbOut_HalfMemory[12], UcOut_HalfMemory[12];
+extern long UabOut_HalfMemory[12], UbcOut_HalfMemory[12], UcaOut_HalfMemory[12];
 
-extern float P_inst_buf[12];
-extern float Q_inst_buf[12];
+extern long long P_inst_buf[12];
+extern long long Q_inst_buf[12];
+extern long long P_sum;
+extern long long Q_sum;
 extern int   pwr_buf_idx;
-extern float P_sum;
-extern float Q_sum;
 extern unsigned int clear_sample_count;
 extern unsigned int clear_sample_flag;
 extern unsigned int flag_EPWM1_INT_Underflow;

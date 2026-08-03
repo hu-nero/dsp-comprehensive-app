@@ -10,9 +10,9 @@
 int ADValue[16]={0};
 
 /*******************************************************************/
-#define KGVAD    0.0318717756//0.03305970206 //0.06900261293
+#define KGVAD    3.18717756//KGVAD=KGVAD*100;default:0.0318717756
 #define KDCAD    0.06636892541
-#define KGIAD    0.09304423621
+#define KGIAD    9.304423621//KGIAD=KGIAD*100;default:0.09304423621
 #define KFIAD    0.00762962736//(100A/4V) 0.00381481368(50A/4V)
 #define KREAL    0.00030518509//0.00030518509
 
@@ -154,26 +154,26 @@ void Palarell_Extern_ADCScan(void)
 	(void)temp;
 
 	for(i=0; i<5; i++);
+    // Ia/Ib/Ic Uab/Ubc/Uca Ua/Ub/Uc expand 100
+	IaPar = (long)((long)IaPar_ad * KGIAD);
+	IbPar = (long)((long)IbPar_ad * KGIAD);
+	IcPar = (long)((long)IcPar_ad * KGIAD);
 
-	IaPar = IaPar_ad * KGIAD;
-	IbPar = IbPar_ad * KGIAD;
-	IcPar = IcPar_ad * KGIAD;
+	IaOvh = (long)((long)IaOvh_ad * KGIAD);
+	IbOvh = (long)((long)IbOvh_ad * KGIAD);
+	IcOvh = (long)((long)IcOvh_ad * KGIAD);
 
-	IaOvh = IaOvh_ad * KGIAD;
-	IbOvh = IbOvh_ad * KGIAD;
-	IcOvh = IcOvh_ad * KGIAD;
-
-	UabSl = (UabSl_ad * KGVAD); //single parallel
-	UbcSl = (UbcSl_ad * KGVAD);
+	UabSl = (long)((long)UabSl_ad * KGVAD); //single parallel
+	UbcSl = (long)((long)UbcSl_ad * KGVAD);
 	UcaSl = -UabSl -UbcSl;
 
-	UabPar = (UabPar_ad * KGVAD);
-	UbcPar = (UbcPar_ad * KGVAD);
+	UabPar = (long)((long)UabPar_ad * KGVAD);
+	UbcPar = (long)((long)UbcPar_ad * KGVAD);
 	UcaPar = -UabPar -UbcPar;
 
-	UaOut = UaOut_ad * KGVAD;
-	UbOut = UbOut_ad * KGVAD;
-	UcOut = UcOut_ad * KGVAD;
+	UaOut = (long)((long)UaOut_ad * KGVAD);
+	UbOut = (long)((long)UbOut_ad * KGVAD);
+	UcOut = (long)((long)UcOut_ad * KGVAD);
 
 	UabOut = UaOut - UbOut;
 	UbcOut = UbOut - UcOut;

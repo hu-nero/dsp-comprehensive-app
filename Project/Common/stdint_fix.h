@@ -16,6 +16,9 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
+// ¾ø¶ÔÖµ
+#define ABS(x)  ((x) >= 0 ? (x) : -(x))
+
 typedef unsigned char		uint8_t;
 typedef char				int8_t;
 

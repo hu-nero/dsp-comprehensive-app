@@ -390,21 +390,21 @@ Cabinet_SetCabinetReset(CabinetContext_t* Context)
     Cabinet_ReadAllSwitchStatus(Context);
 
     // 清空电压、电流、功率缓存
-    memset(IaPar_HalfMemory, 0, sizeof(float)*12);
-    memset(IbPar_HalfMemory, 0, sizeof(float)*12);
-    memset(IcPar_HalfMemory, 0, sizeof(float)*12);
-    memset(IaOvh_HalfMemory, 0, sizeof(float)*12);
-    memset(IbOvh_HalfMemory, 0, sizeof(float)*12);
-    memset(IcOvh_HalfMemory, 0, sizeof(float)*12);
-    memset(UaOut_HalfMemory, 0, sizeof(float)*12);
-    memset(UbOut_HalfMemory, 0, sizeof(float)*12);
-    memset(UcOut_HalfMemory, 0, sizeof(float)*12);
-    memset(UabOut_HalfMemory, 0, sizeof(float)*12);
-    memset(UbcOut_HalfMemory, 0, sizeof(float)*12);
-    memset(UcaOut_HalfMemory, 0, sizeof(float)*12);
-    IaPar_rms  = 0;
-    IbPar_rms  = 0;
-    IcPar_rms  = 0;
+    memset(IaPar_HalfMemory, 0, sizeof(IaPar_HalfMemory));
+    memset(IbPar_HalfMemory, 0, sizeof(IbPar_HalfMemory));
+    memset(IcPar_HalfMemory, 0, sizeof(IcPar_HalfMemory));
+    memset(IaOvh_HalfMemory, 0, sizeof(IaOvh_HalfMemory));
+    memset(IbOvh_HalfMemory, 0, sizeof(IbOvh_HalfMemory));
+    memset(IcOvh_HalfMemory, 0, sizeof(IcOvh_HalfMemory));
+    memset(UaOut_HalfMemory, 0, sizeof(UaOut_HalfMemory));
+    memset(UbOut_HalfMemory, 0, sizeof(UbOut_HalfMemory));
+    memset(UcOut_HalfMemory, 0, sizeof(UcOut_HalfMemory));
+    memset(UabOut_HalfMemory, 0, sizeof(UabOut_HalfMemory));
+    memset(UbcOut_HalfMemory, 0, sizeof(UbcOut_HalfMemory));
+    memset(UcaOut_HalfMemory, 0, sizeof(UcaOut_HalfMemory));
+    IaPar_rms = 0;
+    IbPar_rms = 0;
+    IcPar_rms = 0;
     IaOvh_rms = 0;
     IbOvh_rms = 0;
     IcOvh_rms = 0;
@@ -430,6 +430,11 @@ Cabinet_SetCabinetReset(CabinetContext_t* Context)
     Q_Sys = 0;
     S_Sys = 0;
     PF_Sys = 0;
+    clear_sample_count = 0;
+    clear_sample_flag = 0;
+    memset(P_inst_buf, 0, sizeof(P_inst_buf));
+    memset(Q_inst_buf, 0, sizeof(Q_inst_buf));
+    pwr_buf_idx = 0;
 }
 
 static inline void
@@ -2081,8 +2086,7 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         CommSyncToSection_t status = CAN_Adapter_GetCommSyncToSectionStatus();
         u16 tmp_mainten_status = CAN_Adapter_GetMaintenStatus();
         if ((status.sync_status.bit.mainten_has_power == 0) &&
-            (tmp_mainten_status == 1) &&
-            ((IaOut_rmsf < 20) && (IbOut_rmsf < 20) && (IcOut_rmsf < 20)))
+            (tmp_mainten_status == 1))
         {
             Context->panel_remote_degauss_flag = true;
             CAN_Adapter_SetMaintenStatus(0);
@@ -2775,21 +2779,6 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
         if ((Context->switch_list.A3QS1_switch == SWITCH_OFF) &&
             (Context->switch_list.A3K17_switch == SWITCH_ON))
         {
-            // 检修电流判断
-            if (!((Context->current_read(CURRENT_I6_PHASE_A) < 10) &&
-                 (Context->current_read(CURRENT_I6_PHASE_B) < 10) &&
-                 (Context->current_read(CURRENT_I6_PHASE_C) < 10)))
-            {
-                // 发出警告
-                Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "Current is on");
-                // 根据状态进行回调
-                Cabinet_ErrBranch(Context);
-                Context->switch_control(DO_ID_SHORT_SET, SWITCH_OFF);
-                Context->panel_remote_degauss_flag = false;
-                Context->switch_last.short_switch = SWITCH_OFF;
-                Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
-                return RESULT_FAILED;
-            }
             // 同步柜判断有电则退出
             CommSyncToSection_t status = CAN_Adapter_GetCommSyncToSectionStatus();
             if (status.sync_status.bit.mainten_has_power != 0)
