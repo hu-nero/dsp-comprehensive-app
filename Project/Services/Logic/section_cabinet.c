@@ -2791,6 +2791,9 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
                 Context->panel_remote_degauss_flag = false;
                 Context->switch_last.short_switch = SWITCH_OFF;
                 Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                // 断开消磁
+                Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
+                Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
                 return RESULT_FAILED;
             }
         }
@@ -2805,6 +2808,9 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
             Context->panel_remote_degauss_flag = false;
             Context->switch_last.short_switch = SWITCH_OFF;
             Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
+            // 断开消磁
+            Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
+            Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
             return RESULT_FAILED;
         }
         // 判断是否发生状态转换
@@ -2818,6 +2824,9 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
             Context->panel_remote_degauss_flag = false;
             Context->switch_last.short_switch = SWITCH_OFF;
             Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
+            // 断开消磁
+            Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
+            Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
             return RESULT_FAILED;
         }
 
