@@ -2317,7 +2317,7 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
             (Context->state == CABINET_STATE_PARALLEL))
         {
             // 并机状态超过60s后，清空故障自启的第二次重启标志
-            if (g_cabinet_auto_second_reboot_count > (Auto_Restarttime_Self * 1000))
+            if (g_cabinet_auto_second_reboot_count > (60000))
             {
                 g_cabinet_auto_second_reboot_count = 0;
                 allow_convert_single = false;
