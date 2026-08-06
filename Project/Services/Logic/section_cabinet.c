@@ -460,9 +460,7 @@ Cabinet_SwitchIsMatchMode(CabinetContext_t* Context)
 {
     // 柜内开关
     if (!((Context->switch_list.A3QS1_switch == SWITCH_ON) &&
-        (Context->switch_list.A3K17_switch == SWITCH_OFF) &&
-        (Context->switch_list.A3QS2_switch == SWITCH_ON) &&
-        (Context->switch_list.A3QS3_switch == SWITCH_ON)))
+        (Context->switch_list.A3K17_switch == SWITCH_OFF)))
     {
         return false;
     }
@@ -515,12 +513,6 @@ Cabinet_SwitchIsMatchShortMode(CabinetContext_t* Context)
     bool a3k17_on = (Context->switch_list.A3K17_switch == SWITCH_ON);
 
     if ((a3qs1_on && a3k17_on) || (!a3qs1_on && !a3k17_on)) {
-        return false;
-    }
-
-    // A3QS2和A3QS3必须闭合
-    if (Context->switch_list.A3QS2_switch != SWITCH_ON ||
-        Context->switch_list.A3QS3_switch != SWITCH_ON) {
         return false;
     }
 
@@ -2188,14 +2180,11 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     }
 
     // 连接电容电路
-    if (Context->switch_list.A3QS2_switch == SWITCH_OFF)
+    if ((Context->switch_list.A3QS2_switch == SWITCH_OFF) ||
+        (Context->switch_list.A3QS3_switch == SWITCH_OFF))
+
     {
-        Cabinet_ResetFromEmergency(Context);
-    }
-    // 连接消磁电路
-    if (Context->switch_list.A3QS3_switch == SWITCH_OFF)
-    {
-        Cabinet_ResetFromEmergency(Context);
+        Cabinet_SetAlarm(Context, ALARM_QSx_STATE_ERR, "A3QSx status error");
     }
     return res;
 }
@@ -2930,23 +2919,12 @@ Cabinet_ExecuteStandbyProcedure(CabinetContext_t* Context)
     // 单机时
     if (Context->state == CABINET_STATE_SINGLE)
     {
-        // 断开 A3QR1
+        // 断开 A3QR1、A3QF1
         if (Context->switch_control)
         {
             Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
-        }
-        // I<50A
-        /*current = Context->current_read(CURRENT_I5_PHASE_A);*/
-        /*if (current >= 50.0)*/
-        /*{*/
-            /*return RESULT_FAILED;*/
-        /*}*/
-
-        // 断开 A3QF1
-        if (Context->switch_control)
-        {
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
-            // 等待开关反馈稳定3秒
+            // 等待开关反馈
             res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 3500, 500, 50);
             if (res == RESULT_SUCCESS)
             {
@@ -2966,23 +2944,12 @@ Cabinet_ExecuteStandbyProcedure(CabinetContext_t* Context)
     // 并机时
     else if (Context->state == CABINET_STATE_PARALLEL)
     {
-        // 断开 A3QR2
+        // 断开 A3QR2、A3QF2
         if (Context->switch_control)
         {
             Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
-        }
-        // I<50A
-        /*current = Context->current_read(CURRENT_I5_PHASE_A);*/
-        /*if (current >= 50.0)*/
-        /*{*/
-            /*return RESULT_FAILED;*/
-        /*}*/
-
-        // 断开 A3QF2
-        if (Context->switch_control)
-        {
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
-            // 等待开关反馈稳定3秒
+            // 等待开关反馈
             res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 3500, 500, 50);
             if (res == RESULT_SUCCESS)
             {
@@ -3535,26 +3502,12 @@ Cabinet_DisconnectSingleCircuit(CabinetContext_t* Context)
 {
     ExecuteResult_t res;
     uint16_t voltage;
-    // 断开 A3QR1
+    // 断开 A3QR1、A3QF1
     if (Context->switch_control)
     {
         Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
-    }
-    // I<50A
-    /*current = Context->current_read(CURRENT_I5_PHASE_A);*/
-    /*if (current >= 50.0)*/
-    /*{*/
-    /*return RESULT_FAILED;*/
-    /*}*/
-
-    // 断开 A3QF1
-    if (Context->switch_control)
-    {
-    	if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
-    	{
-            Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
-    	}
-        // 等待开关反馈稳定3秒
+        Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
+        // 等待开关反馈
         res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 3500, 500, 50);
         if (res == RESULT_SUCCESS)
         {
@@ -3576,27 +3529,13 @@ Cabinet_DisconnectSingleCircuit(CabinetContext_t* Context)
 static ExecuteResult_t
 Cabinet_DisconnectParallelCircuit(CabinetContext_t* Context)
 {
-	ExecuteResult_t res;
-    // 断开 A3QR2
+    ExecuteResult_t res;
+    // 断开 A3QR2、A3QF2
     if (Context->switch_control)
     {
         Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
-    }
-    // I<50A
-    /*current = Context->current_read(CURRENT_I5_PHASE_A);*/
-    /*if (current >= 50.0)*/
-    /*{*/
-    /*return RESULT_FAILED;*/
-    /*}*/
-
-    // 断开 A3QF2
-    if (Context->switch_control)
-    {
-    	if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_IDLE)
-    	{
-            Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
-    	}
-        // 等待开关反馈稳定3秒
+        Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
+        // 等待开关反馈
         res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 3500, 500, 50);
         if (res == RESULT_SUCCESS)
         {
