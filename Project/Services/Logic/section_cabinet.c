@@ -2924,6 +2924,7 @@ Cabinet_ExecuteStandbyProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
+            FltFlg_Start_Silicon = 1;
             // 等待开关反馈
             res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 3500, 500, 50);
             if (res == RESULT_SUCCESS)
@@ -2949,6 +2950,7 @@ Cabinet_ExecuteStandbyProcedure(CabinetContext_t* Context)
         {
             Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
             Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
+            FltFlg_Start_Silicon = 1;
             // 等待开关反馈
             res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 3500, 500, 50);
             if (res == RESULT_SUCCESS)
@@ -3507,6 +3509,7 @@ Cabinet_DisconnectSingleCircuit(CabinetContext_t* Context)
     {
         Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
         Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
+        FltFlg_Start_Silicon = 1;
         // 等待开关反馈
         res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 3500, 500, 50);
         if (res == RESULT_SUCCESS)
@@ -3535,6 +3538,7 @@ Cabinet_DisconnectParallelCircuit(CabinetContext_t* Context)
     {
         Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
         Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
+        FltFlg_Start_Silicon = 1;
         // 等待开关反馈
         res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 3500, 500, 50);
         if (res == RESULT_SUCCESS)

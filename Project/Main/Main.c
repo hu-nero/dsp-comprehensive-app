@@ -52,6 +52,8 @@ void RemCommVarRemap(void);
 void DcsCommVarRemap(void);
 void GetVoltCurr(void);
 void npr_1s_protection(void);
+void Main_BaseMs_Handler(void);
+void npr_1ms_protection(void);
 
 void RmsFillter(void);
 void CalImbalance(void);
@@ -115,6 +117,7 @@ void main(void)
 
 	CAN_App_Init();
 	CAN_App_Switch_Init();
+    hal_timer0_callback_set(Main_BaseMs_Handler);
 	for(; ;)
 	{
         CAN_App_RxLoop();
@@ -1187,6 +1190,74 @@ void npr_1s_protection(void)
         FaultWord_Map(26);
     }
 }
+
+void Main_BaseMs_Handler(void)
+{
+    // 1ms任务
+    SysCnt_1ms++;
+    npr_1ms_protection();
+#ifdef DEBUG
+    SCIBSend_1ms ++;
+    if(SCIBSend_1ms >= 10000)
+        SCIBSend_1ms = 0;
+#endif
+    // 系统计时
+    RealTime1ms ++;
+    // 500ms翻转
+    CtrlCnt_LedTogg ++;
+    // 1s任务
+    SysCnt_1sBase ++;
+    if(SysCnt_1sBase > 1000)
+    {
+        SysCnt_1sBase = 0;
+        SysCnt_1s ++;
+
+        if(SysCnt_1s >10000)
+        {
+            SysCnt_1s = 0;
+        }
+    }
+}
+
+void npr_1ms_protection(void)
+{
+    // 可控硅关断
+    if (FltFlg_Start_Silicon)
+    {
+        FltCnt_Start_Silicon ++;
+        if (FltCnt_Start_Silicon < 500)
+        {
+            float IaPar_rms_tmp,IbPar_rms_tmp,IcPar_rms_tmp;
+            IaPar_rms_tmp = fabsf((float)IaPar_rms * 0.000966);
+            IbPar_rms_tmp = fabsf((float)IbPar_rms * 0.000966);
+            IcPar_rms_tmp = fabsf((float)IcPar_rms * 0.000947);
+            if ((IaPar_rms_tmp > FltThr_OverCurr_Silicon) ||
+                (IbPar_rms_tmp > FltThr_OverCurr_Silicon) ||
+                (IcPar_rms_tmp > FltThr_OverCurr_Silicon))
+            {
+                if(FltCnt_OverCurr_Silicon > 40)
+                {
+                    FltCnt_OverCurr_Silicon = 40;
+                    NPR_FaultCode = 28;
+                    FaultWord_Map(28);
+                }
+                else
+                {
+                    FltCnt_OverCurr_Silicon ++;
+                }
+            }
+            else
+            {
+                FltCnt_OverCurr_Silicon = 0;
+            }
+        }
+        else
+        {
+            FltCnt_Start_Silicon = 0;
+            FltFlg_Start_Silicon = 0;
+        }
+    }
+}
 /******************************************************************/
 void GetFlowRate_Calc(void)
 {
@@ -1508,40 +1579,6 @@ interrupt void EPWM1_INT_Underflow_isr(void)
 	for(i=0; i<5; i++);
 	IO_ADCONVSTSTOP;
 	for(i=0; i<70; i++);
-	// Get System Ctrl 1ms
-	SysCnt_1msBase ++;
-	if(SysCnt_1msBase >= 16)
-	{
-		SysCnt_1msBase = 0;
-		SCIBSend_1ms ++;
-		if(SCIBSend_1ms >= 10000)
-			SCIBSend_1ms = 0;
-
-		RealTime1ms ++;
-		SysTime_MicroSecond ++;
-
-		if(SysTime_MicroSecond >= 1000)
-		{
-			SysTime_MicroSecond = 0;
-		}
-		SysCnt_1ms ++;
-		if(SysCnt_1ms > 10000)
-			SysCnt_1ms = 0;
-
-		CtrlCnt_LedTogg ++;
-
-		SysCnt_1sBase ++;
-		if(SysCnt_1sBase > 1000)
-		{
-			SysCnt_1sBase = 0;
-			SysCnt_1s ++;
-
-			if(SysCnt_1s >10000)
-			{
-				SysCnt_1s = 0;
-			}
-		}
-	}
 //////////////////////////////////////////////////////
 	if(IO_ADNotBusy == 1)
     {

@@ -109,6 +109,8 @@ extern unsigned int FltCntThr_OverLow_Flow2;
 
 extern unsigned int FltCnt_UnderCurr_Silicon;
 extern unsigned int FltCnt_OverCurr_Silicon;
+extern unsigned int FltFlg_Start_Silicon;
+extern unsigned int FltCnt_Start_Silicon;
 
 extern float AlmThr_UnderVolt_Phase;
 extern float AlmThr_OverVolt_Work1;
