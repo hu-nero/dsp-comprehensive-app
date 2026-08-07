@@ -205,7 +205,6 @@ Cabinet_Process(CabinetContext_t* Context)
     }
 
     // 急停流程
-    // 急停到底1是急停还是0是
     Cabinet_ExecuteEmergencyProcedure(Context);
     // 故障急停、消磁
     Cabinet_ExecuteEmergencyStopDegaussProcedure(Context);
@@ -1504,28 +1503,6 @@ Cabinet_ResetFromEmergency(CabinetContext_t* Context)
     Context->emergency_stop_status = false;
 
     return RESULT_SUCCESS;
-}
-
-// 公共接口：从急停状态恢复
-ExecuteResult_t 
-Cabinet_RecoverFromEmergency(CabinetContext_t* Context)
-{
-    if (!Context)
-    {
-        return RESULT_FAILED;
-    }
-    
-    // 检查急停信号是否已经解除
-    Context->switch_list.emergency_stop_switch = (SwitchState_t)Context->switch_feed(DI_ID_EMERGENCY_STOP);
-//    Context->emergency_stop_status = (Context->switch_list.emergency_stop_switch == SWITCH_OFF);
-    if (Context->switch_list.emergency_stop_switch == SWITCH_ON)
-    {
-        // 急停信号仍然存在，不能恢复
-        return RESULT_FAILED;
-    }
-    
-    // 恢复系统到安全状态
-    return Cabinet_ResetFromEmergency(Context);
 }
 
 // 返回到待机状态

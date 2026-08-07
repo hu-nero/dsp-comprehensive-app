@@ -697,7 +697,38 @@ Hardware_SwitchFeed(uint16_t SwitchId)
             }
         case DI_ID_EMERGENCY_STOP:
             {
-                return IO_Estop_Feed;
+                static uint16_t s_last_sample_state = 0;
+                static uint16_t s_stable_estop_state = 0;
+                static uint8_t  s_debounce_counter = 0;
+                static uint8_t s_is_first_run = 1;
+                uint16_t current_raw_state = IO_Estop_Feed;
+
+                if (s_is_first_run)
+                {
+                    s_last_sample_state = current_raw_state;
+                    s_stable_estop_state = current_raw_state;
+                    s_is_first_run = 0;
+                }
+
+                if (current_raw_state == s_last_sample_state)
+                {
+                    if (s_debounce_counter < 20)
+                    {
+                        s_debounce_counter++;
+                    }
+
+                    if (s_debounce_counter >= 20)
+                    {
+                        s_stable_estop_state = current_raw_state;
+                    }
+                }
+                else
+                {
+                    s_debounce_counter = 0;
+                    s_last_sample_state = current_raw_state;
+                }
+
+                return s_stable_estop_state;
             }
         case DI_ID_RESET:
             {
