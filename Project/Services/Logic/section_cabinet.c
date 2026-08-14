@@ -511,12 +511,14 @@ Cabinet_SwitchIsMatchShortMode(CabinetContext_t* Context)
     bool a3qs1_on = (Context->switch_list.A3QS1_switch == SWITCH_ON);
     bool a3k17_on = (Context->switch_list.A3K17_switch == SWITCH_ON);
 
-    if ((a3qs1_on && a3k17_on) || (!a3qs1_on && !a3k17_on)) {
+    if ((a3qs1_on && a3k17_on) || (!a3qs1_on && !a3k17_on))
+    {
         return false;
     }
 
-    // 面板：必须在待机状态
-    if (Context->state != CABINET_STATE_STANDBY) {
+    // 回路：必须无回路
+    if (Cabinet_HasCycle(Context))
+    {
         return false;
     }
 
@@ -2053,8 +2055,10 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     if (Context->switch_list.A3K17_switch == SWITCH_ON)
     {
         CommSyncToSection_t status = CAN_Adapter_GetCommSyncToSectionStatus();
+        AdapterStatus_t adapter_status = CAN_Adapter_GetAdapterStatus();
         u16 tmp_mainten_status = CAN_Adapter_GetMaintenStatus();
         if ((status.sync_status.bit.mainten_has_power == 0) &&
+            (adapter_status.sync_online_status == true) &&
             (tmp_mainten_status == 1))
         {
             Context->panel_remote_degauss_flag = true;
@@ -2745,9 +2749,11 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
         if ((Context->switch_list.A3QS1_switch == SWITCH_OFF) &&
             (Context->switch_list.A3K17_switch == SWITCH_ON))
         {
-            // 同步柜判断有电则退出
             CommSyncToSection_t status = CAN_Adapter_GetCommSyncToSectionStatus();
-            if (status.sync_status.bit.mainten_has_power != 0)
+            AdapterStatus_t adapter_status = CAN_Adapter_GetAdapterStatus();
+            // 同步柜判断有电则退出;同步柜通信断了则退出
+            if ((status.sync_status.bit.mainten_has_power != 0) ||
+                (adapter_status.sync_online_status == false))
             {
                 // 发出警告
                 Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "Current is on");

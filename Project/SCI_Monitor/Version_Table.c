@@ -44,7 +44,7 @@ Uint16  RTM_File_Ver[STRING_NUM] =
 };
 
 // DSP
-// SWC0500-00-DSP-35Q-V1.0.0
+// SWC0500-00-DSP-35Q-V1.1.00
 Uint16  Soft_Ver[STRING_NUM] =
 {
 	26,
@@ -59,12 +59,12 @@ Uint16  Soft_Ver[STRING_NUM] =
 	('5'<<0 | 'Q'<<8),
 	('-'<<0 | 'V'<<8),
 	('1'<<0 | '.'<<8),
-	('0'<<0 | '.'<<8),
+	('1'<<0 | '.'<<8),
 	('0'<<0 | '0'<<8),
 };
 
 // SWC0500-00-FPGA-35Q-C001
-Uint16  FPGA_Type_Ver[STRING_NUM] =
+Uint16  FPGA_Ver[STRING_NUM] =
 {
 	24,
 	('S'<<0 | 'W'<<8),

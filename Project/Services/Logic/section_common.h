@@ -109,7 +109,8 @@ typedef enum
     DI_ID_REM_SHORT_START,     // 远控消磁启动
     DI_ID_REM_SHORT_END,       // 远控消磁停止
     DI_ID_A3QR1,               // 单机QR1
-    DI_ID_A3QR2                // 并机QR2
+    DI_ID_A3QR2,               // 并机QR2
+    DI_ID_MAX                  // 最大值
 } DigitalInputType_t;
 
 // 按钮输出

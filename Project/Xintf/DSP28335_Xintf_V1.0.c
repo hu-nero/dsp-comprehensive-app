@@ -6,6 +6,7 @@
 #include "GPIO\Custom_IOMacro.H"
 #include "IQmathLib.h"
 #include "stdbool.h"
+#include "SCI_Monitor\version.h"
 
 int ADValue[16]={0};
 
@@ -559,6 +560,8 @@ int CPLDSWVerRead(void)
 	for(i=0; i<5; i++);
 	temp = FPGARDSWVER1;
 	for(i=0; i<5; i++);
+    FPGA_Ver[11] = ('C' << 0) | (('0' + ((temp >> 8) & 0x000F)) << 8);
+	FPGA_Ver[12] = (('0' + ((temp >> 4) & 0x000F)) << 0) | (('0' + ((temp >> 0) & 0x000F)) << 8);
 	return temp;
 }
 

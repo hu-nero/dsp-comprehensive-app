@@ -28,7 +28,7 @@ const struct RTMType sParaData_Group2[]=
 /* Line -  31 */  1, 0x40c0, (void*)&Conv_Type_Ver,
 /* Line -  31 */  2, 0x40c0, (void*)&Soft_Ver,
 /* Line -  31 */  3, 0x40c0, (void*)&RTM_File_Ver,
-/* Line -  31 */  4, 0x40c0, (void*)&FPGA_Type_Ver,
+/* Line -  31 */  4, 0x40c0, (void*)&FPGA_Ver,
 };
 const struct RTMType sParaData_Group3[]=
 {

@@ -21,7 +21,7 @@
 extern Uint16  Conv_Type_Ver[STRING_NUM] ;
 extern Uint16  Conv_List_Ver[STRING_NUM] ;
 extern Uint16  RTM_File_Ver[STRING_NUM] ;
-extern Uint16  FPGA_Type_Ver[STRING_NUM] ;
+extern Uint16  FPGA_Ver[STRING_NUM] ;
 
 extern Uint16  CPUboard_Ver[STRING_NUM] ; 
 extern Uint16  CPUboard_List[STRING_NUM] ;

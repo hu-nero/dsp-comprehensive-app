@@ -164,6 +164,7 @@ void main(void)
 			IO_DSPLED_TOG;
 			GetFlowRate_Calc();
             MotorFreq_FpgaScan();
+            CPLDSWVerRead();
 		}
 
 		if(RealTime1ms >= 20)
@@ -496,7 +497,7 @@ void FunStatusUpdate(void)
 /******************************************************************/
 void npr_1s_protection(void)
 {
-	uint16_t status1,status2,status3,checkCircleStatus;
+	uint16_t status1,status2,status3,checkCircleStatus,work_condition;
 
 	status1 = Cabinet_GetComPowerToSectionParamStatus1();
     status2 = Cabinet_GetComSyncToSectionStatus();
@@ -504,6 +505,19 @@ void npr_1s_protection(void)
     checkCircleStatus = ((MainSta2Word.DataBit.WorkLpQS1 == 0) && (MainSta2Word.DataBit.CheckLpQS1 == 1));
 	/////////////////////////////////////////////
 
+    // 本地 且 单机,工况再从通信获取
+    if ((MainStusWord.DataBit.LocRem == 0) &&
+        (MainSta2Word.DataBit.SingQF1 == 1) &&
+        (MainSta2Word.DataBit.SingQR1 == 1))
+    {
+        // 工况由通信获取
+        work_condition = ((status1>>4)&1);
+    }
+    else
+    {
+        // 工况2
+        work_condition = 1;
+    }
     // 工作回路：需要满足单机/并机；检修回路直接判断
     if ( (((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1) && ((status3>>10)&1)) ||
           ((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1))) ||
@@ -533,8 +547,8 @@ void npr_1s_protection(void)
         }
 
         // 工况1
-        if (((status1>>4)&1) == 0)
-        { 
+        if (work_condition == 0)
+        {
             // 过压故障
             if(vLine_max > FltThr_OverVolt_Work1)
             {
@@ -675,7 +689,7 @@ void npr_1s_protection(void)
             }
         }
         // 工况2
-        else if ((((status1>>4)&1) == 1) ||
+        else if ((work_condition == 1) ||
                  (checkCircleStatus)
                 )
         {
