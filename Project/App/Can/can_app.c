@@ -115,12 +115,12 @@ CAN_App_CanRxHandler(TeCanPort Port, FuncCode_t Func, uint16_t SrcAddr, uint16_t
         case FUNC_HEARTBEAT://0x07
             {
                 uint16_t u16Data[8] = {};
-                uint16_t u16DataTmp[31] = {0x11,0x11,0x11,0x11,0x11,0x11,
-                		0x22,0x22,0x22,0x22,0x22,0x22,
-                		0x33,0x33,0x33,0x33,0x33,0x33,
-						0x44,0x44,0x44,0x44,0x44,0x44,
-						0x55,0x55,0x55,0x55,0x55,0x55,
-						0x66};
+//                uint16_t u16DataTmp[31] = {0x11,0x11,0x11,0x11,0x11,0x11,
+//                		0x22,0x22,0x22,0x22,0x22,0x22,
+//                		0x33,0x33,0x33,0x33,0x33,0x33,
+//						0x44,0x44,0x44,0x44,0x44,0x44,
+//						0x55,0x55,0x55,0x55,0x55,0x55,
+//						0x66};
                 memcpy(u16Data, Data, Dlc);
                 //CAN_Agent_SendHeartbeat(Port);
 
@@ -128,7 +128,7 @@ CAN_App_CanRxHandler(TeCanPort Port, FuncCode_t Func, uint16_t SrcAddr, uint16_t
                 //CAN_Agent_SendParamCmd(Port, SrcAddr, PARAM_DEV_RECTIFIER, PARAM_CMD_START, 2, 8);
 
                 // test2
-                CAN_App_SendParam(Port, SrcAddr, PARAM_DEV_RECTIFIER, u16DataTmp, 31);
+//                CAN_App_SendParam(Port, SrcAddr, PARAM_DEV_RECTIFIER, u16DataTmp, 31);
             }
             break;
 

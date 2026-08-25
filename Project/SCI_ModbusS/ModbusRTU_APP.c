@@ -5,10 +5,11 @@
 ****************************************************/
 #include "Custom_ModbusRTU.h"
 
+u16  ucTempBuf[128];
 void ModbusRTU_Protocol(u16 *pRxBuffer, u16 *pFront, u16 nRear, u16 RevSize, u16 *pTxBuffer)
 {
 	u16 ucTempCnt, ucTempCnt1;
-	u16 i, ucTempBuf[128];
+	u16 i;
 	u8 FuncCode;
 	int uiLength;
 	u16 ucCrcH, ucCrcL;

@@ -121,15 +121,15 @@ signed int ad_process(signed int a)
 	return(a);
 }
 /**********************************************************/
+SINT IaPar_ad, IbPar_ad, IcPar_ad;
+SINT UabSl_ad, UbcSl_ad;
+SINT UabPar_ad, UbcPar_ad;
+SINT UaOut_ad, UcOut_ad, UbOut_ad;
+SINT IaOvh_ad, IbOvh_ad, IcOvh_ad;
+SINT uflowad;
 void Palarell_Extern_ADCScan(void)
 {
 	SINT i,temp;
-	SINT IaPar_ad, IbPar_ad, IcPar_ad;
-	SINT UabSl_ad, UbcSl_ad;
-	SINT UabPar_ad, UbcPar_ad;
-	SINT UaOut_ad, UcOut_ad, UbOut_ad;
-	SINT IaOvh_ad, IbOvh_ad, IcOvh_ad;
-	SINT uflowad;
 
 	for(i=0; i<5; i++);
 

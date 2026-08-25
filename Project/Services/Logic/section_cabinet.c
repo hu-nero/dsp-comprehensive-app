@@ -387,53 +387,6 @@ Cabinet_SetCabinetReset(CabinetContext_t* Context)
 
     // 读取面板、柜体开关状态
     Cabinet_ReadAllSwitchStatus(Context);
-
-    // 清空电压、电流、功率缓存
-    memset(IaPar_HalfMemory, 0, sizeof(IaPar_HalfMemory));
-    memset(IbPar_HalfMemory, 0, sizeof(IbPar_HalfMemory));
-    memset(IcPar_HalfMemory, 0, sizeof(IcPar_HalfMemory));
-    memset(IaOvh_HalfMemory, 0, sizeof(IaOvh_HalfMemory));
-    memset(IbOvh_HalfMemory, 0, sizeof(IbOvh_HalfMemory));
-    memset(IcOvh_HalfMemory, 0, sizeof(IcOvh_HalfMemory));
-    memset(UaOut_HalfMemory, 0, sizeof(UaOut_HalfMemory));
-    memset(UbOut_HalfMemory, 0, sizeof(UbOut_HalfMemory));
-    memset(UcOut_HalfMemory, 0, sizeof(UcOut_HalfMemory));
-    memset(UabOut_HalfMemory, 0, sizeof(UabOut_HalfMemory));
-    memset(UbcOut_HalfMemory, 0, sizeof(UbcOut_HalfMemory));
-    memset(UcaOut_HalfMemory, 0, sizeof(UcaOut_HalfMemory));
-    IaPar_rms = 0;
-    IbPar_rms = 0;
-    IcPar_rms = 0;
-    IaOvh_rms = 0;
-    IbOvh_rms = 0;
-    IcOvh_rms = 0;
-    UaOut_rms = 0;
-    UbOut_rms = 0;
-    UcOut_rms = 0;
-    UabOut_rms = 0;
-    UbcOut_rms = 0;
-    UcaOut_rms = 0;
-    IaPar_rmsf = 0;
-    IbPar_rmsf = 0;
-    IcPar_rmsf = 0;
-    IaOvh_rmsf = 0;
-    IbOvh_rmsf = 0;
-    IcOvh_rmsf = 0;
-    UaOut_rmsf = 0;
-    UbOut_rmsf = 0;
-    UcOut_rmsf = 0;
-    UabOut_rmsf = 0;
-    UbcOut_rmsf = 0;
-    UcaOut_rmsf = 0;
-    P_Sys = 0;
-    Q_Sys = 0;
-    S_Sys = 0;
-    PF_Sys = 0;
-    clear_sample_count = 0;
-    clear_sample_flag = 0;
-    memset(P_inst_buf, 0, sizeof(P_inst_buf));
-    memset(Q_inst_buf, 0, sizeof(Q_inst_buf));
-    pwr_buf_idx = 0;
 }
 
 static inline void
@@ -2699,6 +2652,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 			{
 				// 失败
 				Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                Context->fault_recovery_ctx.fault_status = true;
 		        Context->emergency_stop_status = false;
 			}
 			break;
@@ -4018,7 +3972,10 @@ Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
                 return;
             }
             // 断开单机回路
-            res = Cabinet_DisconnectSingleCircuit(Context);
+            Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
+            Context->switch_control(DO_ID_A3QF1, SWITCH_OFF);
+            // 等待开关反馈
+            res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_OFF, 3500, 500, 50);
             if (res == RESULT_SUCCESS)
             {
                 // 设置旋钮状态
@@ -4100,7 +4057,10 @@ Cabinet_OneclickDisconnect(CabinetContext_t* Context)
             return RESULT_WAIT;
         }
         // 断开并机回路
-        res = Cabinet_DisconnectParallelCircuit(Context);
+        Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
+        Context->switch_control(DO_ID_A3QF2, SWITCH_OFF);
+        // 等待开关反馈
+        res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF2, SWITCH_OFF, 3500, 500, 50);
         if (res == RESULT_SUCCESS)
         {
             // 设置旋钮状态
