@@ -146,16 +146,17 @@ void main(void)
 		Flag_EEPROMCheck = EEPROMAccess(&ParaDownloadCtrlWord, &EEPROMAceNum);
 		if(Flag_EEPROMCheck == 30)
 		{
-			if(FaultMask_Map(40) == 1)
+			/*if(FaultMask_Map(30) == 1)*/
+			if(1)
 			{
 				if(NPR_FaultCode == 0)
 				{
 					FunFaultReact();
 					ParaDownloadFaultNum = EEPROMAceNum - 1;
-                    NPR_FaultCode = 40;
+                    NPR_FaultCode = 30;
 				}
 			}
-			FaultWord_Map(40);
+            FaultWord_Map(30);
 		}
 
 		if(CtrlCnt_LedTogg > 500)
@@ -497,10 +498,9 @@ void FunStatusUpdate(void)
 /******************************************************************/
 void npr_1s_protection(void)
 {
-	uint16_t status1,status2,status3,checkCircleStatus,work_condition;
+	uint16_t status1,status3,checkCircleStatus,work_condition;
 
 	status1 = Cabinet_GetComPowerToSectionParamStatus1();
-    status2 = Cabinet_GetComSyncToSectionStatus();
     status3 = Cabinet_GetComPowerToSectionStatus();
     checkCircleStatus = ((MainSta2Word.DataBit.WorkLpQS1 == 0) && (MainSta2Word.DataBit.CheckLpQS1 == 1));
 	/////////////////////////////////////////////
@@ -594,9 +594,11 @@ void npr_1s_protection(void)
             }
 
             /////////////////////////////////////////////
-            // 单机直接判断欠压；并机需要读取同步柜给的并网有电信号
-            if ((((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) && ((status3>>10)&1)) ||
-                (((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) && (((status2>>9)&1) == 1)) )
+            // 单机直接判断欠压；
+            if (((((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) && ((status3>>10)&1)) ||
+                 ((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1))) ||
+                (checkCircleStatus)
+               )
             {
                 // 欠压故障
                 if(vLine_min < FltThr_UnderVolt_Work1)
@@ -737,9 +739,9 @@ void npr_1s_protection(void)
             }
             /////////////////////////////////////////////
             // 欠压
-            // 单机直接判断欠压；并机需要读取同步柜给的并网有电信号
+            // 单机直接判断欠压；
             if (((((MainSta2Word.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQR1 == 1)) && ((status3>>10)&1)) ||
-                 (((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) && (((status2>>9)&1) == 1))) ||
+                 ((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1))) ||
                 (checkCircleStatus)
                )
             {

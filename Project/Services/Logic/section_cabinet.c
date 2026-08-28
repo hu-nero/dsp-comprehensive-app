@@ -833,6 +833,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         Cabinet_ErrBranch(Context);
                         return;
                     }
+
                     if (Cabinet_HasCycle(Context))
                     {
                         // 发出警告
@@ -2173,11 +2174,10 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
             // 检查故障码是否在允许自动恢复的范围内
             if ((allow_recovery) && (!allow_convert_single) &&
                     (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
-                     ((cleared_fault >= 27) && (cleared_fault <= 29)) ||
+                     (cleared_fault == 29) ||
                      (cleared_fault == 25)))
             {
-                if (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
-                    ((cleared_fault >= 27) && (cleared_fault <= 28)))
+                if ((cleared_fault >= 17) && (cleared_fault <= 22))
                 {
                     fault_ctx->last_fault_code = cleared_fault;
                     fault_ctx->last_fault_timestamp = hal_timer_get_timestamp();
@@ -2226,8 +2226,8 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
             }
             // 第二次恢复，转单机
             else if ((allow_convert_single) &&
-                     (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
-                     ((cleared_fault >= 27) && (cleared_fault <= 28))))
+                     ((cleared_fault >= 17) && (cleared_fault <= 22))
+                    )
             {
                 // 清空单转并状态
                 CAN_Adapter_ClearPowerStatus();
@@ -2390,12 +2390,21 @@ Cabinet_Execute10sDegaussProcedure(CabinetContext_t* Context)
     {
         case AUTO_RECOVERY_SUB_DEGAUSS_START:
             {
-                if (Cabinet_HasCycle(Context))
+                static uint16_t hascycle_count = 0;
+				if (Cabinet_HasCycle(Context))
+				{
+                    hascycle_count ++;
+                    if (hascycle_count > 5)
+                    {
+                        // 发出警告
+                        Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
+                        Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
+                        return RESULT_FAILED;
+                    }
+				}
+                else
                 {
-                    // 发出警告
-                    Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
-                    Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
-                    return RESULT_FAILED;
+                    hascycle_count = 0;
                 }
 
                 // 自复位消磁
@@ -2551,13 +2560,23 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 	{
 		case AUTO_RECOVERY_SUB_DEGAUSS_START:
 			{
+                static uint16_t hascycle_count = 0;
 				if (Cabinet_HasCycle(Context))
 				{
-					// 发出警告
-					Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
-					Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
-					return RESULT_FAILED;
+                    hascycle_count ++;
+                    if (hascycle_count > 5)
+                    {
+                        // 发出警告
+                        Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
+                        Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
+                        return RESULT_FAILED;
+                    }
+                    break;
 				}
+                else
+                {
+                    hascycle_count = 0;
+                }
 
 				// 自复位消磁
 				ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, SECTION_DISCONNECT_CIRCUIT_DEGAUSS_TIME);
@@ -2617,8 +2636,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                         if (((Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_SINGLE) && (g_cabinet_fault_count<1)) ||
                                 ((Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_PARALLEL) && (g_cabinet_fault_count<2)))
                         {
-                            if (((NPR_FaultCode >= 17) && (NPR_FaultCode <= 22)) ||
-                                    ((NPR_FaultCode >= 27) && (NPR_FaultCode <= 28)))
+                            if ((NPR_FaultCode >= 17) && (NPR_FaultCode <= 22))
                             {
                                 NPR_FaultCode = 0;
                                 MainSta2Word.DataBit.SingQF1 = 0;
@@ -3635,12 +3653,21 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 {
                     case AUTO_RECOVERY_SUB_DEGAUSS_START:
                         {
+                            static uint16_t hascycle_count = 0;
                             if (Cabinet_HasCycle(Context))
                             {
-                                // 发出警告
-                                Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
-                                Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
-                                return;
+                                hascycle_count ++;
+                                if (hascycle_count > 5)
+                                {
+                                    // 发出警告
+                                    Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
+                                    Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                hascycle_count = 0;
                             }
 
                             // 自复位消磁
@@ -3762,6 +3789,17 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                     tmp_state.section_status.bit.grid_connection_request = 0;
                     CAN_Adapter_SetCommSectionToSync(tmp_state);
                 	Context->fault_recovery_state = AUTO_RECOVERY_FAILED;
+    
+                    if (allow_convert_single)
+                    {
+                        // 清空单转并状态
+                        CAN_Adapter_ClearPowerStatus();
+                        allow_convert_single = false;
+                        // 恢复单机阶段
+                        Context->fault_recovery_state = AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS;
+                        Context->fault_timer_start = hal_timer_get_timestamp();
+                        Context->fault_timer_duration = Auto_Restarttime_Self * 1000;
+                    }
                 }
             }
             break;
@@ -3773,12 +3811,21 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 {
                     case AUTO_RECOVERY_SUB_DEGAUSS_START:
                         {
+                            static uint16_t hascycle_count = 0;
                             if (Cabinet_HasCycle(Context))
                             {
-                                // 发出警告
-                                Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
-                                Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
-                                return;
+                                hascycle_count ++;
+                                if (hascycle_count > 5)
+                                {
+                                    // 发出警告
+                                    Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
+                                    Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_FAILED;
+                                    return;
+                                }
+                            }
+                            else
+                            {
+                                hascycle_count = 0;
                             }
 
                             // 自复位消磁
