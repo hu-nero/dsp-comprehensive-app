@@ -3,6 +3,7 @@
 #include "Main\Comm_Variable.H"
 #include "SCI_ModbusS\Sci_Modbus_config.H"
 #include "GPIO\Custom_IOMacro.H"
+#include "SCI_Monitor\version.h"
 /***************************************************************************************************/
 extern int GroupCtrl[35];
 
@@ -46,6 +47,7 @@ void Modbus_Send_To_HMI(void)
 	InputRegBuf[35]   = SysTime_Second;
 	InputRegBuf[36]   = SysTimeser_cmd;
 	memcpy(&InputRegBuf[37], &FltSelfRecvWord.DataInt, 2);
+	InputRegBuf[38]   = HMI_Ver;
 
 	if(ParaDownloadCtrlWord == 0)
 	{

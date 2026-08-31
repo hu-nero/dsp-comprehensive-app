@@ -1024,11 +1024,11 @@ void npr_1s_protection(void)
         FaultWord_Clear(29);
     }
 
-    // 可控硅关断
+    // 可控硅开通故障
     if (MainStusWord.DataBit.Running)
     {
-        if ((IaPar_rmsf < FltThr_UnderCurr_Silicon) &&
-            (IbPar_rmsf < FltThr_UnderCurr_Silicon) &&
+        if ((IaPar_rmsf < FltThr_UnderCurr_Silicon) ||
+            (IbPar_rmsf < FltThr_UnderCurr_Silicon) ||
             (IcPar_rmsf < FltThr_UnderCurr_Silicon))
         {
         	if(FltCnt_UnderCurr_Silicon > 7)
@@ -1046,28 +1046,6 @@ void npr_1s_protection(void)
         {
 			FltCnt_UnderCurr_Silicon = 0;
         }
-    }
-    else
-    {
-        if ((IaPar_rmsf > FltThr_OverCurr_Silicon) &&
-            (IbPar_rmsf > FltThr_OverCurr_Silicon) &&
-            (IcPar_rmsf > FltThr_OverCurr_Silicon))
-        {
-			if(FltCnt_OverCurr_Silicon > 7)
-			{
-				FltCnt_OverCurr_Silicon = 7;
-				NPR_FaultCode = 28;
-				FaultWord_Map(28);
-			}
-			else
-			{
-				FltCnt_OverCurr_Silicon ++;
-			}
-		}
-		else
-		{
-			FltCnt_OverCurr_Silicon = 0;
-		}
     }
 
     // DO开关控制与反馈状态匹配(QR1、QR2、QR3、QF1、QF2)

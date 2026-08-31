@@ -180,6 +180,9 @@ CAN_Adapter_Init(void)
 {
     // 初始化适配器结构体
     memset(&gAdapterStatus, 0, sizeof(AdapterStatus_t));
+    gAdapterStatus.power_online_status = true;
+    gAdapterStatus.sync_online_status = true;
+
     // 初始化电源状态
     gPowerStatus.run_state = POWER_UNKNOWN;
     gPowerStatus.single_to_parallel_flag = false;

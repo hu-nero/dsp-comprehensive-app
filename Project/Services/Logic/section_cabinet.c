@@ -1807,6 +1807,8 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     ExecuteResult_t res = RESULT_SUCCESS;
     uint16_t tmp_reset_switch;
     uint16_t tmp_cap_switch[4];
+    uint16_t status3 = Cabinet_GetComPowerToSectionStatus();
+    AdapterStatus_t adapter_status = CAN_Adapter_GetAdapterStatus();
 
     // 如果发生状态转换
     if ((Context->state != Context->target_state)  &&
@@ -2005,6 +2007,16 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         }
     }
 
+    // 同步柜信号断开故障
+    if ( ((((status3>>11)&1) == 1) || (adapter_status.sync_online_status == false)) &&
+         ((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) &&
+         (MainStusWord.DataBit.LocRem == 1)
+       )
+    {
+        NPR_FaultCode = 33;
+        FaultWord_Map(1);//FaultWord2.DataBit0
+    }
+
     // 检修消磁
     if (Context->switch_list.A3K17_switch == SWITCH_ON)
     {
@@ -2174,8 +2186,8 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
             // 检查故障码是否在允许自动恢复的范围内
             if ((allow_recovery) && (!allow_convert_single) &&
                     (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
-                     (cleared_fault == 29) ||
-                     (cleared_fault == 25)))
+                     (cleared_fault == 29) || (cleared_fault == 25) ||
+                     (cleared_fault == 33)))
             {
                 if ((cleared_fault >= 17) && (cleared_fault <= 22))
                 {
@@ -2218,6 +2230,20 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                     }
                     Context->fault_timer_start = hal_timer_get_timestamp();
                     Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
+                }
+                // 同步柜信号丢失故障
+                else if (cleared_fault == 33)
+                {
+                    fault_ctx->last_fault_code = cleared_fault;
+                    fault_ctx->last_fault_timestamp = hal_timer_get_timestamp();
+                    // 恢复阶段
+                    if (Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_PARALLEL)
+                    {
+                        Context->fault_recovery_state = AUTO_RECOVERY_PWR_RESTART_JUDGMENT_PROCESS;
+                        allow_convert_single = false;
+                        Context->fault_timer_start = hal_timer_get_timestamp();
+                        Context->fault_timer_duration = Auto_Restarttime_Self * 1000;
+                    }
                 }
             }
             else if ((allow_recovery == 0) && (allow_convert_single == 0))
@@ -2636,7 +2662,9 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                         if (((Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_SINGLE) && (g_cabinet_fault_count<1)) ||
                                 ((Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_PARALLEL) && (g_cabinet_fault_count<2)))
                         {
-                            if ((NPR_FaultCode >= 17) && (NPR_FaultCode <= 22))
+                            if ( ((NPR_FaultCode >= 17) && (NPR_FaultCode <= 22)) ||
+                                 (NPR_FaultCode == 33)
+                               )
                             {
                                 NPR_FaultCode = 0;
                                 MainSta2Word.DataBit.SingQF1 = 0;
@@ -2649,6 +2677,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                                 FaultWord_Clear(20);
                                 FaultWord_Clear(21);
                                 FaultWord_Clear(22);
+                                FaultWord_Clear(1); //清空NPR_FaultCode=33
                             }
                         }
                     }
