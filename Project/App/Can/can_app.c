@@ -971,12 +971,12 @@ Hardware_AlarmCallback(AlarmType_t AlarmType, const char* Message)
             break;
         case ALARM_AUTO_SELFSTART_FAL:
             {
-                AlarmWord2.DataBit.Bit10 = 1;
+                AlarmWord2.DataBit.Bit11 = 1;
             }
             break;
         case ALARM_FAULT:
             {
-//                AlarmWord2.DataBit.Bit10 = 1;
+                AlarmWord2.DataBit.Bit10 = 1;
             }
             break;
         default:break;

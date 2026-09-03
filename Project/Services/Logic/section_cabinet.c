@@ -275,12 +275,13 @@ Cabinet_Process(CabinetContext_t* Context)
                 break;
             case DEMAGNETIZE_FAILED:
                 {
-                    // 发出警告，消磁失败，拨回开关
-                    Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "Demagnetize failed");
+                    // 发出警告，逻辑转换失败，拨回开关
+                    Cabinet_SetAlarm(Context, ALARM_FAULT, "Demagnetize failed");
                     // 根据状态进行回调
                     Cabinet_ErrBranch(Context);
                     // 消磁状态回到未触发
                     Context->demagnetize_state = DEMAGNETIZE_IDLE;
+                    Context->target_state = CABINET_STATE_INVALID;
                 }
                 break;
             default:break;
@@ -509,6 +510,9 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             tmp_sync_state = CAN_Adapter_GetCommSectionToSync();
             tmp_sync_state.section_status.bit.grid_connection_request = 0;
             CAN_Adapter_SetCommSectionToSync(tmp_sync_state);
+            // 485的一键解列标志
+            g_cabinet_grid = 0;
+            g_cabinet_grid_count = 0;
             // 清空远控IO状态
             (void)Context->switch_feed(DI_ID_REM_SINGLE_START);
             (void)Context->switch_feed(DI_ID_REM_SINGLE_END);
@@ -520,6 +524,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_PARALLEL);
             (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_SHORT);
             (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_RESET);
+            (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_GRID);
             (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_CAP1);
             (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_CAP2);
             (void)UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_REM_CAP3);
@@ -795,10 +800,6 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             Context->switch_last.bus1_switch = SWITCH_OFF;
         }
     }
-    else if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_TIMEOUT)
-	{
-    	Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
-	}
 
     // 状态转换处理
     switch (Context->state)
@@ -817,8 +818,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         {
                             // 发出警告
                             Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
-                            // 根据状态进行回调
-                            Cabinet_ErrBranch(Context);
+                            Context->demagnetize_state = DEMAGNETIZE_FAILED;
                             return;
                         }
                     }
@@ -829,8 +829,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     {
                         // 发出警告
                         Cabinet_SetAlarm(Context, ALARM_PWR_STATE_MISMATCH, "power status abnormal");
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
                         return;
                     }
 
@@ -838,8 +837,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     {
                         // 发出警告
                         Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
                         return;
                     }
 
@@ -857,8 +855,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         {
                             // 发出警告
                             Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
-                            // 根据状态进行回调
-                            Cabinet_ErrBranch(Context);
+                            Context->demagnetize_state = DEMAGNETIZE_FAILED;
                             return;
                         }
                     }
@@ -867,8 +864,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     {
                         // 发出警告
                         Cabinet_SetAlarm(Context, ALARM_PARA_FACTOR_MISMATHC, "Not meeting the parallel operation coefficient");
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
                         return;
                     }
                     // 判断柜内是否有回路
@@ -876,8 +872,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     {
                         // 发出警告
                         Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
                         return;
                     }
                     // 消磁
@@ -906,8 +901,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         {
                             // 发出警告
                             Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
-                            // 根据状态进行回调
-                            Cabinet_ErrBranch(Context);
+                            Context->demagnetize_state = DEMAGNETIZE_FAILED;
                             return;
                         }
                     }
@@ -919,8 +913,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         {
                             // 发出警告
                             Cabinet_SetAlarm(Context, ALARM_HASCYCLE, "cabinet has cycle");
-                            // 根据状态进行回调
-                            Cabinet_ErrBranch(Context);
+                            Context->demagnetize_state = DEMAGNETIZE_FAILED;
                             return;
                         }
                         (void)Cabinet_ExecuteAutoDegaussProcedure(Context, SECTION_DISCONNECT_CIRCUIT_DEGAUSS_TIME);
@@ -932,9 +925,8 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     else
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_FAULT, "exectue failed");
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
+                        Cabinet_SetAlarm(Context, ALARM_NONE, "exectue failed");
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
                     }
                 }
                 // ⑥ 单机->备机
@@ -951,8 +943,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         {
                             // 发出警告
                             Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
-                            // 根据状态进行回调
-                            Cabinet_ErrBranch(Context);
+                            Context->demagnetize_state = DEMAGNETIZE_FAILED;
                             return;
                         }
                     }
@@ -962,8 +953,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     {
                         // 发出警告
                         Cabinet_SetAlarm(Context, ALARM_PWR_STATE_MISMATCH, "power status abnormal");
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
                         return;
                     }
                     // 判断是否满足并机系数
@@ -992,11 +982,8 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     else
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_FAULT, "start power failed");
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
-                        // 清空目标状态
-                        Context->target_state = CABINET_STATE_INVALID;
+                        Cabinet_SetAlarm(Context, ALARM_NONE, "start power failed");
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
                     }
                 }
                 else
@@ -1021,8 +1008,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         {
                             // 发出警告
                             Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
-                            // 根据状态进行回调
-                            Cabinet_ErrBranch(Context);
+                            Context->demagnetize_state = DEMAGNETIZE_FAILED;
                             return;
                         }
                     }
@@ -1039,9 +1025,8 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     else
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_FAULT, "exectue failed");
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
+                        Cabinet_SetAlarm(Context, ALARM_NONE, "exectue failed");
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
                     }
                 }
                 // ⑧ 并机->备机
@@ -1058,8 +1043,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         {
                             // 发出警告
                             Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
-                            // 根据状态进行回调
-                            Cabinet_ErrBranch(Context);
+                            Context->demagnetize_state = DEMAGNETIZE_FAILED;
                             return;
                         }
                     }
@@ -1069,8 +1053,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     {
                         // 发出警告
                         Cabinet_SetAlarm(Context, ALARM_PWR_STATE_MISMATCH, "power status abnormal");
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
                         return;
                     }
                     result = Cabinet_ExecuteBackupProcedure(Context);
@@ -1090,11 +1073,8 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     else
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_FAULT, "exectue failed");
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
-                        // 清空目标状态
-                        Context->target_state = CABINET_STATE_INVALID;
+                        Cabinet_SetAlarm(Context, ALARM_NONE, "exectue failed");
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
                     }
                 }
                 else
@@ -1119,8 +1099,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         {
                             // 发出警告
                             Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
-                            // 根据状态进行回调
-                            Cabinet_ErrBranch(Context);
+                            Context->demagnetize_state = DEMAGNETIZE_FAILED;
                             return;
                         }
                     }
@@ -1141,11 +1120,8 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     else
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_FAULT, "exectue failed");
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
-                        // 清空目标状态
-                        Context->target_state = CABINET_STATE_INVALID;
+                        Cabinet_SetAlarm(Context, ALARM_NONE, "exectue failed");
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
                     }
                 }
                 // ④ 备机->并机
@@ -1162,8 +1138,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                         {
                             // 发出警告
                             Cabinet_SetAlarm(Context, ALARM_CABINET_SWITCH_MISMATCH, "all switch status abnormal");
-                            // 根据状态进行回调
-                            Cabinet_ErrBranch(Context);
+                            Context->demagnetize_state = DEMAGNETIZE_FAILED;
                             return;
                         }
                     }
@@ -1184,11 +1159,8 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     else
                     {
                         // 发出警告
-                        Cabinet_SetAlarm(Context, ALARM_FAULT, "exectue failed");
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
-                        // 清空目标状态
-                        Context->target_state = CABINET_STATE_INVALID;
+                        Cabinet_SetAlarm(Context, ALARM_NONE, "exectue failed");
+                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
                     }
                 }
                 else
@@ -1236,9 +1208,8 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     }
                     else
                     {
+                        Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "degauss failed");
                         Context->demagnetize_state = DEMAGNETIZE_FAILED;
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
                         return;
                     }
 
@@ -1258,17 +1229,13 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                         else
                         {
                             Cabinet_SetAlarm(Context, ALARM_PARA_FACTOR_MISMATHC, "Not satisfied parallel factor");
-                            Context->target_state = CABINET_STATE_INVALID;
                             Context->demagnetize_state = DEMAGNETIZE_FAILED;
-                            // 根据状态进行回调
-                            Cabinet_ErrBranch(Context);
                             return;
                         }
                     }
                     else
                     {
                         Cabinet_SetAlarm(Context, ALARM_PWR_STATE_MISMATCH, "The power is not running");
-                        Context->target_state = CABINET_STATE_INVALID;
                         Context->demagnetize_state = DEMAGNETIZE_FAILED;
                         return;
                     }
@@ -1290,9 +1257,8 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     }
                     else
                     {
-                        Cabinet_SetAlarm(Context, ALARM_FAULT, "Single procedure failed");
+                        Cabinet_SetAlarm(Context, ALARM_NONE, "Single procedure failed");
                         // 重置
-                        Context->target_state = CABINET_STATE_INVALID;
                         Context->demagnetize_state = DEMAGNETIZE_FAILED;
                     }
                 }
@@ -1313,9 +1279,8 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     }
                     else
                     {
+                        Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "degauss failed");
                         Context->demagnetize_state = DEMAGNETIZE_FAILED;
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
                         return;
                     }
 
@@ -1339,8 +1304,7 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     }
                     else
                     {
-                        Cabinet_SetAlarm(Context, ALARM_FAULT, "Failed to close the parallel circuit");
-                        Context->target_state = CABINET_STATE_INVALID;
+                        Cabinet_SetAlarm(Context, ALARM_NONE, "Failed to close the parallel circuit");
                         Context->demagnetize_state = DEMAGNETIZE_FAILED;
                     }
                 }
@@ -1375,10 +1339,10 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     }
                     else
                     {
-                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
+                        // 消磁命令执行失败
+                        Context->demagnetize_state = DEMAGNETIZE_IDLE;
                         Context->target_state = CABINET_STATE_INVALID;
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
+                        Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "Demagnetize command failed");
                         return;
                     }
                 }
@@ -1419,10 +1383,10 @@ Cabinet_ContinueAction(CabinetContext_t* Context)
                     }
                     else
                     {
-                        Context->demagnetize_state = DEMAGNETIZE_FAILED;
+                        // 消磁命令执行失败
+                        Context->demagnetize_state = DEMAGNETIZE_IDLE;
                         Context->target_state = CABINET_STATE_INVALID;
-                        // 根据状态进行回调
-                        Cabinet_ErrBranch(Context);
+                        Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "Demagnetize command failed");
                         return;
                     }
                 }
@@ -1476,6 +1440,9 @@ Cabinet_BackToStandby(CabinetContext_t* Context)
 
     Context->state = CABINET_STATE_STANDBY;
     Context->target_state = CABINET_STATE_INVALID;
+    // 设置旋钮状态
+    Context->switch_list.single_switch = SWITCH_OFF;
+    Context->switch_list.bus1_switch = SWITCH_OFF;
 
     return RESULT_SUCCESS;
 }
@@ -1495,6 +1462,9 @@ Cabinet_BackToSingle(CabinetContext_t* Context)
 
     Context->state = CABINET_STATE_SINGLE;
     Context->target_state = CABINET_STATE_INVALID;
+    // 设置旋钮状态
+    Context->switch_list.single_switch = SWITCH_ON;
+    Context->switch_list.bus1_switch = SWITCH_OFF;
 
     return RESULT_SUCCESS;
 }
@@ -1514,6 +1484,9 @@ Cabinet_BackToParallel(CabinetContext_t* Context)
 
     Context->state = CABINET_STATE_PARALLEL;
     Context->target_state = CABINET_STATE_INVALID;
+    // 设置旋钮状态
+    Context->switch_list.single_switch = SWITCH_OFF;
+    Context->switch_list.bus1_switch = SWITCH_ON;
 
     return RESULT_SUCCESS;
 }
@@ -1533,6 +1506,9 @@ Cabinet_BackToBackup(CabinetContext_t* Context)
 
     Context->state = CABINET_STATE_BACKUP;
     Context->target_state = CABINET_STATE_INVALID;
+    // 设置旋钮状态
+    Context->switch_list.single_switch = SWITCH_ON;
+    Context->switch_list.bus1_switch = SWITCH_ON;
 
     return RESULT_SUCCESS;
 }
@@ -1921,7 +1897,10 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     // 使用自动重启时间判断
     if (g_cabinet_grid != 1)
     {
-        g_cabinet_grid = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_GRID);
+        if (Context->switch_list.manual_switch == SWITCH_ON)
+        {
+            g_cabinet_grid = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_GRID);
+        }
         g_cabinet_grid_count = 0;
     }
     else
@@ -2472,6 +2451,7 @@ Cabinet_Execute10sDegaussProcedure(CabinetContext_t* Context)
                 else
                 {
                     Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                    Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "degauss failed");
                     return res;
                 }
 
@@ -2689,6 +2669,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 				else
 				{
 					Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
+                    Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "degauss failed");
 					return res;
 				}
 
@@ -2698,8 +2679,8 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 		case AUTO_RECOVERY_SUB_DEGAUSS_FAILED:
 			{
 				// 失败
+                Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "degauss failed");
 				Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
-                Context->fault_recovery_ctx.fault_status = true;
 		        Context->emergency_stop_status = false;
 			}
 			break;
@@ -2838,6 +2819,7 @@ Cabinet_ExecuteRecoveryDegaussProcedure(CabinetContext_t* Context, uint16_t Dela
         {
             // 消磁命令执行失败
             Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "Recovery degauss command failed");
+            Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
             return RESULT_FAILED;
         }
     }
@@ -2875,20 +2857,20 @@ Cabinet_ExecuteAutoDegaussProcedure(CabinetContext_t* Context, uint16_t DelayMs)
         else
         {
             // 消磁命令执行失败
-            Context->demagnetize_state = DEMAGNETIZE_FAILED;
+            Context->demagnetize_state = DEMAGNETIZE_IDLE;
+            Context->target_state = CABINET_STATE_INVALID;
             Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "Demagnetize command failed");
-            // 根据状态进行回调
-            Cabinet_ErrBranch(Context);
+            Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
             return RESULT_FAILED;
         }
     }
     else
     {
         // 消磁命令执行失败
-        Context->demagnetize_state = DEMAGNETIZE_FAILED;
+        Context->demagnetize_state = DEMAGNETIZE_IDLE;
+        Context->target_state = CABINET_STATE_INVALID;
         Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "Demagnetize command failed");
-        // 根据状态进行回调
-        Cabinet_ErrBranch(Context);
+        Context->switch_control(DO_ID_A3QR3, SWITCH_OFF);
         return RESULT_FAILED;
     }
 }
@@ -3247,6 +3229,15 @@ Cabinet_SetAlarm(CabinetContext_t* Context, AlarmType_t Type, const char* Messag
     if (Context && Context->alarm_callback)
     {
         Context->alarm_callback(Type, Message);
+    }
+    if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_TIMEOUT)
+    {
+        // 恢复
+        Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
+        Context->switch_feedback_start_time = 0;
+        Context->switch_feedback_id = 0;
+        Context->switch_feedback_target_state = SWITCH_OFF;
+        Context->switch_feedback_stable_count = 0;
     }
 }
 static bool
@@ -3651,6 +3642,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 else if (res == RESULT_FAILED)
                 {
                     Context->fault_recovery_state = AUTO_RECOVERY_FAILED;
+                    Cabinet_SetAlarm(Context, ALARM_AUTO_SELFSTART_FAL, "cabinet self start failed");
                 }
             }
             break;
@@ -3672,6 +3664,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 else if (res == RESULT_FAILED)
                 {
                     Context->fault_recovery_state = AUTO_RECOVERY_FAILED;
+                    Cabinet_SetAlarm(Context, ALARM_AUTO_SELFSTART_FAL, "cabinet self start failed");
                 }
             }
             break;
@@ -3752,6 +3745,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                             // 失败
                             Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
                             Context->fault_recovery_state = AUTO_RECOVERY_FAILED;
+                            Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "degauss failed");
                         }
                         break;
                     default:
@@ -3915,6 +3909,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                             // 失败
                             Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_INVALID;
                             Context->fault_recovery_state = AUTO_RECOVERY_FAILED;
+                            Cabinet_SetAlarm(Context, ALARM_QR3_STATE_ERR, "degauss failed");
                         }
                         break;
                     default:
@@ -3945,6 +3940,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 else if (res == RESULT_FAILED)
                 {
                     Context->fault_recovery_state = AUTO_RECOVERY_FAILED;
+                    Cabinet_SetAlarm(Context, ALARM_AUTO_SELFSTART_FAL, "cabinet self start failed");
                 }
             }
             break;
@@ -3968,6 +3964,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 else if (res == RESULT_FAILED)
                 {
                     Context->fault_recovery_state = AUTO_RECOVERY_FAILED;
+                    Cabinet_SetAlarm(Context, ALARM_AUTO_SELFSTART_FAL, "cabinet self start failed");
                 }
             }
             break;
@@ -4035,7 +4032,7 @@ Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_FAULT, "The parallel operation circuit connection failed");
+                Cabinet_SetAlarm(Context, ALARM_NONE, "The parallel operation circuit connection failed");
                 return;
             }
         }
@@ -4072,7 +4069,7 @@ Cabinet_ProcessAutoParallel(CabinetContext_t* Context)
             }
             else
             {
-                Cabinet_SetAlarm(Context, ALARM_FAULT, "The parallel operation circuit connection failed");
+                Cabinet_SetAlarm(Context, ALARM_NONE, "The parallel operation circuit connection failed");
                 return;
             }
         }
@@ -4120,7 +4117,7 @@ Cabinet_OneclickDisconnect(CabinetContext_t* Context)
         }
         else
         {
-            Cabinet_SetAlarm(Context, ALARM_FAULT, "The single operation circuit connection failed");
+            Cabinet_SetAlarm(Context, ALARM_NONE, "The single operation circuit connection failed");
             return RESULT_FAILED;
         }
     }
@@ -4151,7 +4148,7 @@ Cabinet_OneclickDisconnect(CabinetContext_t* Context)
         }
         else
         {
-            Cabinet_SetAlarm(Context, ALARM_FAULT, "The parallel operation circuit connection failed");
+            Cabinet_SetAlarm(Context, ALARM_QF2_STATE_ERR, "The parallel operation circuit connection failed");
             return RESULT_FAILED;
         }
     }
