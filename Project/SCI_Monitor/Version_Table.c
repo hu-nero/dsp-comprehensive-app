@@ -81,6 +81,6 @@ Uint16  FPGA_Ver[STRING_NUM] =
 	('0'<<0 | '1'<<8),
 };
 
-// 0831
-Uint16  HMI_Ver = 903;
+// 0904
+Uint16  HMI_Ver = 904;
 
