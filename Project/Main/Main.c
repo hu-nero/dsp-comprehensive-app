@@ -1584,23 +1584,23 @@ void CalImbalance(void)
 	}
 }
 /******************************************************************/
+static bool adc_started = false;
 interrupt void EPWM1_INT_Underflow_isr(void)
 {
-	int i;
+    int i;
+    EPwm1Regs.ETCLR.bit.INT = 1;
+    PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
 
-	EPwm1Regs.ETCLR.bit.INT = 1;
-	PieCtrlRegs.PIEACK.all = PIEACK_GROUP3;
-//	EINT;
-
-	IO_ADCONVSTSTART;
-	for(i=0; i<5; i++);
-	IO_ADCONVSTSTOP;
-	for(i=0; i<70; i++);
-//////////////////////////////////////////////////////
-	if(IO_ADNotBusy == 1)
+    if (adc_started && (IO_ADNotBusy == 1))
     {
-		Palarell_Extern_ADCScan();
+        Palarell_Extern_ADCScan();
         GetVoltCurr();
+        adc_started = false;
     }
+
+    IO_ADCONVSTSTART;
+    for(i=0; i<5; i++);
+    IO_ADCONVSTSTOP;
+    adc_started = true;
 }
 /******************************************************************/
