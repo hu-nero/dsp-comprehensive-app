@@ -800,6 +800,15 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
             Context->switch_last.bus1_switch = SWITCH_OFF;
         }
     }
+    else if (Context->switch_feedback_wait_state == SWITCH_FEEDBACK_TIMEOUT)
+    {
+        // 重置等待状态
+        Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
+        Context->switch_feedback_start_time = 0;
+        Context->switch_feedback_id = 0;
+        Context->switch_feedback_target_state = SWITCH_OFF;
+        Context->switch_feedback_stable_count = 0;
+    }
 
     // 状态转换处理
     switch (Context->state)
@@ -1899,7 +1908,12 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     {
         if (Context->switch_list.manual_switch == SWITCH_ON)
         {
-            g_cabinet_grid = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_GRID);
+            // 如果没有发生状态转换
+            if (!((Context->state != Context->target_state)  &&
+                        (Context->target_state != CABINET_STATE_INVALID)))
+            {
+                g_cabinet_grid = UART485_Adapter_GetRemoteSwitchCtrlStatus(UART485_ID_GRID);
+            }
         }
         g_cabinet_grid_count = 0;
     }
@@ -2009,6 +2023,12 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             Context->panel_remote_degauss_flag = true;
             CAN_Adapter_SetMaintenStatus(0);
         }
+    }
+    else if ((Context->switch_list.A3QS1_switch == SWITCH_OFF) &&
+             (Context->switch_list.A3K17_switch == SWITCH_OFF))
+    {
+        // 清空检修有电转无电信号
+        CAN_Adapter_SetMaintenStatus(0);
     }
 
     // 单机反馈控制K1
@@ -4102,7 +4122,10 @@ Cabinet_OneclickDisconnect(CabinetContext_t* Context)
     {
         ParaToSingleCount = 0;
         // 闭合单机回路
-        res = Cabinet_ConnectSingleCircuit(Context);
+        Context->switch_control(DO_ID_A3QF1, SWITCH_ON);
+        Context->switch_control(DO_ID_A3QR1, SWITCH_ON);
+        // 等待开关反馈
+        res = Cabinet_WaitForSwitchFeedback(Context, DI_ID_A3QF1, SWITCH_ON, 3500, 20, 500);
         if (res == RESULT_SUCCESS)
         {
             // 设置旋钮状态
@@ -4117,7 +4140,8 @@ Cabinet_OneclickDisconnect(CabinetContext_t* Context)
         }
         else
         {
-            Cabinet_SetAlarm(Context, ALARM_NONE, "The single operation circuit connection failed");
+            Cabinet_SetAlarm(Context, ALARM_QF1_STATE_ERR, "The single operation circuit connection failed");
+            Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
             return RESULT_FAILED;
         }
     }
@@ -4149,6 +4173,7 @@ Cabinet_OneclickDisconnect(CabinetContext_t* Context)
         else
         {
             Cabinet_SetAlarm(Context, ALARM_QF2_STATE_ERR, "The parallel operation circuit connection failed");
+            Context->switch_feedback_wait_state = SWITCH_FEEDBACK_IDLE;
             return RESULT_FAILED;
         }
     }
