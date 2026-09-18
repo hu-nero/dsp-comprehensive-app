@@ -1392,29 +1392,29 @@ void GetVoltCurr(void)
 
     pwr_buf_idx = (pwr_buf_idx + 1) % PWM_SAMPLE_SIZE;
 
-    UabSl_rmsf = UabSl_rmsf * 0.9999 + fabsf((float)UabSl_rms * 0.0000000966);//1.1592/12*0.0001/100 矫正系数/12数组*0.0001滤波/100 AD的移位恢复
-    UbcSl_rmsf = UbcSl_rmsf * 0.9999 + fabsf((float)UbcSl_rms * 0.0000000947);
-    UcaSl_rmsf = UcaSl_rmsf * 0.9999 + fabsf((float)UcaSl_rms * 0.0000000947);
+    UabSl_rmsf = UabSl_rmsf * 0.9999 + fabsf((float)UabSl_rms * 0.0000000960);//1.1592/12*0.0001/100 矫正系数/12数组*0.0001滤波/100 AD的移位恢复
+    UbcSl_rmsf = UbcSl_rmsf * 0.9999 + fabsf((float)UbcSl_rms * 0.0000000955);
+    UcaSl_rmsf = UcaSl_rmsf * 0.9999 + fabsf((float)UcaSl_rms * 0.0000000960);
 
-    UabPar_rmsf = UabPar_rmsf * 0.9999 + fabsf((float)UabPar_rms * 0.0000000966);
-    UbcPar_rmsf = UbcPar_rmsf * 0.9999 + fabsf((float)UbcPar_rms * 0.0000000947);
-    UcaPar_rmsf = UcaPar_rmsf * 0.9999 + fabsf((float)UcaPar_rms * 0.0000000947);
+    UabPar_rmsf = UabPar_rmsf * 0.9999 + fabsf((float)UabPar_rms * 0.0000000960);
+    UbcPar_rmsf = UbcPar_rmsf * 0.9999 + fabsf((float)UbcPar_rms * 0.0000000955);
+    UcaPar_rmsf = UcaPar_rmsf * 0.9999 + fabsf((float)UcaPar_rms * 0.0000000960);
 
     IaOvh_rmsf = IaOvh_rmsf * 0.9999 + fabsf((float)IaOvh_rms * 0.0000000966);
-    IbOvh_rmsf = IbOvh_rmsf * 0.9999 + fabsf((float)IbOvh_rms * 0.0000000966);
-    IcOvh_rmsf = IcOvh_rmsf * 0.9999 + fabsf((float)IcOvh_rms * 0.0000000947);
+    IbOvh_rmsf = IbOvh_rmsf * 0.9999 + fabsf((float)IbOvh_rms * 0.0000000955);
+    IcOvh_rmsf = IcOvh_rmsf * 0.9999 + fabsf((float)IcOvh_rms * 0.0000000966);
 
     IaPar_rmsf = IaPar_rmsf * 0.9999 + fabsf((float)IaPar_rms * 0.0000000966);
-    IbPar_rmsf = IbPar_rmsf * 0.9999 + fabsf((float)IbPar_rms * 0.0000000966);
-    IcPar_rmsf = IcPar_rmsf * 0.9999 + fabsf((float)IcPar_rms * 0.0000000947);
+    IbPar_rmsf = IbPar_rmsf * 0.9999 + fabsf((float)IbPar_rms * 0.0000000955);
+    IcPar_rmsf = IcPar_rmsf * 0.9999 + fabsf((float)IcPar_rms * 0.0000000966);
 
-    UaOut_rmsf = UaOut_rmsf * 0.9999 + fabsf((float)UaOut_rms * 0.0000000966);
-    UbOut_rmsf = UbOut_rmsf * 0.9999 + fabsf((float)UbOut_rms * 0.0000000947);
-    UcOut_rmsf = UcOut_rmsf * 0.9999 + fabsf((float)UcOut_rms * 0.0000000947);
+    UaOut_rmsf = UaOut_rmsf * 0.9999 + fabsf((float)UaOut_rms * 0.0000000960);
+    UbOut_rmsf = UbOut_rmsf * 0.9999 + fabsf((float)UbOut_rms * 0.0000000955);
+    UcOut_rmsf = UcOut_rmsf * 0.9999 + fabsf((float)UcOut_rms * 0.0000000955);
 
-    UabOut_rmsf = UabOut_rmsf * 0.9999 + fabsf((float)UabOut_rms * 0.0000000966);
-    UbcOut_rmsf = UbcOut_rmsf * 0.9999 + fabsf((float)UbcOut_rms * 0.0000000947);
-    UcaOut_rmsf = UcaOut_rmsf * 0.9999 + fabsf((float)UcaOut_rms * 0.0000000947);
+    UabOut_rmsf = UabOut_rmsf * 0.9999 + fabsf((float)UabOut_rms * 0.0000000960);
+    UbcOut_rmsf = UbcOut_rmsf * 0.9999 + fabsf((float)UbcOut_rms * 0.0000000955);
+    UcaOut_rmsf = UcaOut_rmsf * 0.9999 + fabsf((float)UcaOut_rms * 0.0000000955);
 
     P_Work = P_Work*0.9999 + (float)P_sum * 8.3333334e-10f; // x/12/10000/10000
     Q_Work = Q_Work*0.9999 + (float)Q_sum * 4.8112522e-10f; // x/12/10000/1.732/10000

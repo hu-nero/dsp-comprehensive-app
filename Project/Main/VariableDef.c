@@ -754,11 +754,11 @@ void variable_init(void)
 
 	Cap_Ctrl_Word.DataInt=0x2F;
 	Can_External_Addr = 0x02;
-	FltThr_UnderCurr_Silicon = 5;
+	FltThr_UnderCurr_Silicon = 0;
 	FltThr_OverCurr_Silicon = 10;
-	Auto_Restarttime_Self = 180;
-	Auto_Restarttime_Para_Request = 61;
-	Auto_SingParaConv_Time = 2;
+	Auto_Restarttime_Self = 80;
+	Auto_Restarttime_Para_Request = 60;
+	Auto_SingParaConv_Time = 10;
 	PS_Monitor_ID = 1;
     FltCnt_P_Sys_WorkMode = 0;
 

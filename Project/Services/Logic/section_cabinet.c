@@ -465,7 +465,7 @@ Cabinet_SwitchIsMatchShortMode(CabinetContext_t* Context)
     bool a3qs1_on = (Context->switch_list.A3QS1_switch == SWITCH_ON);
     bool a3k17_on = (Context->switch_list.A3K17_switch == SWITCH_ON);
 
-    if ((a3qs1_on && a3k17_on) || (!a3qs1_on && !a3k17_on))
+    if (a3qs1_on && a3k17_on)
     {
         return false;
     }
