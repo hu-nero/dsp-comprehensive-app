@@ -119,7 +119,7 @@ typedef struct
     SwitchStateList_t switch_list;         // 所有开关状态
     PowerStatus_t power_status;			   // 电源柜状态
     DemagnetizeState_t demagnetize_state;  // 消磁状态
-    uint16_t demagnetize_counter;          // 消磁计数器（ms）
+    uint32_t demagnetize_counter;          // 消磁计数器（ms）
     uint32_t demagnetize_start_time;       // 消磁开始时间戳
 
     // 开关反馈等待相关状态
@@ -138,7 +138,7 @@ typedef struct
     bool parallel_request_sent;                         // 并网请求已发送标志
     uint32_t parallel_request_start;                    // 并网请求发送时间戳
     uint32_t recovery_degauss_start_time;               // 自复位消磁开始时间
-    uint16_t recovery_degauss_delay_ms;                 // 自复位消磁延时
+    uint32_t recovery_degauss_delay_ms;                 // 自复位消磁延时
 
     // 故障自动恢复专用上下文
     FaultAutoRecoveryContext_t fault_recovery_ctx;

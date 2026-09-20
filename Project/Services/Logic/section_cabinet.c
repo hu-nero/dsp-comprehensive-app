@@ -39,8 +39,8 @@ static ExecuteResult_t Cabinet_ExecuteEmergencyProcedure(CabinetContext_t* Conte
 static ExecuteResult_t Cabinet_Execute10sDegaussProcedure(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context);
-static ExecuteResult_t Cabinet_ExecuteRecoveryDegaussProcedure(CabinetContext_t* Context, uint16_t DelayMs);
-static ExecuteResult_t Cabinet_ExecuteAutoDegaussProcedure(CabinetContext_t* Context, uint16_t DelayMs);
+static ExecuteResult_t Cabinet_ExecuteRecoveryDegaussProcedure(CabinetContext_t* Context, uint32_t DelayMs);
+static ExecuteResult_t Cabinet_ExecuteAutoDegaussProcedure(CabinetContext_t* Context, uint32_t DelayMs);
 static ExecuteResult_t Cabinet_ExecuteStandbyProcedure(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ExecuteSingleProcedure(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_ExecuteParallelProcedure(CabinetContext_t* Context);
@@ -925,7 +925,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                             Context->demagnetize_state = DEMAGNETIZE_FAILED;
                             return;
                         }
-                        (void)Cabinet_ExecuteAutoDegaussProcedure(Context, SECTION_DISCONNECT_CIRCUIT_DEGAUSS_TIME);
+                        (void)Cabinet_ExecuteAutoDegaussProcedure(Context,(uint32_t)HMI_Dgss_Time * 1000L);
                     }
                     else if (result == RESULT_WAIT)
                     {
@@ -1025,7 +1025,7 @@ Cabinet_UpdateCabinetState(CabinetContext_t* Context)
                     if (result == RESULT_SUCCESS)
                     {
                         // 消磁
-                        (void)Cabinet_ExecuteAutoDegaussProcedure(Context, SECTION_DISCONNECT_CIRCUIT_DEGAUSS_TIME);
+                        (void)Cabinet_ExecuteAutoDegaussProcedure(Context, (uint32_t)HMI_Dgss_Time * 1000L);
                     }
                     else if (result == RESULT_WAIT)
                     {
@@ -2433,7 +2433,7 @@ Cabinet_Execute10sDegaussProcedure(CabinetContext_t* Context)
                 }
 
                 // 自复位消磁
-                ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, 10000);
+                ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, (uint32_t)HMI_Dgss_Time * 1000L);
                 if (degauss_res == RESULT_SUCCESS)
                 {
                     Context->degauss_10s_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_WAIT;
@@ -2605,7 +2605,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                 }
 
 				// 自复位消磁
-				ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, SECTION_DISCONNECT_CIRCUIT_DEGAUSS_TIME);
+				ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, (uint32_t)HMI_Dgss_Time * 1000L);
 				if (degauss_res == RESULT_SUCCESS)
 				{
 					Context->flt_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_WAIT;
@@ -2816,7 +2816,7 @@ Cabinet_ExecutePanelDegaussProcedure(CabinetContext_t* Context)
 
 // 自复位消磁
 static ExecuteResult_t
-Cabinet_ExecuteRecoveryDegaussProcedure(CabinetContext_t* Context, uint16_t DelayMs)
+Cabinet_ExecuteRecoveryDegaussProcedure(CabinetContext_t* Context, uint32_t DelayMs)
 {
 	ExecuteResult_t demag_result;
     // 启动消磁流程
@@ -2853,7 +2853,7 @@ Cabinet_ExecuteRecoveryDegaussProcedure(CabinetContext_t* Context, uint16_t Dela
 
 // 执行消磁流程
 static ExecuteResult_t
-Cabinet_ExecuteAutoDegaussProcedure(CabinetContext_t* Context, uint16_t DelayMs)
+Cabinet_ExecuteAutoDegaussProcedure(CabinetContext_t* Context, uint32_t DelayMs)
 {
 	ExecuteResult_t demag_result;
     // 启动消磁流程
@@ -3713,7 +3713,7 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                             }
 
                             // 自复位消磁
-                            ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, SECTION_DISCONNECT_CIRCUIT_DEGAUSS_TIME);
+                            ExecuteResult_t degauss_res = Cabinet_ExecuteRecoveryDegaussProcedure(Context, (uint32_t)HMI_Dgss_Time * 1000L);
                             if (degauss_res == RESULT_SUCCESS)
                             {
                                 Context->recovery_degauss_sub_state = AUTO_RECOVERY_SUB_DEGAUSS_WAIT;
