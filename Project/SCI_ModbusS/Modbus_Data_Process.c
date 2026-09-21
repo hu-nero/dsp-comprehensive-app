@@ -94,6 +94,7 @@ void Modbus_Send_To_HMI(void)
 		HoldRegBuf[40] = Auto_SingParaConv_Time;
 		HoldRegBuf[41] = PS_Monitor_ID;
 		HoldRegBuf[42] = HMI_Dgss_Time;
+		HoldRegBuf[43] = HMI_Test_Mode;
 	}
 }
 
@@ -144,6 +145,7 @@ void Modbus_Recv_For_HMI(void)
 		Auto_SingParaConv_Time = HoldRegBuf[40];
 		PS_Monitor_ID = HoldRegBuf[41];
 		HMI_Dgss_Time = HoldRegBuf[42];
+		HMI_Test_Mode = HoldRegBuf[43];
 
 
 		ParaSaveFlag = Cap_Ctrl_Word.DataBit.Bit4;

@@ -139,6 +139,7 @@ float Auto_SingParaConv_Time;
 unsigned int PS_Monitor_ID;
 float FltCnt_P_Sys_WorkMode;
 unsigned int HMI_Dgss_Time;
+unsigned int HMI_Test_Mode;
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
@@ -763,6 +764,7 @@ void variable_init(void)
 	PS_Monitor_ID = 1;
     FltCnt_P_Sys_WorkMode = 0;
     HMI_Dgss_Time = 10;
+    HMI_Test_Mode = 0;
 
 	memset(&RemInputSum, 0, sizeof(RemoteInput_t));
 	memset(&DcsInputSum, 0, sizeof(RemoteInput_t));

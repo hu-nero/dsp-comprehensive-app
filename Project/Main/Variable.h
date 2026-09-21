@@ -146,6 +146,7 @@ extern float Auto_SingParaConv_Time;
 extern unsigned int PS_Monitor_ID;
 extern float FltCnt_P_Sys_WorkMode;
 extern unsigned int HMI_Dgss_Time;
+extern unsigned int HMI_Test_Mode;
 
 extern long UabSl_HalfMemory[12], UbcSl_HalfMemory[12], UcaSl_HalfMemory[12];
 extern long UabPar_HalfMemory[12], UbcPar_HalfMemory[12], UcaPar_HalfMemory[12];

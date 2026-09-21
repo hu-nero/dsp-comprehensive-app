@@ -63,7 +63,7 @@ const struct RTMType sParaData_Group5[]=
 };
 const struct RTMType sParaData_Group6[]=
 {
-/* Line - 16 */43,0x0004,(void*)&GroupCtrl[6],
+/* Line - 16 */44,0x0004,(void*)&GroupCtrl[6],
 /* Line -  1 */  1,0x4043,(void*)&AlmCntThr_UnderVolt_Phase,
 /* Line -  2 */  2,0x40A3,(void*)&AlmThr_UnderVolt_Phase,
 /* Line -  3 */  3,0x4043,(void*)&AlmCntThr_OverVolt_Work1,
@@ -96,17 +96,18 @@ const struct RTMType sParaData_Group6[]=
 /* Line -  30 */ 30,0x40A3,(void*)&FltThr_OverLow_Flow1,
 /* Line - 31 */ 31,0x4043,(void*)&FltCntThr_OverLow_Flow2,
 /* Line - 32 */ 32,0x40A3,(void*)&FltThr_OverLow_Flow2,
-/* Line - 32 */ 33,0x40A3,(void*)&Auto_Restarttime_Flow,
-/* Line - 33 */ 34,0x4043,(void*)&Cap_Ctrl_Word,
-/* Line - 33 */ 35,0x4043,(void*)&Can_External_Addr,
-/* Line - 33 */ 36,0x40A3,(void*)&FltThr_UnderCurr_Silicon,
-/* Line - 33 */ 37,0x40A3,(void*)&FltThr_OverCurr_Silicon,
-/* Line - 33 */ 38,0x40A3,(void*)&Auto_Restarttime_Self,
-/* Line - 33 */ 39,0x40A3,(void*)&Auto_Restarttime_Para_Request,
-/* Line - 33 */ 40,0x4043,(void*)&SysTimeser_back,
-/* Line - 33 */ 41,0x40A3,(void*)&Auto_SingParaConv_Time,
-/* Line - 33 */ 42,0x4043,(void*)&PS_Monitor_ID,
-/* Line - 33 */ 43,0x4043,(void*)&HMI_Dgss_Time,
+/* Line - 33 */ 33,0x40A3,(void*)&Auto_Restarttime_Flow,
+/* Line - 34 */ 34,0x4043,(void*)&Cap_Ctrl_Word,
+/* Line - 35 */ 35,0x4043,(void*)&Can_External_Addr,
+/* Line - 36 */ 36,0x40A3,(void*)&FltThr_UnderCurr_Silicon,
+/* Line - 37 */ 37,0x40A3,(void*)&FltThr_OverCurr_Silicon,
+/* Line - 38 */ 38,0x40A3,(void*)&Auto_Restarttime_Self,
+/* Line - 39 */ 39,0x40A3,(void*)&Auto_Restarttime_Para_Request,
+/* Line - 40 */ 40,0x4043,(void*)&SysTimeser_back,
+/* Line - 41 */ 41,0x40A3,(void*)&Auto_SingParaConv_Time,
+/* Line - 42 */ 42,0x4043,(void*)&PS_Monitor_ID,
+/* Line - 43 */ 43,0x4043,(void*)&HMI_Dgss_Time,
+/* Line - 44 */ 44,0x4043,(void*)&HMI_Test_Mode,
 
 };
 const struct RTMType sParaData_Group7[]=

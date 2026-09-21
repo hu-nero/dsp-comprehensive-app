@@ -2111,6 +2111,40 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
             Cap_Ctrl_Word.DataBit.Bit3 = 0;
             Context->switch_control(DO_ID_A3QR7, SWITCH_OFF);
         }
+
+        // 投切QR1、QR2
+        if (HMI_Test_Mode == 1)
+        {
+            if (Context->state == CABINET_STATE_STANDBY)
+            {
+                if (Cap_Ctrl_Word.DataBit.Bit11 == 1)
+                {
+                    Cap_Ctrl_Word.DataBit.Bit11 = 1;
+                    Context->switch_control(DO_ID_A3QR1, SWITCH_ON);
+                }
+                else
+                {
+                    Cap_Ctrl_Word.DataBit.Bit11 = 0;
+                    Context->switch_control(DO_ID_A3QR1, SWITCH_OFF);
+                }
+
+                if (Cap_Ctrl_Word.DataBit.Bit12 == 1)
+                {
+                    Cap_Ctrl_Word.DataBit.Bit12 = 1;
+                    Context->switch_control(DO_ID_A3QR2, SWITCH_ON);
+                }
+                else
+                {
+                    Cap_Ctrl_Word.DataBit.Bit12 = 0;
+                    Context->switch_control(DO_ID_A3QR2, SWITCH_OFF);
+                }
+            }
+            else if (Context->state != CABINET_STATE_STANDBY)
+            {
+                // 单机、并机状态下，不允许设置测试模式
+                HMI_Test_Mode = 0;
+            }
+        }
     }
     // 连接单机/并机电路
     if ((Context->switch_list.A3QS1_switch == SWITCH_ON) &&
