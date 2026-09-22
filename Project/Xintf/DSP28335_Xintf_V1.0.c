@@ -156,25 +156,25 @@ void Palarell_Extern_ADCScan(void)
 
 	for(i=0; i<5; i++);
     // Ia/Ib/Ic Uab/Ubc/Uca Ua/Ub/Uc expand 100
-	IaPar = (long)((long)IaPar_ad * KGIAD);
-	IbPar = (long)((long)IbPar_ad * KGIAD);
-	IcPar = (long)((long)IcPar_ad * KGIAD);
+	IaPar = (long)((float)IaPar_ad * KGIAD);
+	IbPar = (long)((float)IbPar_ad * KGIAD);
+	IcPar = (long)((float)IcPar_ad * KGIAD);
 
-	IaOvh = (long)((long)IaOvh_ad * KGIAD);
-	IbOvh = (long)((long)IbOvh_ad * KGIAD);
-	IcOvh = (long)((long)IcOvh_ad * KGIAD);
+	IaOvh = (long)((float)IaOvh_ad * KGIAD);
+	IbOvh = (long)((float)IbOvh_ad * KGIAD);
+	IcOvh = (long)((float)IcOvh_ad * KGIAD);
 
-	UabSl = (long)((long)UabSl_ad * KGVAD); //single parallel
-	UbcSl = (long)((long)UbcSl_ad * KGVAD);
+	UabSl = (long)((float)UabSl_ad * KGVAD); //single parallel
+	UbcSl = (long)((float)UbcSl_ad * KGVAD);
 	UcaSl = -UabSl -UbcSl;
 
-	UabPar = (long)((long)UabPar_ad * KGVAD);
-	UbcPar = (long)((long)UbcPar_ad * KGVAD);
+	UabPar = (long)((float)UabPar_ad * KGVAD);
+	UbcPar = (long)((float)UbcPar_ad * KGVAD);
 	UcaPar = -UabPar -UbcPar;
 
-	UaOut = (long)((long)UaOut_ad * KGVAD);
-	UbOut = (long)((long)UbOut_ad * KGVAD);
-	UcOut = (long)((long)UcOut_ad * KGVAD);
+	UaOut = (long)((float)UaOut_ad * KGVAD);
+	UbOut = (long)((float)UbOut_ad * KGVAD);
+	UcOut = (long)((float)UcOut_ad * KGVAD);
 
 	UabOut = UaOut - UbOut;
 	UbcOut = UbOut - UcOut;
