@@ -969,6 +969,11 @@ Hardware_AlarmCallback(AlarmType_t AlarmType, const char* Message)
                 AlarmWord1.DataBit.Bit14 = 1;
             }
             break;
+        case ALARM_SYNC_LOST_SIGNAL:
+            {
+                AlarmWord1.DataBit.Bit15 = 1;
+            }
+            break;
         case ALARM_AUTO_SELFSTART_FAL:
             {
                 AlarmWord2.DataBit.Bit11 = 1;

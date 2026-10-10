@@ -33,7 +33,7 @@ extern int Modbus_1ms;
 //////////////////////////////////////////////////////////
 extern int Monitor_Ver[20];
 extern int Mon_Recv_Status;
-#define SCIBSendBufferSIZE 1024 
+#define SCIBSendBufferSIZE 1536
 #define SCIBRecvBufferSIZE 512 
 extern UINT SCIBSendBuffer[SCIBSendBufferSIZE];
 extern UINT SCIBRecvBuffer[SCIBRecvBufferSIZE];

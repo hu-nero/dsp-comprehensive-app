@@ -48,6 +48,11 @@ void Func_InputReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 	usStartAddr = ((u16)pMesBuf[2]<<8 ) | pMesBuf[3];
 	usReadLen = ((u16)pMesBuf[4]<<8 ) | pMesBuf[5];
 
+    if (usStartAddr > (sInputReg_Group[0].RegAddrNum - 1))
+        usStartAddr = (sInputReg_Group[0].RegAddrNum - 1);
+    if (usReadLen > sInputReg_Group[0].RegAddrNum - usStartAddr)
+        usReadLen = sInputReg_Group[0].RegAddrNum - usStartAddr;
+    if (usReadLen<1)usReadLen=1;
 	// [cmd] SavleAddr(1byte) + Funcode(1byte) + RegsAddr(2byte) + RegsNum(2byte) + CrcCheck(2byte)
 	// [ack] SavleAddr(1byte) + Funcode(1byte) + ByteNum(1byte) + RegsData(n*2byte) + CrcCheck(2byte)
 
@@ -98,6 +103,11 @@ void Func_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 	usStartAddr = ((u16)pMesBuf[2]<<8 ) | pMesBuf[3];
 	usReadLen = ((u16)pMesBuf[4]<<8 ) | pMesBuf[5];
 
+    if (usStartAddr > (sHoldReg_Group[0].RegAddrNum - 1))
+        usStartAddr = (sHoldReg_Group[0].RegAddrNum - 1);
+    if (usReadLen > sHoldReg_Group[0].RegAddrNum - usStartAddr)
+        usReadLen = sHoldReg_Group[0].RegAddrNum - usStartAddr;
+    if (usReadLen<1)usReadLen=1;
 	// [cmd] SavleAddr(1byte) + Funcode(1byte) + RegsAddr(2byte) + RegsNum(2byte) + CrcCheck(2byte)
 	// [ack] SavleAddr(1byte) + Funcode(1byte) + ByteNum(1byte) + RegsData(n*2byte) + CrcCheck(2byte)
 	if(FuncCode == Code03_RHoldReg)

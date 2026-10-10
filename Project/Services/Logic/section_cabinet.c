@@ -295,16 +295,23 @@ Cabinet_Process(CabinetContext_t* Context)
     // 清除报警清报警字
     if ((AlarmWord2.DataBit.Bit0 == 1) ||
         ((AlarmWord2.DataInt>>6)&0x1F) ||
-        ((AlarmWord1.DataInt>>13)&0x3))
+        ((AlarmWord1.DataInt>>13)&0x3) ||
+        (AlarmWord1.DataBit.Bit15 == 1)
+       )
     {
         // 计时周期
         g_cabinet_period --;
         if (g_cabinet_period == 0)
         {
+            AdapterStatus_t adapter_state = CAN_Adapter_GetAdapterStatus();
             AlarmWord2.DataBit.Bit0 = 0;
             AlarmWord2.DataInt &= ~(0x1F << 6);
             AlarmWord1.DataInt &= ~(0x3 << 13);
-            g_cabinet_period = 5000;
+            if (adapter_state.sync_online_status == true)
+            {
+                AlarmWord1.DataBit.Bit15 = 0;
+            }
+            g_cabinet_period = 6000;
         }
     }
     // 读取面板、柜体开关状态
@@ -1943,13 +1950,9 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         if (Context->state == CABINET_STATE_SINGLE)
         {
             if ((Context->switch_list.A3QF1_switch == SWITCH_OFF) ||
-                (Context->switch_list.A3QR1_switch == SWITCH_OFF) ||
-                (Context->switch_list.A3QS1_switch == SWITCH_OFF))
+                (Context->switch_list.A3QR1_switch == SWITCH_OFF)
+               )
             {
-                if (Context->switch_list.A3QS1_switch == SWITCH_OFF)
-                {
-                    Cabinet_SetAlarm(Context, ALARM_QSx_STATE_ERR, "A3QS1 switch state error");
-                }
                 if (u16TmpSingleCount > 3500)
                 {
                     u16TmpSingleCount = 0;
@@ -1972,13 +1975,9 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         if (Context->state == CABINET_STATE_PARALLEL)
         {
             if ((Context->switch_list.A3QF2_switch == SWITCH_OFF) ||
-                (Context->switch_list.A3QR2_switch == SWITCH_OFF) ||
-                (Context->switch_list.A3QS1_switch == SWITCH_OFF))
+                (Context->switch_list.A3QR2_switch == SWITCH_OFF)
+               )
             {
-                if (Context->switch_list.A3QS1_switch == SWITCH_OFF)
-                {
-                    Cabinet_SetAlarm(Context, ALARM_QSx_STATE_ERR, "A3QS1 switch state error");
-                }
                 if (u16TmpParallelCount > 3500)
                 {
                     u16TmpParallelCount = 0;
@@ -2001,13 +2000,24 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     }
 
     // 同步柜信号断开故障
-    if ( ((((status3>>11)&1) == 1) || (adapter_status.sync_online_status == false)) &&
-         ((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1)) &&
-         (MainStusWord.DataBit.LocRem == 1)
+    if ((MainStusWord.DataBit.LocRem == 1) &&
+        (NPR_FaultCode == 0) &&
+        ((MainSta2Word.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 1))
        )
     {
-        NPR_FaultCode = 33;
-        FaultWord_Map(1);//FaultWord2.DataBit0
+        if ((((status3>>11)&1) == 1) &&
+            (adapter_status.sync_online_status == false)
+           )
+        {
+            NPR_FaultCode = 33;
+            FaultWord_Map(1);//FaultWord2.DataBit0
+        }
+    }
+
+    // 同步柜信号断开报警
+    if (adapter_status.sync_online_status == false)
+    {
+        Cabinet_SetAlarm(Context, ALARM_SYNC_LOST_SIGNAL, "sync lost signal");
     }
 
     // 检修消磁
@@ -2160,8 +2170,11 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
     }
 
     // 连接电容电路
-    if ((Context->switch_list.A3QS2_switch == SWITCH_OFF) ||
-        (Context->switch_list.A3QS3_switch == SWITCH_OFF))
+    if (((Context->switch_list.A3QS1_switch == SWITCH_OFF) && (
+                (Context->state == CABINET_STATE_SINGLE) || (Context->state == CABINET_STATE_PARALLEL)) ) ||
+        (Context->switch_list.A3QS2_switch == SWITCH_OFF) ||
+        (Context->switch_list.A3QS3_switch == SWITCH_OFF)
+       )
 
     {
         Cabinet_SetAlarm(Context, ALARM_QSx_STATE_ERR, "A3QSx status error");
@@ -2533,8 +2546,8 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
 {
     static uint16_t fltCount = 0;
 	ExecuteResult_t res;
-    // 工作回路断开则故障消磁不执行
-    if(Context->switch_list.A3QS1_switch == SWITCH_OFF)
+    // 检修回路接通则故障消磁不执行
+    if(Context->switch_list.A3K17_switch == SWITCH_ON)
     {
         return RESULT_INVALID_STATE;
     }
@@ -2696,8 +2709,13 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                         if (((Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_SINGLE) && (g_cabinet_fault_count<1)) ||
                                 ((Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_PARALLEL) && (g_cabinet_fault_count<2)))
                         {
-                            if ( ((NPR_FaultCode >= 17) && (NPR_FaultCode <= 22)) ||
-                                 (NPR_FaultCode == 33)
+                            uint16_t sync_status = Cabinet_GetComPowerToSectionStatus();
+                            AdapterStatus_t sync_adapter_status = CAN_Adapter_GetAdapterStatus();
+
+                            if (((NPR_FaultCode >= 17) && (NPR_FaultCode <= 22)) ||
+                                (NPR_FaultCode == 33) && ((((sync_status>>11)&1) == 0) ||
+                                                          (sync_adapter_status.sync_online_status == true)
+                                                         )
                                )
                             {
                                 NPR_FaultCode = 0;
@@ -2712,6 +2730,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                                 FaultWord_Clear(21);
                                 FaultWord_Clear(22);
                                 FaultWord_Clear(1); //清空NPR_FaultCode=33
+                                AlarmWord_Clear(16);//清空告警码16
                             }
                         }
                     }

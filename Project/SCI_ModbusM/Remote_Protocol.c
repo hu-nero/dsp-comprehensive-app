@@ -43,6 +43,11 @@ void Remote_InputReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 	usStartAddr = ((u16)pMesBuf[2]<<8 ) | pMesBuf[3];
 	usReadLen = ((u16)pMesBuf[4]<<8 ) | pMesBuf[5];
 
+    if (usStartAddr > (RemInputReg_Group[0].RegAddrNum - 1))
+        usStartAddr = (RemInputReg_Group[0].RegAddrNum - 1);
+    if (usReadLen > RemInputReg_Group[0].RegAddrNum - usStartAddr)
+        usReadLen = RemInputReg_Group[0].RegAddrNum - usStartAddr;
+    if (usReadLen<1)usReadLen=1;
 	// [cmd] SavleAddr(1byte) + Funcode(1byte) + RegsAddr(2byte) + RegsNum(2byte) + CrcCheck(2byte)
 	// [ack] SavleAddr(1byte) + Funcode(1byte) + ByteNum(1byte) + RegsData(n*2byte) + CrcCheck(2byte)
 	if(FuncCode == Code04_RInputReg)
@@ -78,12 +83,15 @@ void Remote_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 	u8 i, j, ucTempCnt;
 	u16 usStartAddr, usReadLen;
 	u16 usTempData;
-	u16 usTempDataLen;
-
 
 	usStartAddr = ((u16)pMesBuf[2]<<8 ) | pMesBuf[3];
 	usReadLen = ((u16)pMesBuf[4]<<8 ) | pMesBuf[5];
 
+    if (usStartAddr > (RemHoldReg_Group[0].RegAddrNum - 1))
+        usStartAddr = (RemHoldReg_Group[0].RegAddrNum - 1);
+    if (usReadLen > RemHoldReg_Group[0].RegAddrNum - usStartAddr)
+        usReadLen = RemHoldReg_Group[0].RegAddrNum - usStartAddr;
+    if (usReadLen<1)usReadLen=1;
 	// [cmd] SavleAddr(1byte) + Funcode(1byte) + RegsAddr(2byte) + RegsNum(2byte) + CrcCheck(2byte)
 	// [ack] SavleAddr(1byte) + Funcode(1byte) + ByteNum(1byte) + RegsData(n*2byte) + CrcCheck(2byte)
 	if(FuncCode == Code03_RHoldReg)
@@ -139,13 +147,14 @@ void Remote_HoldReg(u8 FuncCode, u16 *pMesBuf, u16 *pTxBuffer)
 	else if(FuncCode == Code10_WHoldRegs)
 	{
 //////////////////////////////////time service  add by lhy 2026.5.6////////////////////////////////////////
-		usTempDataLen = ((pMesBuf[4] << 8) & 0xFF00)  | (pMesBuf[5] & 0x00FF);
+		//usTempDataLen = ((pMesBuf[4] << 8) & 0xFF00)  | (pMesBuf[5] & 0x00FF);
 
+        if(usReadLen)
 		for(j=1; j<(RemHoldReg_Group[0].RegAddrNum + 1); j++)
 		{
 			if( usStartAddr == (RemHoldReg_Group[j].RegAddrNum) )
 			{
-				for(i=0;i<usTempDataLen;i++)
+				for(i=0;i<usReadLen;i++)
 				{
 					usTempData = ((pMesBuf[7+2*i] << 8) & 0xFF00)  | (pMesBuf[8+2*i] & 0x00FF);
 					*(u16 *)RemHoldReg_Group[j+i].RegObj = usTempData;

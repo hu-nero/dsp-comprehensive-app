@@ -1436,7 +1436,7 @@ void GetVoltCurr(void)
             {
                 // 视在功率
                 S_Work = P_Sys*P_Sys + Q_Sys*Q_Sys;
-                S_Sys = sqrtf(S_Work);
+                S_Sys = sqrtf(MAX(S_Work, 0.0f));
                 // 功率因子
                 if (S_Sys != 0)
                 {
@@ -1463,7 +1463,7 @@ void GetVoltCurr(void)
             {
                 // 视在功率
                 S_Work = P_Sys*P_Sys + Q_Sys*Q_Sys;
-                S_Sys = sqrtf(S_Work);
+                S_Sys = sqrtf(MAX(S_Work, 0.0f));
                 // 功率因子
                 if (S_Sys != 0)
                 {

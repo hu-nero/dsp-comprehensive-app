@@ -77,6 +77,7 @@ typedef enum
     ALARM_PARA_FACTOR_MISMATHC,     // 并机系数不匹配
     ALARM_PWR_FLT,                  // 电源故障-区段停机
     ALARM_SYNC_DISCONNECT,          // 同步柜解列-区段停机
+    ALARM_SYNC_LOST_SIGNAL,         // 丢失同步柜信号
     ALARM_AUTO_SELFSTART_FAL,       // 自启流程失败
     ALARM_FAULT,                    // 状态转换异常
     ALARM_MAX

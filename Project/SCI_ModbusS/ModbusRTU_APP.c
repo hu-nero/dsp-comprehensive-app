@@ -5,7 +5,7 @@
 ****************************************************/
 #include "Custom_ModbusRTU.h"
 
-u16  ucTempBuf[128];
+u16  ucTempBuf2[128];
 void ModbusRTU_Protocol(u16 *pRxBuffer, u16 *pFront, u16 nRear, u16 RevSize, u16 *pTxBuffer)
 {
 	u16 ucTempCnt, ucTempCnt1;
@@ -49,10 +49,10 @@ void ModbusRTU_Protocol(u16 *pRxBuffer, u16 *pFront, u16 nRear, u16 RevSize, u16
 					ucTempCnt = (*pFront) + i;
 					if(ucTempCnt >= RevSize)
 						ucTempCnt -= RevSize;
-					ucTempBuf[i] = pRxBuffer[ucTempCnt];
+					ucTempBuf2[i] = pRxBuffer[ucTempCnt];
 				}
 
-				CRC_Check(ucTempBuf, 6, &ucCrcH, &ucCrcL);
+				CRC_Check(ucTempBuf2, 6, &ucCrcH, &ucCrcL);
 
 				//Step2-2-2-2: The receive CRC compared with the calculate
 				ucTempCnt = (*pFront) + 6;
@@ -84,12 +84,12 @@ void ModbusRTU_Protocol(u16 *pRxBuffer, u16 *pFront, u16 nRear, u16 RevSize, u16
 						case Code03_RHoldReg :
 						case Code06_WHoldReg :
 						{
-							Func_HoldReg(FuncCode, ucTempBuf, pTxBuffer);
+							Func_HoldReg(FuncCode, ucTempBuf2, pTxBuffer);
 						}break;
 
 						case Code04_RInputReg:
 						{
-							Func_InputReg(FuncCode, ucTempBuf, pTxBuffer);
+							Func_InputReg(FuncCode, ucTempBuf2, pTxBuffer);
 						}break;
 					}
 
