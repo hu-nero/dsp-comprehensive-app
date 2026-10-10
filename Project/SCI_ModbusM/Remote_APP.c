@@ -6,7 +6,7 @@
 
 #include "Custom_Remote.h"
 
-u16  ucTempBuf[128];
+u16  ucTempBuf[256];
 void ModbusRem_Protocol(u16 *pRxBuffer, u16 *pFront, u16 nRear, u16 RevSize, u16 *pTxBuffer)
 {
 	u16 ucTempCnt, ucTempCnt1;

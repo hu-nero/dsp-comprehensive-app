@@ -5,7 +5,7 @@
 ****************************************************/
 #include "Custom_ModbusRTU.h"
 
-u16  ucTempBuf2[128];
+u16  ucTempBuf2[256];
 void ModbusRTU_Protocol(u16 *pRxBuffer, u16 *pFront, u16 nRear, u16 RevSize, u16 *pTxBuffer)
 {
 	u16 ucTempCnt, ucTempCnt1;

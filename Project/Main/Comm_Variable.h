@@ -162,8 +162,8 @@ extern ULONG ulRealTimeSecondSet;
 extern long Time_H;
 extern long Time_L;
 /************************************************************************************************************/
-#define Modbus_Send_BUFF_SIZE  128
-#define Modbus_Recv_BUFF_SIZE  128
+#define Modbus_Send_BUFF_SIZE  256
+#define Modbus_Recv_BUFF_SIZE  256
 extern u16 Modbus_RecvFront;
 extern u16 Modbus_RecvTail;
 extern u16 Modbus_SendFront;

@@ -28,26 +28,26 @@ void Modbus_Send_To_HMI(void)
 	InputRegBuf[16] = Q_Sys *10;
 	InputRegBuf[17] = S_Sys *10;
 	InputRegBuf[18] = PF_Sys *100;
-	memcpy(&InputRegBuf[19], &MainStusWord.DataInt, 2);
-	memcpy(&InputRegBuf[20], &MainSta2Word.DataInt, 2);
-	memcpy(&InputRegBuf[21], &AlarmWord1.DataInt, 2);
-	memcpy(&InputRegBuf[22], &AlarmWord2.DataInt, 2);
-	memcpy(&InputRegBuf[23], &FaultWord1.DataInt, 2);
-	memcpy(&InputRegBuf[24], &FaultWord2.DataInt, 2);
-	memcpy(&InputRegBuf[25], &SwitchWord1.DataInt, 2);
-	memcpy(&InputRegBuf[26], &SwitchWord2.DataInt, 2);
-	memcpy(&InputRegBuf[27], &SwitchWord3.DataInt, 2);
-	InputRegBuf[28]   = FlowRate*10;
-	InputRegBuf[29]   = FpgaMotorFreq*10;
-	InputRegBuf[30]   = SysTime_Year;
-	InputRegBuf[31]   = SysTime_Month;
-	InputRegBuf[32]   = SysTime_Day;
-	InputRegBuf[33]   = SysTime_Hour;
-	InputRegBuf[34]   = SysTime_Minute;
-	InputRegBuf[35]   = SysTime_Second;
-	InputRegBuf[36]   = SysTimeser_cmd;
-	memcpy(&InputRegBuf[37], &FltSelfRecvWord.DataInt, 2);
-	InputRegBuf[38]   = HMI_Ver;
+	InputRegBuf[19] = MainStusWord.DataInt;
+	InputRegBuf[20] = MainSta2Word.DataInt;
+	InputRegBuf[21] = AlarmWord1.DataInt;
+	InputRegBuf[22] = AlarmWord2.DataInt;
+	InputRegBuf[23] = FaultWord1.DataInt;
+	InputRegBuf[24] = FaultWord2.DataInt;
+	InputRegBuf[25] = SwitchWord1.DataInt;
+	InputRegBuf[26] = SwitchWord2.DataInt;
+	InputRegBuf[27] = SwitchWord3.DataInt;
+	InputRegBuf[28] = FlowRate*10;
+	InputRegBuf[29] = FpgaMotorFreq*10;
+	InputRegBuf[30] = SysTime_Year;
+	InputRegBuf[31] = SysTime_Month;
+	InputRegBuf[32] = SysTime_Day;
+	InputRegBuf[33] = SysTime_Hour;
+	InputRegBuf[34] = SysTime_Minute;
+	InputRegBuf[35] = SysTime_Second;
+	InputRegBuf[36] = SysTimeser_cmd;
+	InputRegBuf[37] = FltSelfRecvWord.DataInt;
+	InputRegBuf[38] = HMI_Ver;
 
 	if(ParaDownloadCtrlWord == 0)
 	{

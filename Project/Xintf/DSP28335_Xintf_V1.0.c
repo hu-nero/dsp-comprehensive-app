@@ -488,39 +488,8 @@ void IOInputCtrlFlag(void)
 /**********************************************************************************/
 void IOOutMapLogic(void)
 {
-	IOOutFpga1.DataBit.Bit0 = (IOOutput1.DataBit.Bit0 & IOOut1CtrlWord.DataBit.Bit0)^0;
-	IOOutFpga1.DataBit.Bit1 = (IOOutput1.DataBit.Bit1 & IOOut1CtrlWord.DataBit.Bit1)^0;
-	IOOutFpga1.DataBit.Bit2 = (IOOutput1.DataBit.Bit2 & IOOut1CtrlWord.DataBit.Bit2)^0;
-	IOOutFpga1.DataBit.Bit3 = (IOOutput1.DataBit.Bit3 & IOOut1CtrlWord.DataBit.Bit3)^0;
-	IOOutFpga1.DataBit.Bit4 = (IOOutput1.DataBit.Bit4 & IOOut1CtrlWord.DataBit.Bit4)^0;
-	IOOutFpga1.DataBit.Bit5 = (IOOutput1.DataBit.Bit5 & IOOut1CtrlWord.DataBit.Bit5)^0;
-	IOOutFpga1.DataBit.Bit6 = (IOOutput1.DataBit.Bit6 & IOOut1CtrlWord.DataBit.Bit6)^0;
-	IOOutFpga1.DataBit.Bit7 = (IOOutput1.DataBit.Bit7 & IOOut1CtrlWord.DataBit.Bit7)^0;
-	IOOutFpga1.DataBit.Bit8 = (IOOutput1.DataBit.Bit8 & IOOut1CtrlWord.DataBit.Bit8)^0;
-	IOOutFpga1.DataBit.Bit9 = (IOOutput1.DataBit.Bit9 & IOOut1CtrlWord.DataBit.Bit9)^0;
-	IOOutFpga1.DataBit.Bit10 = (IOOutput1.DataBit.Bit10 & IOOut1CtrlWord.DataBit.Bit10)^0;
-	IOOutFpga1.DataBit.Bit11 = (IOOutput1.DataBit.Bit11 & IOOut1CtrlWord.DataBit.Bit11)^0;
-	IOOutFpga1.DataBit.Bit12 = (IOOutput1.DataBit.Bit12 & IOOut1CtrlWord.DataBit.Bit12)^0;
-	IOOutFpga1.DataBit.Bit13 = (IOOutput1.DataBit.Bit13 & IOOut1CtrlWord.DataBit.Bit13)^0;
-	IOOutFpga1.DataBit.Bit14 = (IOOutput1.DataBit.Bit14 & IOOut1CtrlWord.DataBit.Bit14)^0;
-	IOOutFpga1.DataBit.Bit15 = (IOOutput1.DataBit.Bit15 & IOOut1CtrlWord.DataBit.Bit15)^0;
-
-	IOOutFpga2.DataBit.Bit0 = (IOOutput2.DataBit.Bit0 & IOOut2CtrlWord.DataBit.Bit0)^0;
-	IOOutFpga2.DataBit.Bit1 = (IOOutput2.DataBit.Bit1 & IOOut2CtrlWord.DataBit.Bit1)^0;
-	IOOutFpga2.DataBit.Bit2 = (IOOutput2.DataBit.Bit2 & IOOut2CtrlWord.DataBit.Bit2)^0;
-	IOOutFpga2.DataBit.Bit3 = (IOOutput2.DataBit.Bit3 & IOOut2CtrlWord.DataBit.Bit3)^0;
-	IOOutFpga2.DataBit.Bit4 = (IOOutput2.DataBit.Bit4 & IOOut2CtrlWord.DataBit.Bit4)^0;
-	IOOutFpga2.DataBit.Bit5 = (IOOutput2.DataBit.Bit5 & IOOut2CtrlWord.DataBit.Bit5)^0;
-	IOOutFpga2.DataBit.Bit6 = (IOOutput2.DataBit.Bit6 & IOOut2CtrlWord.DataBit.Bit6)^0;
-	IOOutFpga2.DataBit.Bit7 = (IOOutput2.DataBit.Bit7 & IOOut2CtrlWord.DataBit.Bit7)^0;
-	IOOutFpga2.DataBit.Bit8 = (IOOutput2.DataBit.Bit8 & IOOut2CtrlWord.DataBit.Bit8)^0;
-	IOOutFpga2.DataBit.Bit9 = (IOOutput2.DataBit.Bit9 & IOOut2CtrlWord.DataBit.Bit9)^0;
-	IOOutFpga2.DataBit.Bit10 = (IOOutput2.DataBit.Bit10 & IOOut2CtrlWord.DataBit.Bit10)^0;
-	IOOutFpga2.DataBit.Bit11 = (IOOutput2.DataBit.Bit11 & IOOut2CtrlWord.DataBit.Bit11)^0;
-	IOOutFpga2.DataBit.Bit12 = (IOOutput2.DataBit.Bit12 & IOOut2CtrlWord.DataBit.Bit12)^0;
-	IOOutFpga2.DataBit.Bit13 = (IOOutput2.DataBit.Bit13 & IOOut2CtrlWord.DataBit.Bit13)^0;
-	IOOutFpga2.DataBit.Bit14 = (IOOutput2.DataBit.Bit14 & IOOut2CtrlWord.DataBit.Bit14)^0;
-	IOOutFpga2.DataBit.Bit15 = (IOOutput2.DataBit.Bit15 & IOOut2CtrlWord.DataBit.Bit15)^0;
+	IOOutFpga1.DataInt = IOOutput1.DataInt & IOOut1CtrlWord.DataInt;
+	IOOutFpga2.DataInt = IOOutput2.DataInt & IOOut2CtrlWord.DataInt;
 }
 /***********************************************************************/
 void IO_Scan(void)
