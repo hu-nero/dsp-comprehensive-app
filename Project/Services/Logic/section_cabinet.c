@@ -3689,7 +3689,8 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                     }
                     else
                     {
-                        return;
+                        Cabinet_SetAlarm(Context, ALARM_NONE, "cabinet state Abnormal");
+                        Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
                     }
                 }
                 else
