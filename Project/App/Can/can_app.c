@@ -87,7 +87,7 @@ CAN_App_CanRxHandler(TeCanPort Port, FuncCode_t Func, uint16_t SrcAddr, uint16_t
         case FUNC_STATUS://0x03
             {
                 uint16_t u16Data[8] = {};
-                memcpy(u16Data, Data, sizeof(uint16_t)*Dlc);
+                memcpy(u16Data, Data, Dlc);
                 // 回调
                 if (g_func_status_handler)
                 {

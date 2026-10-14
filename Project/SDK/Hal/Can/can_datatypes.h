@@ -100,10 +100,10 @@ typedef enum
 typedef  struct
 {
     uint32_t id;
-    uint8_t dlc;
-    uint8_t is_can_fd:2;
-    uint8_t is_ext_id:2;
-    uint8_t data[CAN_DRIVER_MAX_DLC];
+    uint16_t dlc;
+    uint16_t is_can_fd:2;
+    uint16_t is_ext_id:2;
+    uint16_t data[CAN_DRIVER_MAX_DLC];
 } TsCanFrame;
 
 typedef  struct

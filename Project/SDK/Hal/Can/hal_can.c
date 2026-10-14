@@ -164,8 +164,10 @@ hal_can_deinit(uint8_t PortId)
 TeErrorEnum
 hal_can_send(uint8_t PortId, uint8_t Mb, TsCanFrame* Frame)
 {
-	S_CANMSG sCanMsg = {0};
+    S_CANMSG sCanMsg = {0};
+    uint16_t txData[8] = {0};
 
+    sCanMsg.data = txData;
 	if (Frame->is_ext_id)
 	{
 	    sCanMsg.rid.all = (Frame->id) | CAN_DRIVER_EID_FLAG;

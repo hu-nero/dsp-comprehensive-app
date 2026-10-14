@@ -3676,7 +3676,6 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                     Context->fault_recovery_state = AUTO_RECOVERY_DISCONNECT_SINGLE_CIRCUIT;
                 }
                 else if (Context->state == CABINET_STATE_PARALLEL)
-
                 {
                     // TODO: 同步柜全部解列信号
                     CommSyncToSection_t status = CAN_Adapter_GetCommSyncToSectionStatus();

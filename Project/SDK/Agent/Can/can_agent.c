@@ -171,7 +171,7 @@ CAN_SendFrame(TeCanPort Port, FuncCode_t Func, uint16_t DstAddr, uint16_t *Data,
     frame.is_ext_id = 0;  // 标准帧
     frame.is_can_fd = 0;
     frame.dlc = Dlc > 8 ? 8 : Dlc;
-    memcpy(frame.data, Data, sizeof(uint16_t)*frame.dlc);
+    memcpy(frame.data, Data, frame.dlc);
 
     // 通过 FIFO 发送
     if (CAN_FIFO_Write(Port, &frame) != TX_OK)
@@ -304,7 +304,7 @@ static void
 CAN_Agent_StartCmdTimeout(TeCanPort Port, uint16_t DstAddr, FuncCode_t FunCode, uint16_t *Data)
 {
     uint16_t slot = CAN_Agent_FindEmptySlot(Port);
-    if (slot > MAX_PENDING_CMDS)
+    if (slot >= MAX_PENDING_CMDS)
     {
         // 总是覆盖第一个
         slot = 0;
