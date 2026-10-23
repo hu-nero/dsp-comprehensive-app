@@ -62,6 +62,7 @@ static ExecuteResult_t Cabinet_ErrBranch(CabinetContext_t* Context);
 static void Cabinet_ContinueAction(CabinetContext_t* Context);
 static void Cabinet_ProcessDemagnetizeWait(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, SwitchState_t TargetState, uint32_t TimeoutMs, uint32_t StableTime, uint32_t DelayMs);
+static uint16_t Cabinet_CheckFeedbackTimeout(CabinetContext_t* Context, uint32_t TimeoutMs);
 
 // 开关、回路检测
 static inline void Cabinet_ReadAllSwitchStatus(CabinetContext_t* Context);
@@ -74,7 +75,6 @@ static bool Cabinet_IsSatisfyPowerParallel(CabinetContext_t* Context);
 static void Cabinet_ProcessFaultReset(CabinetContext_t* Context);
 static void Cabinet_ProcessAutoParallel(CabinetContext_t* Context);
 static ExecuteResult_t Cabinet_OneclickDisconnect(CabinetContext_t* Context);
-//static uint32_t GetFaultTimerDuration(uint8_t fault_code);
 static void Cabinet_SendParallelRequest(CabinetContext_t* Context);
 
 uint16_t
@@ -214,14 +214,17 @@ Cabinet_Process(CabinetContext_t* Context)
     Cabinet_UpdateCommSectionToHMIStatus(Context);
     (void)Cabinet_SetExternalAddr(Can_External_Addr);// 设置对外CAN地址
     UART485_Adapter_MainLoop();
+    // 面板消磁流程
+    Cabinet_ExecutePanelDegaussProcedure(Context);
+    // 刀闸状态检查处理
+    Cabinet_ExecuteKnifeSwitchProcedure(Context);
+    // 读取面板、柜体开关状态
+    Cabinet_ReadAllSwitchStatus(Context);
+    // 检查开关反馈状态
+    (void)Cabinet_CheckFeedbackTimeout(Context, 60000);
     // 急停下只允许面板消磁
     if (Context->emergency_stop_status == true)
     {
-        Cabinet_ExecutePanelDegaussProcedure(Context);
-        // 刀闸状态检查处理
-        Cabinet_ExecuteKnifeSwitchProcedure(Context);
-        // 读取面板、柜体开关状态
-        Cabinet_ReadAllSwitchStatus(Context);
         return;
     }
 
@@ -287,11 +290,6 @@ Cabinet_Process(CabinetContext_t* Context)
             default:break;
         }
     }
-    // 面板消磁流程
-    Cabinet_ExecutePanelDegaussProcedure(Context);
-    // 刀闸状态检查处理
-    Cabinet_ExecuteKnifeSwitchProcedure(Context);
-
     // 清除报警清报警字
     if ((AlarmWord2.DataBit.Bit0 == 1) ||
         ((AlarmWord2.DataInt>>6)&0x1F) ||
@@ -314,8 +312,6 @@ Cabinet_Process(CabinetContext_t* Context)
             g_cabinet_period = 6000;
         }
     }
-    // 读取面板、柜体开关状态
-    Cabinet_ReadAllSwitchStatus(Context);
 }
 
 static inline void
@@ -1794,8 +1790,6 @@ Cabinet_UpdateCommSectionToHMIStatus(CabinetContext_t* Context)
 static ExecuteResult_t
 Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
 {
-    static uint16_t u16TmpSingleCount = 0;
-    static uint16_t u16TmpParallelCount = 0;
     ExecuteResult_t res = RESULT_SUCCESS;
     uint16_t tmp_reset_switch;
     uint16_t tmp_cap_switch[4];
@@ -1940,62 +1934,6 @@ Cabinet_ExecuteKnifeSwitchProcedure(CabinetContext_t* Context)
         else
         {
             g_cabinet_grid_count ++;
-        }
-    }
-
-    // 如果没有发生状态转换
-    if (!((Context->state != Context->target_state)  &&
-                (Context->target_state != CABINET_STATE_INVALID)))
-    {
-        if (Context->state == CABINET_STATE_SINGLE)
-        {
-            if ((Context->switch_list.A3QF1_switch == SWITCH_OFF) ||
-                (Context->switch_list.A3QR1_switch == SWITCH_OFF)
-               )
-            {
-                if (u16TmpSingleCount > 3500)
-                {
-                    u16TmpSingleCount = 0;
-                    NPR_FaultCode = 31;
-                    Context->fault_recovery_ctx.fault_status = true;
-                    FaultWord1.DataBit.Bit14 = 1;
-                    Context->state = CABINET_STATE_STANDBY;
-                    Context->target_state = CABINET_STATE_INVALID;
-                }
-                else
-                {
-                    u16TmpSingleCount ++;
-                }
-            }
-            else
-            {
-                u16TmpSingleCount = 0;
-            }
-        }
-        if (Context->state == CABINET_STATE_PARALLEL)
-        {
-            if ((Context->switch_list.A3QF2_switch == SWITCH_OFF) ||
-                (Context->switch_list.A3QR2_switch == SWITCH_OFF)
-               )
-            {
-                if (u16TmpParallelCount > 3500)
-                {
-                    u16TmpParallelCount = 0;
-                    NPR_FaultCode = 32;
-                    Context->fault_recovery_ctx.fault_status = true;
-                    FaultWord1.DataBit.Bit15 = 1;
-                    Context->state = CABINET_STATE_STANDBY;
-                    Context->target_state = CABINET_STATE_INVALID;
-                }
-                else
-                {
-                    u16TmpParallelCount ++;
-                }
-            }
-            else
-            {
-                u16TmpParallelCount = 0;
-            }
         }
     }
 
@@ -2233,7 +2171,7 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
             if ((allow_recovery) && (!allow_convert_single) &&
                     (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
                      (cleared_fault == 29) || (cleared_fault == 25) ||
-                     (cleared_fault == 33)))
+                     (cleared_fault == 32) || (cleared_fault == 33)))
             {
                 if ((cleared_fault >= 17) && (cleared_fault <= 22))
                 {
@@ -2277,6 +2215,26 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
                     Context->fault_timer_start = hal_timer_get_timestamp();
                     Context->fault_timer_duration = Auto_Restarttime_Flow * 1000;
                 }
+                // 并机回路有开关断开故障
+                else if (cleared_fault == 32)
+                {
+                    fault_ctx->last_fault_code = cleared_fault;
+                    fault_ctx->last_fault_timestamp = hal_timer_get_timestamp();
+                    // 恢复阶段
+                    if (Context->fault_recovery_ctx.state_before_fault == CABINET_STATE_PARALLEL)
+                    {
+                        Context->fault_recovery_state = AUTO_RECOVERY_REQUEST_PARALLEL;
+                        // 只有故障前是并机，才执行第二次恢复
+                        allow_convert_single = true;
+                    }
+                    else
+                    {
+                        Context->fault_recovery_state = AUTO_RECOVERY_IDLE;
+                        allow_convert_single = false;
+                    }
+                    Context->fault_timer_start = hal_timer_get_timestamp();
+                    Context->fault_timer_duration = Auto_Restarttime_Self * 1000;
+                }
                 // 同步柜信号丢失故障
                 else if (cleared_fault == 33)
                 {
@@ -2298,7 +2256,9 @@ Cabinet_ExecuteFaultAutoReset(CabinetContext_t* Context)
             }
             // 第二次恢复，转单机
             else if ((allow_convert_single) &&
-                     ((cleared_fault >= 17) && (cleared_fault <= 22))
+                     (((cleared_fault >= 17) && (cleared_fault <= 22)) ||
+                      (cleared_fault == 32)
+                     )
                     )
             {
                 // 清空单转并状态
@@ -2713,9 +2673,10 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                             AdapterStatus_t sync_adapter_status = CAN_Adapter_GetAdapterStatus();
 
                             if (((NPR_FaultCode >= 17) && (NPR_FaultCode <= 22)) ||
-                                (NPR_FaultCode == 33) && ((((sync_status>>11)&1) == 0) ||
-                                                          (sync_adapter_status.sync_online_status == true)
-                                                         )
+                                (NPR_FaultCode == 32) ||
+                                ((NPR_FaultCode == 33) && ((((sync_status>>11)&1) == 0) ||
+                                                           (sync_adapter_status.sync_online_status == true)
+                                                          ))
                                )
                             {
                                 NPR_FaultCode = 0;
@@ -2731,6 +2692,7 @@ Cabinet_ExecuteEmergencyStopDegaussProcedure(CabinetContext_t* Context)
                                 FaultWord_Clear(22);
                                 FaultWord_Clear(1); //清空NPR_FaultCode=33
                                 AlarmWord_Clear(16);//清空告警码16
+                                FaultWord_Clear(32);
                             }
                         }
                     }
@@ -3429,19 +3391,31 @@ Cabinet_WaitForSwitchFeedback(CabinetContext_t* Context, uint16_t SwitchId, Swit
     return RESULT_FAILED;
 }
 
-// 根据故障码获取计时时长（ms）
-//static uint32_t
-//GetFaultTimerDuration(uint8_t fault_code)
-//{
-//    switch (fault_code)
-//    {
-//        case 0x01: return 60000;   // 重启失败 -> 60s
-//        case 0x02: return 120000;  // 停电 -> 120s
-//        case 0x03: return 60000;   // 非停水停电 -> 60s
-//        case 0x04: return 1800000; // 停水 -> 30min
-//        default:   return 60000;
-//    }
-//}
+// 主函数检查按钮反馈超时处理
+static uint16_t
+Cabinet_CheckFeedbackTimeout(CabinetContext_t* Context, uint32_t TimeoutMs)
+{
+    uint32_t now, elapsed;
+
+    if (Context->switch_feedback_wait_state != SWITCH_FEEDBACK_WAITING &&
+        Context->switch_feedback_wait_state != SWITCH_FEEDBACK_CHECKING)
+    {
+        return 0;
+    }
+
+    now = hal_timer_get_timestamp();
+    elapsed = now - Context->switch_feedback_start_time;
+    if (elapsed >= TimeoutMs)
+    {
+        Context->switch_feedback_wait_state   = SWITCH_FEEDBACK_IDLE;
+        Context->switch_feedback_start_time   = 0;
+        Context->switch_feedback_stable_count = 0;
+        Context->switch_feedback_id           = 0;
+        Context->switch_feedback_target_state = SWITCH_OFF;
+        return 1;
+    }
+    return 0;
+}
 
 // 发送并网请求（需实现CAN发送）
 static void
@@ -4056,6 +4030,9 @@ Cabinet_ProcessFaultReset(CabinetContext_t* Context)
                 Context->recovery_degauss_start_time = 0;
                 Context->recovery_degauss_delay_ms = 0;
                 Cabinet_SetAlarm(Context, ALARM_NONE, "auto recovery failed");
+                Cabinet_ErrBranch(Context);
+                // 新故障
+                Context->fault_recovery_ctx.fault_status = true;
             }
             break;
         default:break;

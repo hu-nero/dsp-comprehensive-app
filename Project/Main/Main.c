@@ -51,9 +51,10 @@ void FunStatusUpdate(void);
 void RemCommVarRemap(void);
 void DcsCommVarRemap(void);
 void GetVoltCurr(void);
+void npr_silicon_shutdown_protection(void);
+void npr_1ms_protection(void);
 void npr_1s_protection(void);
 void Main_BaseMs_Handler(void);
-void npr_1ms_protection(void);
 
 void RmsFillter(void);
 void CalImbalance(void);
@@ -186,6 +187,7 @@ void main(void)
 		{
 			SysCnt_1msOld = SysCnt_1ms;
             CAN_App_MainLoop();
+            npr_1ms_protection();
 			IO_Scan();
 			Inner_ADCScan();
 			CalImbalance();
@@ -1070,119 +1072,6 @@ void npr_1s_protection(void)
 		}
     }
 
-
-    // DO开关控制与反馈状态匹配(QR1、QR2、QR3、QF1、QF2)
-    if (MainSta2WordCtrl.DataBit.SingQF1 != MainSta2Word.DataBit.SingQF1)
-    {
-        if (FltCnt_OverTime_QF1 < 3)
-        {
-        	FltCnt_OverTime_QF1++;
-        }
-        else
-        {
-            AlarmWord_Map(18);
-        }
-    }
-    else
-    {
-        if (FltCnt_OverTime_QF1 > 0)
-        {
-        	FltCnt_OverTime_QF1--;
-            if (FltCnt_OverTime_QF1 == 0)
-            {
-                AlarmWord_Clear(18);
-            }
-        }
-    }
-    if (MainSta2WordCtrl.DataBit.ParaQF2 != MainSta2Word.DataBit.ParaQF2)
-    {
-        if (FltCnt_OverTime_QF2 < 3)
-        {
-        	FltCnt_OverTime_QF2++;
-        }
-        else
-        {
-            AlarmWord_Map(19);
-        }
-    }
-    else
-    {
-        if (FltCnt_OverTime_QF2 > 0)
-        {
-        	FltCnt_OverTime_QF2--;
-            if (FltCnt_OverTime_QF2 == 0)
-            {
-                AlarmWord_Clear(19);
-            }
-        }
-    }
-    if (MainSta2WordCtrl.DataBit.SingQR1 != MainSta2Word.DataBit.SingQR1)
-    {
-        if (FltCnt_OverTime_QR1 < 3)
-        {
-        	FltCnt_OverTime_QR1++;
-        }
-        else
-        {
-            AlarmWord_Map(20);
-        }
-    }
-    else
-    {
-        if (FltCnt_OverTime_QR1 > 0)
-        {
-        	FltCnt_OverTime_QR1--;
-            if (FltCnt_OverTime_QR1 == 0)
-            {
-                AlarmWord_Clear(20);
-            }
-        }
-    }
-    if (MainSta2WordCtrl.DataBit.ParaQR2 != MainSta2Word.DataBit.ParaQR2)
-    {
-        if (FltCnt_OverTime_QR2 < 3)
-        {
-        	FltCnt_OverTime_QR2++;
-        }
-        else
-        {
-            AlarmWord_Map(21);
-        }
-    }
-    else
-    {
-        if (FltCnt_OverTime_QR2 > 0)
-        {
-        	FltCnt_OverTime_QR2--;
-            if (FltCnt_OverTime_QR2 == 0)
-            {
-                AlarmWord_Clear(21);
-            }
-        }
-    }
-    if (MainSta2WordCtrl.DataBit.DgssKM1 != MainSta2Word.DataBit.DgssKM1)
-    {
-        if (FltCnt_OverTime_QR3 < 3)
-        {
-        	FltCnt_OverTime_QR3++;
-        }
-        else
-        {
-            AlarmWord_Map(22);
-        }
-    }
-    else
-    {
-        if (FltCnt_OverTime_QR3 > 0)
-        {
-        	FltCnt_OverTime_QR3--;
-            if (FltCnt_OverTime_QR3 == 0)
-            {
-                AlarmWord_Clear(22);
-            }
-        }
-    }
-
     //////////////////////////////////////////////////////////
     if(MainStusWord.DataBit.PwrGrid)
     {
@@ -1212,7 +1101,7 @@ void Main_BaseMs_Handler(void)
 {
     // 1ms任务
     SysCnt_1ms++;
-    npr_1ms_protection();
+    npr_silicon_shutdown_protection();
 #ifdef DEBUG
     SCIBSend_1ms ++;
     if(SCIBSend_1ms >= 10000)
@@ -1236,7 +1125,7 @@ void Main_BaseMs_Handler(void)
     }
 }
 
-void npr_1ms_protection(void)
+void npr_silicon_shutdown_protection(void)
 {
     // 可控硅关断
     if (FltFlg_Start_Silicon)
@@ -1274,6 +1163,213 @@ void npr_1ms_protection(void)
             FltFlg_Start_Silicon = 0;
         }
     }
+}
+
+void npr_1ms_protection(void)
+{
+   // DO开关控制与反馈状态匹配(QR1、QR2、QR3、QF1、QF2)
+   if (MainSta2WordCtrl.DataBit.SingQF1 != MainSta2Word.DataBit.SingQF1)
+   {
+       if (FltCnt_OverTime_QF1 < 2000)
+       {
+           FltCnt_OverTime_QF1++;
+       }
+       else
+       {
+           AlarmWord_Map(18);
+       }
+   }
+   else
+   {
+       if (FltCnt_OverTime_QF1 > 0)
+       {
+           FltCnt_OverTime_QF1--;
+           if (FltCnt_OverTime_QF1 == 0)
+           {
+               AlarmWord_Clear(18);
+           }
+       }
+   }
+   if (MainSta2WordCtrl.DataBit.ParaQF2 != MainSta2Word.DataBit.ParaQF2)
+   {
+       if (FltCnt_OverTime_QF2 < 2000)
+       {
+           FltCnt_OverTime_QF2++;
+       }
+       else
+       {
+           AlarmWord_Map(19);
+       }
+   }
+   else
+   {
+       if (FltCnt_OverTime_QF2 > 0)
+       {
+           FltCnt_OverTime_QF2--;
+           if (FltCnt_OverTime_QF2 == 0)
+           {
+               AlarmWord_Clear(19);
+           }
+       }
+   }
+   if (MainSta2WordCtrl.DataBit.SingQR1 != MainSta2Word.DataBit.SingQR1)
+   {
+       if (FltCnt_OverTime_QR1 < 2000)
+       {
+           FltCnt_OverTime_QR1++;
+       }
+       else
+       {
+           AlarmWord_Map(20);
+       }
+   }
+   else
+   {
+       if (FltCnt_OverTime_QR1 > 0)
+       {
+           FltCnt_OverTime_QR1--;
+           if (FltCnt_OverTime_QR1 == 0)
+           {
+               AlarmWord_Clear(20);
+           }
+       }
+   }
+   if (MainSta2WordCtrl.DataBit.ParaQR2 != MainSta2Word.DataBit.ParaQR2)
+   {
+       if (FltCnt_OverTime_QR2 < 2000)
+       {
+           FltCnt_OverTime_QR2++;
+       }
+       else
+       {
+           AlarmWord_Map(21);
+       }
+   }
+   else
+   {
+       if (FltCnt_OverTime_QR2 > 0)
+       {
+           FltCnt_OverTime_QR2--;
+           if (FltCnt_OverTime_QR2 == 0)
+           {
+               AlarmWord_Clear(21);
+           }
+       }
+   }
+   if (MainSta2WordCtrl.DataBit.DgssKM1 != MainSta2Word.DataBit.DgssKM1)
+   {
+       if (FltCnt_OverTime_QR3 < 2000)
+       {
+           FltCnt_OverTime_QR3++;
+       }
+       else
+       {
+           AlarmWord_Map(22);
+       }
+   }
+   else
+   {
+       if (FltCnt_OverTime_QR3 > 0)
+       {
+           FltCnt_OverTime_QR3--;
+           if (FltCnt_OverTime_QR3 == 0)
+           {
+               AlarmWord_Clear(22);
+           }
+       }
+   }
+
+   if ((((MainSta2WordCtrl.DataBit.SingQF1 == 1) && (MainSta2Word.DataBit.SingQF1 == 0)) ||
+        ((MainSta2WordCtrl.DataBit.SingQR1 == 1) && (MainSta2Word.DataBit.SingQR1 == 0))) &&
+       ((IaPar_rmsf < FltThr_UnderCurr_Silicon) ||
+        (IbPar_rmsf < FltThr_UnderCurr_Silicon) ||
+        (IcPar_rmsf < FltThr_UnderCurr_Silicon))
+      )
+   {
+       if (FltCnt_OverTime_Single > 5500)
+       {
+           FltCnt_OverTime_Single = 0;
+           NPR_FaultCode = 31;
+           FaultWord1.DataBit.Bit14 = 1;
+       }
+       else
+       {
+           FltCnt_OverTime_Single ++;
+       }
+   }
+   else
+   {
+       FltCnt_OverTime_Single = 0;
+   }
+
+   if ((((MainSta2WordCtrl.DataBit.SingQF1 == 0) && (MainSta2Word.DataBit.SingQF1 == 1)) ||
+        ((MainSta2WordCtrl.DataBit.SingQR1 == 0) && (MainSta2Word.DataBit.SingQR1 == 1))) &&
+       ((IaPar_rmsf > FltThr_OverCurr_Silicon) ||
+        (IbPar_rmsf > FltThr_OverCurr_Silicon) ||
+        (IcPar_rmsf > FltThr_OverCurr_Silicon))
+      )
+   {
+       if (FltCnt_OverTime_Single2 > 5500)
+       {
+           FltCnt_OverTime_Single2 = 0;
+           NPR_FaultCode = 31;
+           FaultWord1.DataBit.Bit14 = 1;
+       }
+       else
+       {
+           FltCnt_OverTime_Single2 ++;
+       }
+   }
+   else
+   {
+       FltCnt_OverTime_Single2 = 0;
+   }
+
+   if ((((MainSta2WordCtrl.DataBit.ParaQF2 == 1) && (MainSta2Word.DataBit.ParaQF2 == 0)) ||
+        ((MainSta2WordCtrl.DataBit.ParaQR2 == 1) && (MainSta2Word.DataBit.ParaQR2 == 0))) &&
+       ((IaPar_rmsf < FltThr_UnderCurr_Silicon) ||
+        (IbPar_rmsf < FltThr_UnderCurr_Silicon) ||
+        (IcPar_rmsf < FltThr_UnderCurr_Silicon))
+      )
+   {
+       if (FltCnt_OverTime_Parallel > 5500)
+       {
+           FltCnt_OverTime_Parallel = 0;
+           NPR_FaultCode = 32;
+           FaultWord1.DataBit.Bit15 = 1;
+       }
+       else
+       {
+           FltCnt_OverTime_Parallel ++;
+       }
+   }
+   else
+   {
+       FltCnt_OverTime_Parallel = 0;
+   }
+
+   if ((((MainSta2WordCtrl.DataBit.ParaQF2 == 0) && (MainSta2Word.DataBit.ParaQF2 == 1)) ||
+        ((MainSta2WordCtrl.DataBit.ParaQR2 == 0) && (MainSta2Word.DataBit.ParaQR2 == 1))) &&
+       ((IaPar_rmsf > FltThr_OverCurr_Silicon) ||
+        (IbPar_rmsf > FltThr_OverCurr_Silicon) ||
+        (IcPar_rmsf > FltThr_OverCurr_Silicon))
+      )
+   {
+       if (FltCnt_OverTime_Parallel2 > 5500)
+       {
+           FltCnt_OverTime_Parallel2 = 0;
+           NPR_FaultCode = 32;
+           FaultWord1.DataBit.Bit15 = 1;
+       }
+       else
+       {
+           FltCnt_OverTime_Parallel2 ++;
+       }
+   }
+   else
+   {
+       FltCnt_OverTime_Parallel2 = 0;
+   }
 }
 /******************************************************************/
 void GetFlowRate_Calc(void)

@@ -521,6 +521,7 @@ union Control_Mode_Word_Type CtrlModeWord;
 int UnloadCtrl_PC=0;
 
 u16 FltCnt_OverTime_QR1,FltCnt_OverTime_QF1,FltCnt_OverTime_QF2,FltCnt_OverTime_QR2,FltCnt_OverTime_QR3;
+u16 FltCnt_OverTime_Single,FltCnt_OverTime_Parallel,FltCnt_OverTime_Single2,FltCnt_OverTime_Parallel2;
 // PowerRef
 float KVARRef_Sys=0, KWRefRef_Sys=0;
 float KVARRef_CAN=0, KWRefRef_CAN=0;
@@ -665,6 +666,10 @@ void variable_init(void)
     FltCnt_OverTime_QR1 = 0;
     FltCnt_OverTime_QR2 = 0;
     FltCnt_OverTime_QR3 = 0;
+    FltCnt_OverTime_Single = 0;
+    FltCnt_OverTime_Parallel = 0;
+    FltCnt_OverTime_Single2 = 0;
+    FltCnt_OverTime_Parallel2 = 0;
 
 	FaultWord1.DataInt=0;
 	FaultWord2.DataInt=0;
@@ -756,7 +761,7 @@ void variable_init(void)
 
 	Cap_Ctrl_Word.DataInt=0x2F;
 	Can_External_Addr = 0x02;
-	FltThr_UnderCurr_Silicon = 0;
+	FltThr_UnderCurr_Silicon = 5;
 	FltThr_OverCurr_Silicon = 10;
 	Auto_Restarttime_Self = 80;
 	Auto_Restarttime_Para_Request = 60;

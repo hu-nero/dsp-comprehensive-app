@@ -591,6 +591,7 @@ extern union Control_Mode_Word_Type CtrlModeWord;
 extern int UnloadCtrl_PC;
 
 extern u16 FltCnt_OverTime_QR1,FltCnt_OverTime_QF1,FltCnt_OverTime_QF2,FltCnt_OverTime_QR2,FltCnt_OverTime_QR3;
+extern u16 FltCnt_OverTime_Single,FltCnt_OverTime_Parallel,FltCnt_OverTime_Single2,FltCnt_OverTime_Parallel2;
 // PowerRef
 extern float KVARRef_Sys, KWRefRef_Sys;
 extern float KVARRef_CAN, KWRefRef_CAN;
